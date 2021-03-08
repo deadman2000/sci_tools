@@ -17,9 +17,9 @@ jobs:
       with:
         dotnet-version: '5.0.x'
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore SCI_Lib
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore SCI_Lib
     - name: Publish to NuGet
       uses: brandedoutcast/publish-nuget@v2
       with:

@@ -18,8 +18,12 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      run: dotnet restore SCI_Lib
+      run: |
+        dotnet restore SCI_Lib
+        dotnet restore Tests
     - name: Build
-      run: dotnet build --no-restore SCI_Lib
+      run: |
+        dotnet build --no-restore SCI_Lib
+        dotnet build --no-restore Tests
     - name: Test
-      run: dotnet test --verbosity normal
+      run: dotnet test --no-build --verbosity normal
