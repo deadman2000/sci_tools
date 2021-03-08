@@ -5,6 +5,9 @@
     <RootNamespace>SCI_Lib</RootNamespace>
     <LangVersion>8.0</LangVersion>
     <Version>1.0.0</Version>
+    <Authors>dead_man</Authors>
+    <Product>SCI_Tools</Product>
+    <Description>https://github.com/deadman2000/sci_tools</Description>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">

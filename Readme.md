@@ -1,5 +1,7 @@
 ## SCI engine tools for resource editing and translating
 
+[![build](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml/badge.svg)](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml) [![deploy](https://github.com/deadman2000/sci_tools/actions/workflows/deploy.yml/badge.svg)](https://github.com/deadman2000/sci_tools/actions/workflows/deploy.yml)
+
 **SCI_Lib** - resource management library for SCI-games. 
 
 **SCI_Tools** - executable utility. Scripting, editing, extracting, backend tasks, etc.
