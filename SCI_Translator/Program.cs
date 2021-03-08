@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using SCI_Lib;
-using SCI_Lib.Resources;
 using System;
 using System.Text;
 using System.Windows.Forms;
@@ -31,7 +30,10 @@ namespace SCI_Translator
 
                 var lastEnc = key.GetValue("LastEncoding");
                 if (lastEnc != null)
-                    form.Encoding = Encoding.GetEncoding(int.Parse(lastEnc.ToString()));
+                {
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                    form.GameEncoding = int.Parse(lastEnc.ToString());
+                }
                 key.Close();
 
 
@@ -41,7 +43,7 @@ namespace SCI_Translator
                 translateDir = form.TranslateDir;
                 if (translateDir.Length == 0) translateDir = null;
 
-                enc = form.Encoding;
+                enc = Encoding.GetEncoding(form.GameEncoding);
             }
             else
             {

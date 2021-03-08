@@ -46,10 +46,29 @@ namespace SCI_Translator
             set => tbTranslateDir.Text = value;
         }
 
-        public Encoding Encoding
+        public int GameEncoding
         {
-            get => ((EncodingWrapper)cbEncoding.SelectedItem).Encoding;
-            set => cbEncoding.SelectedItem = Encodings.Find(e => e.Encoding == value);
+            get
+            {
+                if (cbEncoding.SelectedItem == null)
+                {
+                    if (int.TryParse(cbEncoding.Text, out var enc))
+                        return enc;
+
+                    return 0;
+                }
+
+                return ((EncodingWrapper)cbEncoding.SelectedItem).Encoding.CodePage;
+            }
+
+            set
+            {
+                cbEncoding.SelectedItem = Encodings.Find(e => e.Encoding.CodePage == value);
+                if (cbEncoding.SelectedItem == null)
+                {
+                    cbEncoding.Text = value.ToString();
+                }
+            }
         }
 
         private void btOpen_Click(object sender, EventArgs e)
@@ -59,7 +78,7 @@ namespace SCI_Translator
             RegistryKey key = Registry.CurrentUser.CreateSubKey("SCI_Translator");
             key.SetValue("LastGameDir", GameDir);
             key.SetValue("LastTranslateDir", TranslateDir);
-            key.SetValue("LastEncoding", Encoding.CodePage.ToString());
+            key.SetValue("LastEncoding", GameEncoding.ToString());
             key.Close();
 
             DialogResult = DialogResult.OK;

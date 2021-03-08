@@ -40,9 +40,7 @@ namespace SCI_Lib
         {
             if (enc == null)
             {
-#if NETSTANDARD || NET5_0
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-#endif
                 enc = Encoding.GetEncoding(866);
             }
             GameEncoding = new GameEncoding(enc);
