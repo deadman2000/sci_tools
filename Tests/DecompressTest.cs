@@ -19,6 +19,13 @@ namespace Tests
                 var unpack = r.GetContent();
 
                 var filePath = Path.Combine(uncompDir, r.FileName);
+
+                if (!File.Exists(filePath))
+                    filePath = Path.Combine(uncompDir, r.FileName.ToLower());
+
+                if (!File.Exists(filePath))
+                    continue;
+
                 var target = await File.ReadAllBytesAsync(filePath);
 
                 int offset = Resource.GetResourceOffsetInFile(target[1]);
