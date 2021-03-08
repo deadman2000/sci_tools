@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SCI_Tools": {
+      "commandName": "Project",
+      "commandLineArgs": "test -d D:\\Projects\\SCITools\\assets\\Conquest\\",
+      "nativeDebugging": false
+    }
+  }
+}

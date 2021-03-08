@@ -1,0 +1,67 @@
+echo COMPLETE install will install all files to your hard
+echo drive. The entire game will be played from a hard drive.
+echo Approximate hard drive space required:	7.4 Meg
+rem					LARGE INSTALL
+:large
+clear
+space %1: 7400	NoSpace
+godir %1:\sierra\robin	CantCreate
+echo Copying Startup Files ...
+
+copy %2:*.drv              /q
+
+copy %2:version         
+copy %2:scidhv.exe         /q
+copy %2:resource.004
+copy %2:resource.map  
+echo %3 >resource.cfg 
+copy %2:in*.*         
+copy %2:read.me            /q
+
+copy %2:robin2.bat         %1:\sierra\robin.bat
+copy %2:robin3.bat         %1:\sierra\robin\robin.bat
+copy %2:robin3.bat         %1:\sierra\robin\sierra.bat
+
+echo Copying Game files...
+exists %2:resource.001 Please insert the disk labeled "Disk 1" in drive %2:.
+copy %2:resource.001   
+exists %2:resource.002 Please insert the disk labeled "Disk 2" in drive %2:.
+copy %2:resource.002   
+exists %2:resource.003 Please insert the disk labeled "Disk 3" in drive %2:.
+copy %2:*.*         
+exists %2:resource.000 Please insert the disk labeled "Disk 4" in drive %2:.
+copy %2:resource.000
+exists %2:resource.005 Please insert the disk labeled "Disk 5" in drive %2:.
+copy %2:resource.005
+
+:exit
+clear
+echo
+echo ÿTo play NOW:
+echo ÿ   Type robin and press [ENTER].
+echo
+echo ÿTo play LATER:
+echo ÿ   From the root directory of %1:,
+echo ÿ   Type cd \sierra and press [ENTER], then
+echo ÿ   Type robin and press [ENTER].
+echo
+pause
+goto Exit2
+:NoSpace
+clear
+echo
+alert There is not enough space on %1: to install Conquests of the Longbow!
+rem determine which message to bring up.
+rem 11/12 NOSMALL space %1: 1600 NoSmall 
+echo 7.4 Megabytes of disk space are necessary.
+pause
+echo
+end
+:Exit2
+end
+:CantCreate
+alert Unable to create directory %1:\sierra\robin
+end
+
+
+
