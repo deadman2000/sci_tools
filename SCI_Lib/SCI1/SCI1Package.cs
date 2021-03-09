@@ -163,7 +163,7 @@ namespace SCI_Lib.SCI1
             throw new FormatException("Unknown format");
         }
 
-        private bool CheckMap(FileStream fs, int step, int count)
+        private static bool CheckMap(FileStream fs, int step, int count)
         {
             try
             {
@@ -191,8 +191,6 @@ namespace SCI_Lib.SCI1
             }
         }
 
-        const bool SAVE_MAP_DEBUG = false;
-
         protected override void SaveMap(FileStream fs)
         {
             var byType = Resources.GroupBy(r => r.Type);
@@ -204,13 +202,11 @@ namespace SCI_Lib.SCI1
             foreach (var gr in byType)
             {
                 offset = (ushort)fs.Position;
-                if (SAVE_MAP_DEBUG) Console.WriteLine($"{gr.Key} {(byte)gr.Key:X2} {gr.Count()}");
 
                 foreach (var r in gr)
                 {
                     foreach (var resOffset in r.Volumes)
                     {
-                        if (SAVE_MAP_DEBUG) Console.WriteLine($"{fs.Position:X4} > {r}  {r.Number} {resOffset.Offset:X4} {resOffset.Num}");
                         fs.WriteUShortBE(r.Number);
                         fs.WriteUIntBE((uint)(resOffset.Offset | (resOffset.Num << 28)));
                     }
@@ -219,7 +215,6 @@ namespace SCI_Lib.SCI1
                 var pos = fs.Position;
 
                 fs.Seek(i * 3, SeekOrigin.Begin);
-                if (SAVE_MAP_DEBUG) Console.WriteLine($"{fs.Position:X4} > {(byte)gr.Key:X2}  {offset:X4}");
 
                 fs.WriteByte((byte)gr.Key);
                 fs.WriteUShortBE(offset);
@@ -230,7 +225,6 @@ namespace SCI_Lib.SCI1
             offset = (ushort)fs.Position;
 
             fs.Seek(i * 3, SeekOrigin.Begin);
-            if (SAVE_MAP_DEBUG) Console.WriteLine($"{fs.Position:X4} > 0xff  {offset:X4}");
             fs.WriteByte(0xff);
             fs.WriteUShortBE(offset);
         }
