@@ -1,6 +1,6 @@
 ## SCI engine tools for resource editing and translating
 
-[![build](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml/badge.svg)](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml)
+[![build](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml/badge.svg)](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml) [![SCI_Lib on fuget.org](https://www.fuget.org/packages/SCI_Lib/badge.svg)](https://www.fuget.org/packages/SCI_Lib)
 
 **SCI_Lib** - resource management library for SCI-games. 
 
