@@ -22,12 +22,12 @@ namespace SCI_Tools
 
             if (Picture.HasValue)
             {
-                var p = package.GetResouce<ResPicture>(Picture.Value);
+                var p = package.GetResource<ResPicture>(Picture.Value);
                 Save(p);
             }
             else
             {
-                var pics = package.GetResouces<ResPicture>();
+                var pics = package.GetResources<ResPicture>();
                 foreach (var p in pics)
                     Save(p);
             }

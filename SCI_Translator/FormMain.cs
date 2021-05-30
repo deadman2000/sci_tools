@@ -44,7 +44,7 @@ namespace SCI_Translator
 
             foreach (ResType resType in Enum.GetValues(typeof(ResType)))
             {
-                var resources = package.GetResouces(resType);
+                var resources = package.GetResources(resType);
                 if (!resources.Any()) continue;
 
                 TreeNode tnRes = tv.Nodes.Add(ResTypeName(resType));

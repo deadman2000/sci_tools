@@ -12,8 +12,8 @@ namespace Tests
         {
             var package = Utils.LoadPackage();
 
-            //var r = package.GetResouce("95.p56");
-            foreach (var r in package.GetResouces<ResView>())
+            //var r = package.GetResource("95.p56");
+            foreach (var r in package.GetResources<ResView>())
             {
                 var info = r.GetInfo();
 

@@ -114,7 +114,7 @@ namespace SCI_Lib.SCI1
                     if (!ushort.TryParse(Path.GetFileNameWithoutExtension(f), out var num))
                         continue;
 
-                    if (GetResouce(f) == null)
+                    if (GetResource(f) == null)
                     {
                         ushort method = 0;
                         byte resNum = 0;

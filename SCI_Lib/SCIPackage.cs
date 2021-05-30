@@ -115,23 +115,23 @@ namespace SCI_Lib
 
         public List<Resource> Resources { get; } = new List<Resource>();
 
-        public IEnumerable<ResText> Texts => GetResouces<ResText>();
+        public IEnumerable<ResText> Texts => GetResources<ResText>();
 
-        public IEnumerable<ResScript> Scripts => GetResouces<ResScript>();
+        public IEnumerable<ResScript> Scripts => GetResources<ResScript>();
 
-        public IEnumerable<ResMessage> Messages => GetResouces<ResMessage>();
+        public IEnumerable<ResMessage> Messages => GetResources<ResMessage>();
 
-        public IEnumerable<Resource> GetResouces(ResType resType) => Resources.FindAll(r => r.Type == resType);
+        public IEnumerable<Resource> GetResources(ResType resType) => Resources.FindAll(r => r.Type == resType);
 
-        public IEnumerable<T> GetResouces<T>() where T : Resource => Resources.FindAll(r => r is T).Cast<T>();
+        public IEnumerable<T> GetResources<T>() where T : Resource => Resources.FindAll(r => r is T).Cast<T>();
 
-        public Resource GetResouce(ResType type, ushort number) => Resources.FirstOrDefault(r => r.Type == type && r.Number == number);
+        public Resource GetResource(ResType type, ushort number) => Resources.FirstOrDefault(r => r.Type == type && r.Number == number);
 
-        public Resource GetResouce(string fileName) => Resources.FirstOrDefault(r => r.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+        public Resource GetResource(string fileName) => Resources.FirstOrDefault(r => r.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
 
-        public T GetResouce<T>(ushort number) where T : Resource => Resources.FirstOrDefault(r => r is T && r.Number == number) as T;
+        public T GetResource<T>(ushort number) where T : Resource => Resources.FirstOrDefault(r => r is T && r.Number == number) as T;
 
-        public T Get<T>(T res) where T : Resource => GetResouce<T>(res.Number);
+        public T Get<T>(T res) where T : Resource => GetResource<T>(res.Number);
 
         #endregion
 
@@ -145,7 +145,7 @@ namespace SCI_Lib
 
         private Dictionary<byte, OpCode> LoadOpCodes()
         {
-            return GetResouce<ResVocab>(998).GetVocabOpcodes();
+            return GetResource<ResVocab>(998).GetVocabOpcodes();
         }
 
         private string[] _funcNames;
@@ -159,7 +159,7 @@ namespace SCI_Lib
 
         private string[] LoadFuncs()
         {
-            return GetResouce<ResVocab>(999).GetText();
+            return GetResource<ResVocab>(999).GetText();
         }
 
         private string[] _names;
@@ -172,14 +172,14 @@ namespace SCI_Lib
 
         private string[] LoadNames()
         {
-            return GetResouce<ResVocab>(997).GetVocabNames();
+            return GetResource<ResVocab>(997).GetVocabNames();
         }
 
         public IEnumerable<Resource> GetTextResources()
         {
-            return GetResouces(ResType.Text)
-                .Union(GetResouces(ResType.Script))
-                .Union(GetResouces(ResType.Message));
+            return GetResources(ResType.Text)
+                .Union(GetResources(ResType.Script))
+                .Union(GetResources(ResType.Message));
         }
 
         public void Pack(string directory)

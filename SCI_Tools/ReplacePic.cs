@@ -19,7 +19,7 @@ namespace SCI_Tools
         {
             var bmp = new Bitmap(BitmapPath);
             
-            var res = package.GetResouce<ResPicture>(Picture);
+            var res = package.GetResource<ResPicture>(Picture);
             var pic = res.GetPicture();
             pic.SetBackground(bmp);
             res.SetPicture(pic);

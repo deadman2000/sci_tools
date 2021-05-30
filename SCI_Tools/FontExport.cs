@@ -15,7 +15,7 @@ namespace SCI_Tools
 
         protected override Task Do()
         {
-            var res = package.GetResouce<ResFont>(Font);
+            var res = package.GetResource<ResFont>(Font);
             var outDir = Path.GetFullPath(res.FileName);
             if (Directory.Exists(outDir))
                 Directory.Delete(outDir, true);

@@ -29,7 +29,7 @@ namespace Tests
 
             foreach (var r in package.Resources)
             {
-                var r2 = packed.GetResouce(r.FileName);
+                var r2 = packed.GetResource(r.FileName);
                 Assert.IsNotNull(r2);
 
                 Assert.AreEqual(r.Number, r2.Number, $"{r.FileName}");

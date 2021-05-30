@@ -12,7 +12,7 @@ namespace Tests
         {
             var package = Utils.LoadPackage();
 
-            //var r = package.GetResouce("95.p56");
+            //var r = package.GetResource("95.p56");
             foreach (var r in package.Resources.Take(250))
             {
                 var info = r.GetInfo();
@@ -38,7 +38,7 @@ namespace Tests
         {
             var package = Utils.LoadPackage();
 
-            //var r = package.GetResouce("95.p56");
+            //var r = package.GetResource("95.p56");
             foreach (var r in package.Resources)
             {
                 var info = r.GetInfo();
