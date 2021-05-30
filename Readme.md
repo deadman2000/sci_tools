@@ -14,3 +14,13 @@
 - http://wiki.scummvm.org/index.php/SCI/Specifications
 - https://github.com/scummvm/scummvm/tree/master/engines/sci
 - https://github.com/ValeryAnisimovsky/GameAudioPlayer/blob/master/Specs/SOL-AUD.txt
+
+
+## TODO
+
+### Talker detection
+
+By export offsets get Talker insntance. Show it's view
+By noun get Actor. Show it's view
+Package method GetTalkerInfo(message number, talkerId)
+Returns name, view(num, loop)

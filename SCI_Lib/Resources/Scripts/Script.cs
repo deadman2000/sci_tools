@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts
 {
-    public class Script
+    public class Script : IScript
     {
         private Dictionary<ushort, BaseElement> _elements = new Dictionary<ushort, BaseElement>();
         private readonly StringSection _strings;
@@ -30,8 +30,8 @@ namespace SCI_Lib.Resources.Scripts
                 Sections.Add(sec);
                 i += size;
 
-                if (sec is StringSection)
-                    _strings = (StringSection)sec;
+                if (sec is StringSection section)
+                    _strings = section;
             }
 
             foreach (var sec in Sections)
@@ -51,7 +51,7 @@ namespace SCI_Lib.Resources.Scripts
 
         public List<Section> Sections { get; } = new List<Section>();
 
-        public IEnumerable<StringConst> AllStrings => Sections.OfType<StringSection>().SelectMany(s => s.Strings).Where(s => !s.IsClassName);
+        public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings).Where(s => !s.IsClassName);
 
         public IEnumerable<BaseElement> AllElements => _elements.Values.Where(e => !(e is StringPart));
 
@@ -100,8 +100,8 @@ namespace SCI_Lib.Resources.Scripts
 
             foreach (Section sec in Sections)
             {
-                if (sec is T)
-                    list.Add((T)sec);
+                if (sec is T t)
+                    list.Add(t);
             }
 
             return list;
@@ -120,7 +120,7 @@ namespace SCI_Lib.Resources.Scripts
             return list;
         }
 
-        public ClassSection GetClass(ushort id)
+        public IClass GetClass(ushort id)
         {
             return Get<ClassSection>(SectionType.Class).Find(c => c.Id == id);
         }

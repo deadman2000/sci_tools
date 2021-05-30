@@ -1,16 +1,26 @@
-﻿using SCI_Lib.Utils;
+﻿using SCI_Lib.Resources.Scripts;
+using SCI_Lib.Resources.Scripts.Elements;
+using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace SCI_Lib.Resources.Scripts1_1
 {
-    public class Script1_1
+    public class Script1_1 : IScript
     {
+        private byte[] _sourceData;
+
+        private List<LocalVar> localVars = new List<LocalVar>();
+
+        private List<ushort> exportsOffsets = new List<ushort>();
+        private List<ushort> exportedObjInst = new List<ushort>();
+
         public Script1_1(Resource res)
         {
             Resource = res;
-            SourceData = res.GetContent();
+            _sourceData = res.GetContent();
             ReadScriptSCI1_1();
         }
 
@@ -18,9 +28,8 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         public SCIPackage Package => Resource.Package;
 
-        public byte[] SourceData { get; }
 
-        public List<Object1_1> Objects { get; set; } = new List<Object1_1>();
+        public List<Object1_1> Objects { get; } = new List<Object1_1>();
 
         public HashSet<ushort> StringOffsets { get; set; }
 
@@ -30,12 +39,10 @@ namespace SCI_Lib.Resources.Scripts1_1
         {
             // https://github.com/scummvm/scummvm/blob/master/engines/sci/engine/script.cpp#L390
             // https://github.com/icefallgames/SCICompanion/blob/master/SCICompanionLib/Src/Compile/CompiledScript.cpp#L226
-            List<ushort> exportsTO = new List<ushort>();
-            List<ushort> exportedObjInst = new List<ushort>();
-            var heapRes = Package.GetResource(ResType.Heap, Resource.Volumes[0].Num);
+            var heapRes = Package.GetResource(ResType.Heap, Resource.Number);
 
-            using var stream = new MemoryStream(SourceData.Length);
-            stream.Write(SourceData, 0, SourceData.Length);
+            using var stream = new MemoryStream(_sourceData.Length);
+            stream.Write(_sourceData, 0, _sourceData.Length);
             stream.Seek(0, SeekOrigin.Begin);
 
             var endOfStringOffset = stream.ReadUShortBE();
@@ -48,12 +55,11 @@ namespace SCI_Lib.Resources.Scripts1_1
                 var isHeapPointer = heapPoints.Contains((ushort)stream.Position);
                 var exportOffset = stream.ReadUShortBE();
 
-                exportsTO.Add(exportOffset);
+                exportsOffsets.Add(exportOffset);
                 if (isHeapPointer)
                     exportedObjInst.Add(exportOffset);
             }
 
-            List<LocalVar> localVars = new List<LocalVar>();
             var heapData = heapRes.GetContent();
             using var heap = new MemoryStream(heapData);
 
@@ -70,13 +76,14 @@ namespace SCI_Lib.Resources.Scripts1_1
 
             while (true)
             {
+                var offset = (ushort)heap.Position;
                 var magic = heap.ReadUShortBE();
                 if (magic == 0)
                     break;
 
                 if (magic != 0x1234) throw new Exception("Wrong script format");
 
-                var obj = new Object1_1(this);
+                var obj = new Object1_1(this, heapData, offset);
                 obj.Read(stream, heap);
                 Objects.Add(obj);
             }
@@ -85,10 +92,10 @@ namespace SCI_Lib.Resources.Scripts1_1
             {
                 var offs = (ushort)heap.Position;
                 var str = heap.ReadString(Resource.GameEncoding);
-                List<ushort> stringsOffset = new List<ushort>();
+                //List<ushort> stringsOffset = new List<ushort>();
                 if (str.Length > 0 || heap.Position < stringOffset)
                 {
-                    stringsOffset.Add(offs);
+                    //stringsOffset.Add(offs);
                     Strings.Add(str);
                 }
             }
@@ -107,6 +114,28 @@ namespace SCI_Lib.Resources.Scripts1_1
 
             stream.Seek(oldPos, SeekOrigin.Begin);
             return heapPointers;
+        }
+
+        public byte[] GetBytes()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<StringConst> AllStrings()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IClass GetClass(ushort id)
+        {
+            foreach (var obj in Objects)
+                if (obj.ClassId == id) return obj;
+            return null;
+        }
+
+        public List<T> Get<T>() where T : Section
+        {
+            throw new NotImplementedException();
         }
     }
 }

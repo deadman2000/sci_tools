@@ -88,9 +88,9 @@ namespace SCI_Lib
             };
         }
 
-        private IEnumerable<Script> _scriptsCache;
+        private IEnumerable<IScript> _scriptsCache;
 
-        public ClassSection GetClass(ushort id)
+        public IClass GetClass(ushort id)
         {
             if (_scriptsCache == null)
                 _scriptsCache = Scripts.Select(r => r.GetScript());
@@ -164,15 +164,11 @@ namespace SCI_Lib
 
         private string[] _names;
 
+        public string[] Names => _names ??= GetResource<ResVocab>(997).GetVocabNames();
+
         public string GetName(int ind)
         {
-            if (_names == null) _names = LoadNames();
-            return _names[ind];
-        }
-
-        private string[] LoadNames()
-        {
-            return GetResource<ResVocab>(997).GetVocabNames();
+            return Names[ind];
         }
 
         public IEnumerable<Resource> GetTextResources()

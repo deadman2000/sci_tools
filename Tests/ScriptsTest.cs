@@ -18,7 +18,7 @@ namespace Tests
         {
             foreach (var res in package.Scripts)
             {
-                var scr = res.GetScript();
+                var scr = res.GetScript() as Script;
                 Assert.IsNotNull(scr);
 
                 CheckScriptValid(scr);
@@ -65,7 +65,7 @@ namespace Tests
             
             foreach (var r in package.Scripts)
             {
-                var scr = r.GetScript();
+                var scr = r.GetScript() as Script;
                 foreach (var e in scr.AllElements)
                     e.IsAddressSet = false;
 
@@ -83,7 +83,7 @@ namespace Tests
 
             foreach (var res in package.Scripts)
             {
-                var scr = res.GetScript();
+                var scr = res.GetScript() as Script;
                 scr.GetBytes();
 
                 foreach (var r in scr.AllRefs)

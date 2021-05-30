@@ -1,20 +1,72 @@
-﻿using SCI_Lib.Utils;
+﻿using SCI_Lib.Resources.Scripts;
+using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace SCI_Lib.Resources.Scripts1_1
 {
-    public class Object1_1
+    public class Object1_1 : IClass, IDisposable
     {
-        private Script1_1 _script;
+        private readonly Script1_1 _script;
+        private readonly MemoryStream _heap;
+       
+        private ushort[] functionSelectors;
+        private ushort[] functionOffsets;
 
-        public Object1_1(Script1_1 script)
+        private ushort[] propertySelectors;
+
+        private readonly ushort[] generalProps = new ushort[8];
+        private Dictionary<string, LocalVar> _props;
+        private LocalVar[] propertyValues;
+
+        private bool _isInstance;
+
+
+        public Object1_1(Script1_1 script, byte[] heapData, ushort offset)
         {
             _script = script;
+            _heap = new MemoryStream(heapData);
+            Offset = offset;
         }
 
-        public string Name { get; set; }
+        public ushort Offset { get; }
+
+        public Dictionary<string, LocalVar> Properties => _props ??= PrepareProps();
+
+        public bool HasProperty(string key) => Properties.ContainsKey(key);
+
+        public ushort this[GeneralProperty prop] => generalProps[(int)prop];
+
+        public ushort this[string property]
+        {
+            get
+            {
+                if (!Properties.TryGetValue(property, out var value)) throw new ArgumentException($"Property {property} does not exists");
+                return value.Value;
+            }
+        }
+
+        public ushort Id => this[GeneralProperty.ObjectId];
+
+        public ushort ClassId => this[GeneralProperty.Script];
+
+        private Object1_1 _super;
+        public Object1_1 Super
+        {
+            get
+            {
+                if (_super != null) return _super;
+
+                var porpSuper = this[GeneralProperty.Super];
+                if (porpSuper == 0xFFFF) return null;
+
+                return _super = _script.Package.GetClass(porpSuper) as Object1_1;
+            }
+        }
+
+        private string _name;
+        public string Name => _name ??= GetString(this["name"]);
 
         public override string ToString() => Name;
 
@@ -26,42 +78,66 @@ namespace SCI_Lib.Resources.Scripts1_1
             var mystery = heap.ReadUShortBE();
             if (mystery != 0) throw new Exception("Wrong script format");
 
+            // Read properties
             stream.Seek(varOffset, SeekOrigin.Begin);
-            ushort[] propSelectors = new ushort[numVars];
+            propertySelectors = new ushort[numVars];
             for (int i = 0; i < numVars; i++)
             {
-                propSelectors[i] = stream.ReadUShortBE();
+                propertySelectors[i] = stream.ReadUShortBE();
             }
 
-            List<LocalVar> propertyValues = new List<LocalVar>();
+            propertyValues = new LocalVar[numVars];
             for (int i = 0; i < numVars; i++)
             {
-                if (i >= 5)
+                if (i < 5)
+                    generalProps[i] = 0;
+                else if (i < 8)
+                    generalProps[i] = heap.ReadUShortBE();
+                else
                 {
                     bool isString = _script.StringOffsets.Contains((ushort)heap.Position);
                     var w = heap.ReadUShortBE();
-                    propertyValues.Add(new LocalVar { Value = w, IsObjectOrString = isString });
-                }
-                else
-                {
-                    propertyValues.Add(new LocalVar { Value = 0, IsObjectOrString = false });
+                    propertyValues[i] = new LocalVar { Value = w, IsObjectOrString = isString };
                 }
             }
 
-            var pos = heap.Position;
-            heap.Seek(propertyValues[8].Value, SeekOrigin.Begin);
-            Name = heap.ReadString(_script.Package.GameEncoding);
-            heap.Seek(pos, SeekOrigin.Begin);
+            _isInstance = this[GeneralProperty.Script] == 0xffff;
 
+            // Methods
             stream.Seek(methodsOffset, SeekOrigin.Begin);
             var numMethods = stream.ReadUShortBE();
-            ushort[] functionSelectors = new ushort[numMethods];
-            ushort[] functionOffsets = new ushort[numMethods];
+            functionSelectors = new ushort[numMethods];
+            functionOffsets = new ushort[numMethods];
             for (int i = 0; i < numMethods; i++)
             {
                 functionSelectors[i] = stream.ReadUShortBE();
                 functionOffsets[i] = stream.ReadUShortBE();
             }
+        }
+
+        private Dictionary<string, LocalVar> PrepareProps()
+        {
+            var dict = new Dictionary<string, LocalVar>();
+            ushort[] sel = _isInstance ? Super.propertySelectors : propertySelectors;
+
+            for (int i = 8; i < propertyValues.Length; i++)
+            {
+                var name = _script.Package.GetName(sel[i]);
+                dict[name] = propertyValues[i];
+            }
+
+            return dict;
+        }
+
+        private string GetString(ushort offset)
+        {
+            _heap.Seek(offset, SeekOrigin.Begin);
+            return _heap.ReadString(_script.Package.GameEncoding);
+        }
+
+        public void Dispose()
+        {
+            _heap.Dispose();
         }
     }
 }

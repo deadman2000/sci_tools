@@ -3,7 +3,7 @@ using SCI_Lib.Utils;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
-    public class ClassSection : Section
+    public class ClassSection : Section, IClass
     {
         ushort funcList;
         ushort[] varselectors;
@@ -116,14 +116,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         private ClassSection _superClass;
 
-        public ClassSection SuperClass
-        {
-            get
-            {
-                if (_superClass != null) return _superClass;
-                return _superClass = Package.GetClass(((ShortElement)Selectors[1]).Value);
-            }
-        }
+        public ClassSection SuperClass => _superClass ??= Package.GetClass(((ShortElement)Selectors[1]).Value) as ClassSection;
 
         public override void Write(ByteBuilder bb)
         {

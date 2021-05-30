@@ -37,7 +37,7 @@ namespace SCI_Translator.ResView
         {
             var resScript = (ResScript)Current;
 
-            script = resScript.GetScript();
+            script = resScript.GetScript() as Script;
 
             if (script == null)
             {
@@ -52,10 +52,10 @@ namespace SCI_Translator.ResView
             tbHex.Clear();
 
             if (_translated)
-                orig = ((ResScript)_res).GetScript().AllStrings.ToArray();
+                orig = ((ResScript)_res).GetScript().AllStrings().ToArray();
 
             int i = 0;
-            foreach (StringConst sc in script.AllStrings)
+            foreach (StringConst sc in script.AllStrings())
             {
                 int rowInd = dgvStrings.Rows.Add(new object[] { i });
                 var row = dgvStrings.Rows[rowInd];
