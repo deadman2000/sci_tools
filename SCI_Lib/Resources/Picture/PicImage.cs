@@ -13,7 +13,7 @@ namespace SCI_Lib.Resources.Picture
         public ushort Height { get; set; }
         public byte[] Image { get; set; }
 
-        private static bool LOG = false;
+        private const bool LOG = false;
         private static bool WRITE_BY_ROW = true; // Построчная запись
 
         public PicImage(Stream stream) : base(0x01)
@@ -39,11 +39,18 @@ namespace SCI_Lib.Resources.Picture
 
         private void ReadImageData(Stream stream)
         {
+            ReadImageData(stream, stream, Image, _transpCol);
+        }
+
+
+#pragma warning disable CS0162 // Unreachable code detected
+        public static void ReadImageData(Stream rle, Stream literal, byte[] img, byte transpColor)
+        {
             int ind = 0;
             int addCount = 0;
-            while (ind < Image.Length)
+            while (ind < img.Length)
             {
-                var d = stream.ReadB();
+                var d = rle.ReadB();
                 var cnt = (d & 0x3f) + addCount; // 2 бита - код, 6 - количество
                 var code = d >> 6;
                 if (LOG) Console.Write($"{code} x{cnt} ");
@@ -54,8 +61,8 @@ namespace SCI_Lib.Resources.Picture
                         if (LOG) Console.Write("[");
                         for (var i = 0; i < cnt; i++)
                         {
-                            Image[ind + i] = stream.ReadB();
-                            if (LOG) Console.Write($"{Image[ind + i]:X2} ");
+                            img[ind + i] = literal.ReadB();
+                            if (LOG) Console.Write($"{img[ind + i]:X2} ");
                         }
                         ind += cnt;
                         addCount = 0;
@@ -68,10 +75,10 @@ namespace SCI_Lib.Resources.Picture
                         break;
 
                     case 2: // Одинаковые пиксели подряд
-                        var c = stream.ReadB();
+                        var c = literal.ReadB();
                         if (LOG) Console.WriteLine($"{c:X2}");
                         for (var i = 0; i < cnt; i++)
-                            Image[ind + i] = c;
+                            img[ind + i] = c;
                         ind += cnt;
                         addCount = 0;
                         break;
@@ -79,16 +86,14 @@ namespace SCI_Lib.Resources.Picture
                     case 3: // Прозрачные пиксели подряд
                         if (LOG) Console.WriteLine("T");
                         for (var i = 0; i < cnt; i++)
-                            Image[ind + i] = _transpCol;
+                            img[ind + i] = transpColor;
                         ind += cnt;
                         addCount = 0;
                         break;
-
-                    default:
-                        throw new NotImplementedException($"Image code {code:X2} not implemented");
                 }
             }
         }
+#pragma warning restore CS0162 // Unreachable code detected
 
         protected override void WriteExt(ByteBuilder bb)
         {
@@ -126,7 +131,7 @@ namespace SCI_Lib.Resources.Picture
             }
             else
             {
-                    WriteImageRow(bb, Image);
+                WriteImageRow(bb, Image);
             }
         }
 

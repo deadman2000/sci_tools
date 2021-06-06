@@ -30,10 +30,12 @@ namespace Tests
 
                 //Assert.AreEqual(unpack, uncompressed, $"Decompress error in {r.FileName}");
 
-                var originalView = new SCIView(unpack);
-                var reorderView = new SCIView(uncompressed);
+                var originalView = new SCIView(package);
+                originalView.ReadVGA(unpack);
+                var reorderView = new SCIView(package);
+                reorderView.ReadVGA(uncompressed);
 
-                Assert.AreEqual(originalView.Palette[3..], reorderView.Palette[3..]);
+                Assert.AreEqual(originalView.Palette.Colors[3..], reorderView.Palette.Colors[3..]);
 
                 Assert.AreEqual(originalView.Loops.Count, reorderView.Loops.Count);
 
@@ -51,8 +53,8 @@ namespace Tests
 
                         Assert.AreEqual(oc.Width, rc.Width);
                         Assert.AreEqual(oc.Height, rc.Height);
-                        Assert.AreEqual(oc.PlacementX, rc.PlacementX);
-                        Assert.AreEqual(oc.PlacementY, rc.PlacementY);
+                        Assert.AreEqual(oc.X, rc.X);
+                        Assert.AreEqual(oc.Y, rc.Y);
                         Assert.AreEqual(oc.TransparentColor, rc.TransparentColor);
                     }
                 }

@@ -1,7 +1,7 @@
 ﻿using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
-using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.View;
 using SCI_Lib.SCI0;
 using SCI_Lib.SCI1;
 using System;
@@ -33,6 +33,14 @@ namespace SCI_Lib
             return test.All(b => b == 0xff);
         }
 
+        private Palette _palette;
+
+        public Palette GlobalPalette => _palette ??= GetGlobalPalette();
+
+        private Palette GetGlobalPalette()
+        {
+            return GetResource<ResPalette>(999).GetPalette();
+        }
 
         public abstract string GetResFileName(Resource resource);
 
@@ -84,6 +92,7 @@ namespace SCI_Lib
                 ResType.Message => new ResMessage(),
                 ResType.Picture => new ResPicture(),
                 ResType.View => new ResView(),
+                ResType.Palette => new ResPalette(),
                 _ => new Resource(),
             };
         }
@@ -110,6 +119,8 @@ namespace SCI_Lib
         public bool SeparateHeapResources { get; set; }
 
         public bool ExternalMessages { get; set; }
+
+        public ViewFormats ViewFormat { get; set; } = ViewFormats.NotSet;
 
         #region Resources
 

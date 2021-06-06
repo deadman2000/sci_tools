@@ -11,6 +11,7 @@ namespace SCI_Tools
         typeof(FontExport),
         typeof(ReplacePic),
         typeof(ExtractPic),
+        typeof(ExtractView),
         typeof(Pack)
     )]
     partial class Program

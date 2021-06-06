@@ -24,53 +24,51 @@ namespace SCI_Lib.Resources.Picture
         {
             commands = new List<PicCommand>();
 
-            using (var stream = new MemoryStream(data.Length))
+            using var stream = new MemoryStream(data.Length);
+            stream.Write(data, 0, data.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            PicOpCode opcode = 0;
+            while (true)
             {
-                stream.Write(data, 0, data.Length);
-                stream.Seek(0, SeekOrigin.Begin);
-
-                PicOpCode opcode = 0;
-                while (true)
+                var b = stream.Peek();
+                if (b >= 0xf0)
                 {
-                    var b = stream.Peek();
-                    if (b >= 0xf0)
-                    {
-                        opcode = (PicOpCode)b;
-                        stream.Seek(1, SeekOrigin.Current);
-                    }
+                    opcode = (PicOpCode)b;
+                    stream.Seek(1, SeekOrigin.Current);
+                }
 
-                    switch (opcode)
-                    {
-                        case PicOpCode.DISABLE_VISUAL:
-                        case PicOpCode.DISABLE_PRIORITY:
-                        case PicOpCode.DISABLE_CONTROL:
-                            commands.Add(new PicCommand(opcode));
-                            break;
+                switch (opcode)
+                {
+                    case PicOpCode.DISABLE_VISUAL:
+                    case PicOpCode.DISABLE_PRIORITY:
+                    case PicOpCode.DISABLE_CONTROL:
+                        commands.Add(new PicCommand(opcode));
+                        break;
 
-                        case PicOpCode.SET_COLOR:
-                        case PicOpCode.SET_CONTROL:
-                        case PicOpCode.SET_PRIORITY:
-                        case PicOpCode.SET_PATTERN:
-                            commands.Add(new PicCommand(opcode, stream.ReadBytes(1))); break;
+                    case PicOpCode.SET_COLOR:
+                    case PicOpCode.SET_CONTROL:
+                    case PicOpCode.SET_PRIORITY:
+                    case PicOpCode.SET_PATTERN:
+                        commands.Add(new PicCommand(opcode, stream.ReadBytes(1))); break;
 
-                        case PicOpCode.RELATIVE_MEDIUM_LINES: ReadRelativeMediumLines(stream); break;
-                        case PicOpCode.RELATIVE_LONG_LINES: ReadRelativeLongLines(stream); break;
-                        case PicOpCode.RELATIVE_SHORT_LINES: ReadRelativeShortLines(stream); break;
+                    case PicOpCode.RELATIVE_MEDIUM_LINES: ReadRelativeMediumLines(stream); break;
+                    case PicOpCode.RELATIVE_LONG_LINES: ReadRelativeLongLines(stream); break;
+                    case PicOpCode.RELATIVE_SHORT_LINES: ReadRelativeShortLines(stream); break;
 
-                        case PicOpCode.FILL: commands.Add(new PicCommand(opcode, stream.ReadBytes(3))); break;
+                    case PicOpCode.FILL: commands.Add(new PicCommand(opcode, stream.ReadBytes(3))); break;
 
-                        case PicOpCode.OPX: ReadExt(stream); break;
+                    case PicOpCode.OPX: ReadExt(stream); break;
 
-                        case PicOpCode.END:
-                            commands.Add(new PicCommand(opcode));
-                            return;
+                    case PicOpCode.END:
+                        commands.Add(new PicCommand(opcode));
+                        return;
 
-                        default:
+                    default:
 #if DEBUG
-                            Debugger.Break();
+                        Debugger.Break();
 #endif
-                            throw new FormatException($"Unsupported opcode {opcode}");
-                    }
+                        throw new FormatException($"Unsupported opcode {opcode}");
                 }
             }
         }

@@ -11,6 +11,11 @@ namespace SCI_Lib.Utils
             return (ushort)(stream.ReadByte() | (stream.ReadByte() << 8));
         }
 
+        public static short ReadShortBE(this Stream stream)
+        {
+            return (short)(stream.ReadByte() | (stream.ReadByte() << 8));
+        }
+
         public static void WriteUShortBE(this Stream stream, ushort val)
         {
             stream.WriteByte((byte)val);
