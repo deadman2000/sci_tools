@@ -15,6 +15,7 @@ namespace Tests
             //var r = package.GetResource("95.p56");
             foreach (var r in package.GetResources<ResView>())
             {
+                if (r.Number == 460) continue; // Skip broken view in Conquest
                 var info = r.GetInfo();
 
                 if (info.Method != 3) continue;
