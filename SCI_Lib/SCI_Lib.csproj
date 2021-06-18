@@ -4,7 +4,7 @@
     <TargetFrameworks>net5;netstandard2.0</TargetFrameworks>
     <RootNamespace>SCI_Lib</RootNamespace>
     <LangVersion>8.0</LangVersion>
-    <Version>1.0.2</Version>
+    <Version>1.0.3-dev3</Version>
     <Authors>dead_man</Authors>
     <Product>SCI_Tools</Product>
     <Description>https://github.com/deadman2000/sci_tools</Description>

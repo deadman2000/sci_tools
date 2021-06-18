@@ -22,6 +22,16 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         private bool _isInstance;
 
+        public bool InstanceOf(string className)
+        {
+            var s = Super;
+            while (s != null)
+            {
+                if (s.Name == className) return true;
+                s = s.Super;
+            }
+            return false;
+        }
 
         public Object1_1(Script1_1 script, byte[] heapData, ushort offset)
         {
@@ -30,9 +40,24 @@ namespace SCI_Lib.Resources.Scripts1_1
             Offset = offset;
         }
 
+        public Script1_1 Script => _script;
+
         public ushort Offset { get; }
 
+        public int? ExportInd { get; set; }
+
         public Dictionary<string, LocalVar> Properties => _props ??= PrepareProps();
+
+        public bool TryGetProperty(string name, out ushort value)
+        {
+            if (Properties.TryGetValue(name, out var val))
+            {
+                value = val.Value;
+                return true;
+            }
+            value = default;
+            return false;
+        }
 
         public bool HasProperty(string key) => Properties.ContainsKey(key);
 

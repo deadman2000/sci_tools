@@ -14,9 +14,6 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         private List<LocalVar> localVars = new List<LocalVar>();
 
-        private List<ushort> exportsOffsets = new List<ushort>();
-        private List<ushort> exportedObjInst = new List<ushort>();
-
         public Script1_1(Resource res)
         {
             Resource = res;
@@ -24,10 +21,16 @@ namespace SCI_Lib.Resources.Scripts1_1
             ReadScriptSCI1_1();
         }
 
+        public override string ToString() => Resource.ToString();
+
         public Resource Resource { get; }
 
         public SCIPackage Package => Resource.Package;
 
+
+        public ushort[] ExportsOffsets { get; private set; }
+
+        public bool[] ExportsOffsetsIsHeap { get; private set; }
 
         public List<Object1_1> Objects { get; } = new List<Object1_1>();
 
@@ -50,14 +53,16 @@ namespace SCI_Lib.Resources.Scripts1_1
             stream.Seek(4, SeekOrigin.Current);
 
             var exportsCount = stream.ReadUShortBE();
+            ExportsOffsets = new ushort[exportsCount];
+            ExportsOffsetsIsHeap = new bool[exportsCount];
             for (int i = 0; i < exportsCount; i++)
             {
                 var isHeapPointer = heapPoints.Contains((ushort)stream.Position);
                 var exportOffset = stream.ReadUShortBE();
 
-                exportsOffsets.Add(exportOffset);
+                ExportsOffsets[i] = exportOffset;
                 if (isHeapPointer)
-                    exportedObjInst.Add(exportOffset);
+                    ExportsOffsetsIsHeap[i] = true;
             }
 
             var heapData = heapRes.GetContent();
@@ -86,6 +91,12 @@ namespace SCI_Lib.Resources.Scripts1_1
                 var obj = new Object1_1(this, heapData, offset);
                 obj.Read(stream, heap);
                 Objects.Add(obj);
+
+                for (int i = 0; i < exportsCount; i++)
+                {
+                    if (ExportsOffsetsIsHeap[i] && ExportsOffsets[i] == obj.Offset)
+                        obj.ExportInd = i;
+                }
             }
 
             do
@@ -121,9 +132,10 @@ namespace SCI_Lib.Resources.Scripts1_1
             throw new NotImplementedException();
         }
 
+        static readonly StringConst[] empty = Array.Empty<StringConst>();
         public IEnumerable<StringConst> AllStrings()
         {
-            throw new NotImplementedException();
+            return empty;
         }
 
         public IClass GetClass(ushort id)

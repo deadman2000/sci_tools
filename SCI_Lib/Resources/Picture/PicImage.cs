@@ -4,6 +4,7 @@ using System.IO;
 
 namespace SCI_Lib.Resources.Picture
 {
+#pragma warning disable CS0162 // Unreachable code detected
     class PicImage : PicExtCommand
     {
         private PointShort _coord;
@@ -43,7 +44,6 @@ namespace SCI_Lib.Resources.Picture
         }
 
 
-#pragma warning disable CS0162 // Unreachable code detected
         public static void ReadImageData(Stream rle, Stream literal, byte[] img, byte transpColor)
         {
             int ind = 0;
@@ -93,7 +93,6 @@ namespace SCI_Lib.Resources.Picture
                 }
             }
         }
-#pragma warning restore CS0162 // Unreachable code detected
 
         protected override void WriteExt(ByteBuilder bb)
         {
@@ -236,4 +235,5 @@ namespace SCI_Lib.Resources.Picture
             return bb.GetArray();
         }
     }
+#pragma warning restore CS0162 // Unreachable code detected
 }
