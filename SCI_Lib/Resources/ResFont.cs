@@ -7,8 +7,12 @@ namespace SCI_Lib.Resources
 {
     public class ResFont : Resource
     {
+        private SCIFont _font;
+
         public SCIFont GetFont()
         {
+            if (_font != null) return _font;
+
             byte[] data = GetContent();
             if (data == null) return null;
 
@@ -67,17 +71,22 @@ namespace SCI_Lib.Resources
                 spr.Frames.Add(frm);
             }
 
-            return spr;
+            return _font = spr;
         }
 
         public void SetFont(SCIFont spr)
         {
-            ushort cnt = (ushort)(spr.Frames.Count & 0xFFFF);
+            _font = spr;
+        }
+
+        public override byte[] GetPatch()
+        {
+            ushort cnt = (ushort)(_font.Frames.Count & 0xFFFF);
 
             ByteBuilder bb = new ByteBuilder();
             bb.AddByte(0);
             bb.AddShortLE(cnt);
-            bb.AddShortLE(spr.FontHeight);
+            bb.AddShortLE(_font.FontHeight);
             bb.AddByte(0);
 
             for (int i = 0; i < cnt; i++)
@@ -88,7 +97,7 @@ namespace SCI_Lib.Resources
             for (int i = 0; i < cnt; i++)
             {
 
-                SpriteFrame frm = spr[i];
+                SpriteFrame frm = _font[i];
                 byte w = (byte)frm.Width;
                 byte h = (byte)frm.Height;
                 ushort offset = (ushort)bb.Position;
@@ -120,7 +129,7 @@ namespace SCI_Lib.Resources
                 }
             }
 
-            SavePatch(bb.GetArray());
+            return bb.GetArray();
         }
 
     }

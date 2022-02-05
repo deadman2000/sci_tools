@@ -28,8 +28,8 @@ namespace SCI_Lib.Resources
         public override void SetStrings(string[] strings)
         {
             var trScr = GetScript();
-            var scriptStrings = trScr.AllStrings().ToArray();
 
+            var scriptStrings = trScr.AllStrings().ToArray();
             if (strings.Length != scriptStrings.Length)
                 throw new Exception("Line count mismatch");
 
@@ -38,8 +38,11 @@ namespace SCI_Lib.Resources
                 if (strings[i] != null)
                     scriptStrings[i].Value = strings[i];
             }
+        }
 
-            SavePatch(trScr.GetBytes());
+        public override byte[] GetPatch()
+        {
+            return GetScript().GetBytes();
         }
     }
 }

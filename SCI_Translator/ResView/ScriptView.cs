@@ -134,8 +134,7 @@ namespace SCI_Translator.ResView
         {
             CommitStrings();
 
-            byte[] bytes = script.GetBytes();
-            _res.SavePatch(bytes);
+            _res.SavePatch();
         }
 
         private void tsmiRevert_Click(object sender, EventArgs e)

@@ -23,6 +23,7 @@ namespace SCI_Tools
             var pic = res.GetPicture();
             pic.SetBackground(bmp);
             res.SetPicture(pic);
+            res.SavePatch();
 
             return Task.CompletedTask;
         }

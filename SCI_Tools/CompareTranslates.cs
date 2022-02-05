@@ -100,6 +100,7 @@ namespace SCI_Tools
                 if (hasTranslate)
                 {
                     txt.SetStrings(trTxt);
+                    txt.SavePatch();
                 }
             }
 

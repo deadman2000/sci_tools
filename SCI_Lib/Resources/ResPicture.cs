@@ -4,16 +4,23 @@ namespace SCI_Lib.Resources
 {
     public class ResPicture : Resource
     {
+        private SCIPicture _pic;
+
         public SCIPicture GetPicture()
         {
+            if (_pic != null) return _pic;
             var data = GetContent();
-            return new SCIPicture(data);
+            return _pic = new SCIPicture(data);
         }
 
         public void SetPicture(SCIPicture pic)
         {
-            var data = pic.GetBytes();
-            SavePatch(data);
+            _pic = pic;
+        }
+
+        public override byte[] GetPatch()
+        {
+            return _pic.GetBytes();
         }
     }
 }
