@@ -147,7 +147,7 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         public List<T> Get<T>() where T : Section
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

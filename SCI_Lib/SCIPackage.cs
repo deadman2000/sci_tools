@@ -142,6 +142,8 @@ namespace SCI_Lib
 
         public T GetResource<T>(ushort number) where T : Resource => Resources.FirstOrDefault(r => r is T && r.Number == number) as T;
 
+        public Resource Get(Resource res) => Resources.FirstOrDefault(r => r.Type == res.Type && r.Number == res.Number);
+
         public T Get<T>(T res) where T : Resource => GetResource<T>(res.Number);
 
         #endregion

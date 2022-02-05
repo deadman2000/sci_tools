@@ -80,6 +80,7 @@ namespace SCI_Translator
             if (script == null) return;
 
             var sections = script.Get<StringSection>();
+            if (sections == null) return;
 
             List<StringSection> trSections = null;
             if (_translate != null)

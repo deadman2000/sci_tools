@@ -158,10 +158,8 @@ namespace SCI_Lib.Resources
             if (File.Exists(lower))
                 File.Delete(lower);
 
-            using (FileStream fs = File.Create(Path.Combine(Package.GameDirectory, FileName)))
-            {
-                Save(fs, data);
-            }
+            using FileStream fs = File.Create(Path.Combine(Package.GameDirectory, FileName));
+            Save(fs, data);
         }
 
         public byte[] Export()
