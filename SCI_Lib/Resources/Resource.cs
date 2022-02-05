@@ -152,6 +152,16 @@ namespace SCI_Lib.Resources
             return _compressed = fs.ReadBytes(info.CompSize);
         }
 
+        public virtual byte[] GetPatch()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void SavePatch()
+        {
+            SavePatch(GetPatch());
+        }
+
         public void SavePatch(byte[] data)
         {
             var lower = Path.Combine(Package.GameDirectory, FileName.ToLower());
@@ -171,7 +181,7 @@ namespace SCI_Lib.Resources
             return mem.ToArray();
         }
 
-        private void Save(Stream stream, byte[] data)
+        public void Save(Stream stream, byte[] data)
         {
             stream.WriteByte((byte)Type);
             stream.WriteByte(0);

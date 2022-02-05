@@ -53,6 +53,7 @@ namespace SCI_Translator.ResView
             }
 
             ((ResText)_res).SetStrings(lines);
+            _res.SavePatch();
         }
 
         private void InitializeComponent()

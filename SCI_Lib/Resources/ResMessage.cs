@@ -9,9 +9,12 @@ namespace SCI_Lib.Resources
     public class ResMessage : Resource
     {
         private uint header;
+        private List<MessageRecord> _records;
 
         public List<MessageRecord> GetMessages()
         {
+            if (_records != null) return _records;
+
             var data = GetContent();
             List<MessageRecord> records;
 
@@ -30,7 +33,7 @@ namespace SCI_Lib.Resources
             foreach (var r in records)
                 r.ReadText(data, GameEncoding);
 
-            return records;
+            return _records = records;
         }
 
         public override string[] GetStrings()
@@ -49,14 +52,14 @@ namespace SCI_Lib.Resources
                 if (strings[i] != null)
                     messages[i].Text = strings[i];
             }
-
-            SetMessages(messages);
         }
 
-        public void SetMessages(List<MessageRecord> messages)
+        public override byte[] GetPatch()
         {
-            ByteBuilder bb = new ByteBuilder();
+            var messages = GetMessages();
 
+            ByteBuilder bb = new ByteBuilder();
+            
             if (messages[0] is MessageRecordV3)
                 SaveV3(messages, bb);
             else if (messages[0] is MessageRecordV4)
@@ -64,7 +67,7 @@ namespace SCI_Lib.Resources
             else
                 throw new NotImplementedException();
 
-            SavePatch(bb.GetArray());
+            return bb.GetArray();
         }
 
         private List<MessageRecord> ReadV3(Stream stream)

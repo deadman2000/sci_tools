@@ -82,6 +82,7 @@ namespace SCI_Translator.ResView
         protected override void SaveContent()
         {
             ((ResFont)_tres).SetFont(spr);
+            _tres.SavePatch();
         }
 
         #region Editing
