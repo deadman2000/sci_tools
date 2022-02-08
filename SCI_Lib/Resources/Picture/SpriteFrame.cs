@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 
 namespace SCI_Lib.Pictures
 {
@@ -104,13 +101,45 @@ namespace SCI_Lib.Pictures
             }
         }
 
-        public void ExportToImage(string imagePath)
+        public Image GetImage()
         {
             var bitmap = new Bitmap(Width, Height);
             var g = Graphics.FromImage(bitmap);
             g.FillRectangle(new SolidBrush(Color.White), 0, 0, Width, Height);
             Draw(bitmap, 0, 0);
-            bitmap.Save(imagePath);
+            g.Dispose();
+            return bitmap;
+        }
+
+        public void ExportToImage(string imagePath)
+        {
+            GetImage().Save(imagePath);
+        }
+
+        public SpriteFrame GetOutline()
+        {
+            if (Height <= 1) return new SpriteFrame(this);
+
+            var frame = new SpriteFrame(Width, Height);
+
+            for (int x = 0; x < Width; x++)
+                for (int y = 0; y < Height; y++)
+                    if (_pixelMap[x, y] > 0)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                            for (int dy = -1; dy <= 1; dy++)
+                            {
+                                if (dx == 0 && dy == 0) continue;
+                                var tx = x + dx;
+                                var ty = y + dy;
+                                if (tx < 0 || ty < 0 || tx == Width || ty == Height) continue;
+                                if (_pixelMap[tx, ty] > 0) continue;
+
+                                frame._pixelMap[tx, ty] = 1;
+                            }
+                    }
+
+            return frame;
         }
     }
 }
