@@ -10,6 +10,9 @@ namespace SCI_Lib.Resources.View
     {
         public Color[] Colors { get; set; }
 
+        public byte ColStart { get; private set; }
+        public byte Format { get; private set; }
+
         public Image GetImage()
         {
             int realCount = 0;
@@ -41,6 +44,127 @@ namespace SCI_Lib.Resources.View
             }
 
             return bmp;
+        }
+
+        public static Palette Read(MemoryStream ms)
+        {
+            var pal = new Palette();
+
+            var palOffset = ms.Position;
+
+            var marker = ms.ReadB();
+            var garbage = ms.ReadBytes(9);
+            ms.Position += 2 + 1;
+            //if (ms.ReadUShortBE() != 1) throw new FormatException();
+            //if (ms.ReadB() != 0) throw new FormatException();
+
+            var offsetEnd = ms.ReadUShortBE();
+            var globalMarker = ms.ReadUIntBE();
+            ms.Position += 4 + 2;
+            //if (ms.ReadUShortBE() != 0) throw new FormatException();
+            pal.ColStart = ms.ReadB();
+            ms.Position += 3;
+            var colCount = ms.ReadUShortBE();
+
+            ms.Position += 1;
+            pal.Format = ms.ReadB();
+
+            if (marker == 0 && garbage[0] == 1)
+            {
+                pal.Format = 0;
+                pal.ColStart = 0;
+                colCount = 256;
+                palOffset += 260;
+            }
+            else
+            {
+                palOffset += 37;
+            }
+
+            pal.Colors = new Color[colCount];
+
+            if (colCount > 0)
+            {
+                ms.Position = palOffset;
+
+                if (pal.ColStart + colCount > 256) throw new FormatException();
+
+                if (pal.Format == 0)
+                {
+                    for (int i = 0; i < colCount; i++)
+                    {
+                        var used = ms.ReadB();
+                        var r = ms.ReadB();
+                        var g = ms.ReadB();
+                        var b = ms.ReadB();
+                        if (used > 0)
+                            pal.Colors[i] = Color.FromArgb(r, g, b);
+                    }
+                }
+                else if (pal.Format == 1)
+                {
+                    for (int i = 0; i < colCount; i++)
+                    {
+                        var r = ms.ReadB();
+                        var g = ms.ReadB();
+                        var b = ms.ReadB();
+                        pal.Colors[i] = Color.FromArgb(r, g, b);
+                    }
+                }
+                else throw new FormatException();
+
+                return pal;
+            }
+
+            return pal;
+        }
+
+        public void Write(ByteBuilder bb)
+        {
+            bb.AddByte(0xe); // Marker
+            bb.Zeros(9);
+            bb.AddShortBE(1);
+            bb.AddByte(0);
+            int offsetEndRef = bb.Position;
+            bb.AddShortBE(0); // Offset end
+            bb.AddIntBE(0x393939); // Global marker
+            bb.Zeros(6);
+            bb.AddByte(ColStart);
+            bb.Zeros(3);
+            bb.AddShortBE((ushort)Colors.Length);
+            bb.AddByte(0);
+            bb.AddByte(Format);
+            bb.AddIntBE(0);
+
+            for (int i = 0; i < Colors.Length; i++)
+            {
+                var c = Colors[i];
+                if (Format == 0)
+                {
+                    if (c.IsEmpty)
+                    {
+                        bb.AddByte(0);
+                        bb.AddByte(0);
+                        bb.AddByte(0);
+                        bb.AddByte(0);
+                    }
+                    else
+                    {
+                        bb.AddByte(1);
+                        bb.AddByte(c.R);
+                        bb.AddByte(c.G);
+                        bb.AddByte(c.B);
+                    }
+                }
+                else
+                {
+                    bb.AddByte(c.R);
+                    bb.AddByte(c.G);
+                    bb.AddByte(c.B);
+                }
+            }
+
+            bb.SetShortBE(offsetEndRef, (ushort)(bb.Position - offsetEndRef)); // Setup offset end
         }
     }
 }

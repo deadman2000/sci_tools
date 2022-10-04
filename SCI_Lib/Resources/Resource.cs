@@ -157,18 +157,20 @@ namespace SCI_Lib.Resources
             throw new NotImplementedException();
         }
 
-        public virtual void SavePatch()
+        public virtual void SavePatch(string path = null)
         {
-            SavePatch(GetPatch());
+            SavePatch(GetPatch(), path);
         }
 
-        public void SavePatch(byte[] data)
+        public void SavePatch(byte[] data, string path = null)
         {
-            var lower = Path.Combine(Package.GameDirectory, FileName.ToLower());
-            if (File.Exists(lower))
-                File.Delete(lower);
+            if (path == null)
+                path = Path.Combine(Package.GameDirectory, FileName.ToLower());
 
-            using FileStream fs = File.Create(Path.Combine(Package.GameDirectory, FileName));
+            if (File.Exists(path))
+                File.Delete(path);
+
+            using FileStream fs = File.Create(path);
             Save(fs, data);
         }
 
