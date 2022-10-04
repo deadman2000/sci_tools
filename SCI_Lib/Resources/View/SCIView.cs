@@ -2,18 +2,23 @@
 using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
+using System.Linq;
 
 namespace SCI_Lib.Resources.View
 {
     public class SCIView
     {
+        private ushort _mask;
+        private byte _scaleFlags;
+        private byte _scaleRes;
+        private ushort _nativeResolution;
+
         public SCIPackage Package { get; }
 
         public Palette Palette { get; set; }
 
-        public List<Loop> Loops { get; } = new List<Loop>();
+        public List<Loop> Loops { get; private set; }
 
         public SCIView(SCIPackage package)
         {
@@ -24,15 +29,17 @@ namespace SCI_Lib.Resources.View
         {
             MemoryStream ms = new MemoryStream(data);
             var loopsCount = ms.ReadB();
-            ms.Position++; // Skip const 80
-            var mask = ms.ReadUShortBE();
-            ms.Position += 2; // Skip unkown
+            var const80 = ms.ReadB();
+            if (const80 != 0x80) throw new FormatException();
+            _mask = ms.ReadUShortBE();
+            var unknown = ms.ReadUShortBE();
             var palOffset = ms.ReadUShortBE();
 
             ushort[] offsets = new ushort[loopsCount];
             for (int i = 0; i < loopsCount; i++)
                 offsets[i] = ms.ReadUShortBE();
 
+            Loops = new List<Loop>(loopsCount);
             for (int i = 0; i < loopsCount; i++)
             {
                 var loop = new Loop();
@@ -60,12 +67,28 @@ namespace SCI_Lib.Resources.View
                     ms.Position++; // Skip unknown
 
                     cell.Pixels = new byte[cell.Width * cell.Height];
-                    PicImage.ReadImageData(ms, ms, cell.Pixels, cell.TransparentColor);
+                    ImageEncoder.ReadImage(ms, ms, cell.Pixels, cell.TransparentColor);
                 }
             }
 
             ms.Position = palOffset;
-            ReadPalette(ms);
+            Palette = Palette.Read(ms);
+        }
+
+        public byte[] GetBytesVGA()
+        {
+            ByteBuilder bb = new ByteBuilder();
+
+            if (Loops.Count > 255) throw new Exception("Too many loops");
+            bb.AddByte((byte)Loops.Count);
+            bb.AddByte(80);
+            bb.AddShortBE(_mask);
+            bb.AddShortBE(0);
+
+            var palRefOffest = bb.Position;
+
+            throw new NotImplementedException();
+            //return bb.GetArray();
         }
 
         public void ReadVGA11(byte[] data)
@@ -74,11 +97,10 @@ namespace SCI_Lib.Resources.View
             var headerSize = ms.ReadUShortBE();
             if (headerSize < 14) throw new FormatException();
             var loopsCount = ms.ReadB();
-            var scaleFlags = ms.ReadB();
-            var testb = ms.ReadB();
-            //if (testb != 1) throw new FormatException();
+            _scaleFlags = ms.ReadB();
+            var unknown = ms.ReadB();
 
-            var sci32ScaleRes = ms.ReadB();
+            _scaleRes = ms.ReadB();
             var totalNumberOfCells = ms.ReadUShortBE();
             var palOffset = ms.ReadUIntBE();
             var loopHeaderSize = ms.ReadB();
@@ -87,14 +109,15 @@ namespace SCI_Lib.Resources.View
             var cellHeaderSize = ms.ReadB();
             if (cellHeaderSize != 36 && cellHeaderSize != 52) throw new FormatException();
 
-            var nativeResolution = ms.ReadUShortBE();
+            _nativeResolution = ms.ReadUShortBE();
 
             if (palOffset > 0)
             {
                 ms.Position = palOffset;
-                ReadPalette(ms);
+                Palette = Palette.Read(ms);
             }
 
+            Loops = new List<Loop>(loopsCount);
             for (int l = 0; l < loopsCount; l++)
             {
                 var loop = new Loop();
@@ -102,13 +125,13 @@ namespace SCI_Lib.Resources.View
 
                 ms.Position = headerSize + 2 + loopHeaderSize * l;
 
-                var mirrorInfo = ms.ReadB();
-                var isMirror = ms.ReadB();
+                loop.LoopMirror = ms.ReadB();
+                loop.IsMirror = ms.ReadB() > 0;
                 var cellCount = ms.ReadB();
                 ms.Position += 9;
                 var cellOffset = ms.ReadUIntBE();
 
-                if (mirrorInfo == 255)
+                if (!loop.IsMirror)
                 {
                     for (int c = 0; c < cellCount; c++)
                     {
@@ -128,7 +151,7 @@ namespace SCI_Lib.Resources.View
                         var temp3 = ms.ReadB();
                         var totalCellDataSize = ms.ReadUIntBE();
                         var rleCellDataSize = ms.ReadUIntBE();
-                        var paletteOffset = ms.ReadUIntBE();
+                        cell.PaletteOffset = ms.ReadUIntBE();
                         var offsetRLE = ms.ReadUIntBE();
                         if (offsetRLE == 0) throw new FormatException();
                         var offsetLiteral = ms.ReadUIntBE();
@@ -153,13 +176,13 @@ namespace SCI_Lib.Resources.View
                             var msLiteral = new MemoryStream(data);
                             msLiteral.Position = offsetLiteral;
                             cell.Pixels = new byte[cell.Width * cell.Height];
-                            PicImage.ReadImageData(ms, msLiteral, cell.Pixels, cell.TransparentColor);
+                            ImageEncoder.ReadImage(ms, msLiteral, cell.Pixels, cell.TransparentColor);
                         }
                     }
                 }
                 else
                 {
-                    foreach (var c in Loops[mirrorInfo].Cells)
+                    foreach (var c in Loops[loop.LoopMirror].Cells)
                     {
                         var cell = new Cell(this);
                         loop.Cells.Add(cell);
@@ -177,76 +200,121 @@ namespace SCI_Lib.Resources.View
 
             }
         }
-
-        private void ReadPalette(MemoryStream ms)
+        public byte[] GetBytesVGA11()
         {
-            var palOffset = ms.Position;
+            ByteBuilder bb = new ByteBuilder();
+            bb.AddShortBE(0x10); // header size
 
-            var marker = ms.ReadB();
-            var garbage = ms.ReadBytes(9);
-            ms.Position += 2 + 1;
-            //if (ms.ReadUShortBE() != 1) throw new FormatException();
-            //if (ms.ReadB() != 0) throw new FormatException();
+            if (Loops.Count > 255) throw new Exception("Too many loops");
+            bb.AddByte((byte)Loops.Count);
+            bb.AddByte(_scaleFlags);
+            bb.AddByte(1);
+            bb.AddByte(_scaleRes);
+            bb.AddShortBE((ushort)Loops.Sum(l => l.Cells.Count));
+            var palRef = bb.Position;
+            bb.AddIntBE(0); // Palette offset
+            bb.AddByte(0x10); // Loop header size
+            bb.AddByte(0x24); // Cell header size
+            bb.AddShortBE(_nativeResolution);
+            bb.AddShortBE(0); // Unknown
 
-            var offsetEnd = ms.ReadUShortBE();
-            var globalMarker = ms.ReadUIntBE();
-            ms.Position += 4 + 2;
-            //if (ms.ReadUShortBE() != 0) throw new FormatException();
-            var colStart = ms.ReadB();
-            ms.Position += 3;
-            var colCount = ms.ReadUShortBE();
-
-            ms.Position += 1;
-            var palFormat = ms.ReadB();
-
-            if (marker == 0 && garbage[0] == 1)
+            // Write loop headers
+            int[] cellsRef = new int[Loops.Count];
+            for (int i = 0; i < Loops.Count; i++)
             {
-                palFormat = 0;
-                colStart = 0;
-                colCount = 256;
-                palOffset += 260;
-            }
-            else
-            {
-                palOffset += 37;
-            }
-
-            if (colCount > 0)
-            {
-                ms.Position = palOffset;
-
-                var end = colStart + colCount;
-                if (end > 256) throw new FormatException();
-
-                Palette = new Palette
+                var loop = Loops[i];
+                if (loop.IsMirror)
                 {
-                    Colors = new Color[256]
-                };
-
-                if (palFormat == 0)
-                {
-                    for (int i = colStart; i < end; i++)
-                    {
-                        var used = ms.ReadB();
-                        var r = ms.ReadB();
-                        var g = ms.ReadB();
-                        var b = ms.ReadB();
-                        if (used > 0)
-                            Palette.Colors[i] = Color.FromArgb(r, g, b);
-                    }
+                    bb.AddByte(loop.LoopMirror);
+                    bb.AddByte(1);
                 }
-                else if (palFormat == 1)
+                else
                 {
-                    for (int i = colStart; i < end; i++)
-                    {
-                        var r = ms.ReadB();
-                        var g = ms.ReadB();
-                        var b = ms.ReadB();
-                        Palette.Colors[i] = Color.FromArgb(r, g, b);
-                    }
+                    bb.AddByte(0xff);
+                    bb.AddByte(0);
                 }
-                else throw new FormatException();
+                bb.AddByte((byte)loop.Cells.Count);
+
+                // Constants
+                bb.AddByte(0xff);
+                bb.AddIntBE(0x3ffffff);
+                bb.AddIntBE(0);
+
+                cellsRef[i] = bb.Position;
+                bb.AddIntBE(0); // Cell offset
             }
+
+            // Write cells
+            var rle = new List<byte>();
+            var literals = new List<byte>();
+            var cellsOffsets = new List<int>(); // Cell offsets
+            var rleOffsets = new List<int>(); // RLE offsets in list
+            var literalsOffsets = new List<int>(); // Literals offsets in list
+            for (int i = 0; i < Loops.Count; i++)
+            {
+                var loop = Loops[i];
+                for (int j = 0; j < loop.Cells.Count; j++)
+                {
+                    var cell = loop.Cells[j];
+
+                    // Setup first cell offset
+                    if (j == 0) bb.SetIntBE(cellsRef[i], bb.Position);
+
+                    bb.AddShortBE(cell.Width);
+                    bb.AddShortBE(cell.Height);
+                    bb.AddShortBE(cell.X);
+                    bb.AddShortBE(cell.Y);
+                    bb.AddByte(cell.TransparentColor);
+                    bb.AddByte(0x0a);
+                    bb.AddShortBE(0);
+
+                    var bbRLE = new ByteBuilder();
+                    var bbLit = new ByteBuilder();
+
+                    cell.Write(bbRLE, bbLit);
+                    var rleData = bbRLE.GetArray();
+                    var litData = bbLit.GetArray();
+
+                    rleOffsets.Add(rle.Count);
+                    rle.AddRange(rleData);
+                    literalsOffsets.Add(literals.Count);
+                    literals.AddRange(litData);
+
+                    bb.AddIntBE(rleData.Length + litData.Length); // Total size
+                    bb.AddIntBE(rleData.Length); // RLE size
+                    bb.AddIntBE(cell.PaletteOffset);
+
+                    cellsOffsets.Add(bb.Position);
+                    bb.AddIntBE(0); // RLE offset
+                    bb.AddIntBE(0); // Literals offset
+                    bb.AddIntBE(0); // Per row offset
+                }
+            }
+
+            // Write palette
+            if (Palette != null)
+            {
+                bb.SetIntBE(palRef, bb.Position);
+                Palette.Write(bb);
+            }
+
+            // Setup RLE offsets
+            for (int i = 0; i < cellsOffsets.Count; i++)
+            {
+                int offset = cellsOffsets[i];
+                bb.SetIntBE(offset, bb.Position + rleOffsets[i]); // RLE offset
+            }
+            bb.AddBytes(rle);
+
+            for (int i = 0; i < literalsOffsets.Count; i++)
+            {
+                int offset = cellsOffsets[i] + 4;
+                bb.SetIntBE(offset, bb.Position + literalsOffsets[i]); // Literal offset
+            }
+            bb.AddBytes(literals);
+
+            return bb.GetArray();
         }
+
     }
 }

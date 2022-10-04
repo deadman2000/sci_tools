@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SCI_Lib.Utils
 {
@@ -15,7 +16,7 @@ namespace SCI_Lib.Utils
         }
 
 
-        public void AddBytes(byte[] bytes)
+        public void AddBytes(IEnumerable<byte> bytes)
         {
             _bytes.AddRange(bytes);
         }
@@ -37,6 +38,18 @@ namespace SCI_Lib.Utils
         }
 
         public void AddShortBE(ushort val)
+        {
+            _bytes.Add((byte)(val & 0xFF));
+            _bytes.Add((byte)(val >> 8));
+        }
+
+        public void AddShortLE(short val)
+        {
+            _bytes.Add((byte)(val >> 8));
+            _bytes.Add((byte)(val & 0xFF));
+        }
+
+        public void AddShortBE(short val)
         {
             _bytes.Add((byte)(val & 0xFF));
             _bytes.Add((byte)(val >> 8));
@@ -76,6 +89,14 @@ namespace SCI_Lib.Utils
             _bytes[offset + 1] = (byte)(val >> 8);
         }
 
+        public void SetIntBE(int offset, int val)
+        {
+            _bytes[offset] = (byte)(val & 0xFF);
+            _bytes[offset + 1] = (byte)(val >> 8);
+            _bytes[offset + 2] = (byte)(val >> 16);
+            _bytes[offset + 3] = (byte)(val >> 24);
+        }
+
 
         public void WritePicAbsCoord(ref PointShort p)
         {
@@ -88,5 +109,9 @@ namespace SCI_Lib.Utils
             AddByte((byte)(p.Y & 0xff));
         }
 
+        public void Zeros(int count)
+        {
+            for (int i = 0; i < count; i++) AddByte(0);
+        }
     }
 }

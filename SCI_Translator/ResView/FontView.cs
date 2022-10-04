@@ -37,7 +37,10 @@ namespace SCI_Translator.ResView
         private SplitContainer splitContainer1;
         private ToolStrip tsControls;
         private ToolStripSeparator toolStripSeparator1;
+        private ToolStripButton tsbGenOutline;
         private System.ComponentModel.IContainer components;
+
+        int _copyInd = -1;
 
         public FontView()
         {
@@ -250,6 +253,14 @@ namespace SCI_Translator.ResView
                         case 'Ж': or = 'W'; break;
                         case 'ё': or = 'e'; break;
                         case 'Ё': or = 'E'; break;
+                        case 'И': or = 'N'; break;
+                        case 'Й': or = 'N'; break;
+                        case 'Э': or = 'G'; break;
+                        case 'Я': or = 'R'; break;
+                        case 'и': or = 'u'; break;
+                        case 'к': or = 'k'; break;
+                        case 'Б': or = '6'; break;
+                        case 'З': or = '3'; break;
                     }
 
                     SpriteFrame frm;
@@ -293,8 +304,10 @@ namespace SCI_Translator.ResView
                 string name = String.Format("0x{0:X2} {1}", i, GameEncoding.AllChars[i]);
                 tscbChar.Items.Add(name);
 
-                Bitmap b = viewer.CreateBitmap(i);
-                ilChars.Images.Add(b);
+                //Bitmap b = viewer.CreateBitmap(i);
+                //ilChars.Images.Add(b);
+                var img = spr.Frames[i].GetImage().Rescale(32);
+                ilChars.Images.Add(img);
 
                 ListViewItem lvi = lvChars.Items.Add(name);
                 lvi.Tag = i;
@@ -377,7 +390,7 @@ namespace SCI_Translator.ResView
             viewer.Redraw();
         }
 
-        int _copyInd = -1;
+
         private void tsbCopy_Click(object sender, EventArgs e)
         {
             _copyInd = viewer.CurrentFrameIndex;
@@ -388,6 +401,16 @@ namespace SCI_Translator.ResView
             if (_copyInd == -1) return;
             spr.Frames[viewer.CurrentFrameIndex] = new SpriteFrame(spr[_copyInd]);
             UpdateView();
+        }
+
+        private void tsbGenOutline_Click(object sender, EventArgs e)
+        {
+            var form = new FormSelectFont((ResFont)_tres);
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                ((ResFont)_tres).GenerateOutline(form.SelectedFont, form.SelectedStartIndex, form.SelectedEndIndex);
+                FillChars();
+            }
         }
 
         private void InitializeComponent()
@@ -416,6 +439,7 @@ namespace SCI_Translator.ResView
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbCopy = new System.Windows.Forms.ToolStripButton();
             this.tsbPaste = new System.Windows.Forms.ToolStripButton();
+            this.tsbGenOutline = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -427,7 +451,7 @@ namespace SCI_Translator.ResView
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(4);
+            this.splitContainer1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -440,19 +464,20 @@ namespace SCI_Translator.ResView
             this.splitContainer1.Panel2.Controls.Add(this.plPic);
             this.splitContainer1.Panel2.Controls.Add(this.tsInstruments);
             this.splitContainer1.Panel2.Controls.Add(this.tsControls);
-            this.splitContainer1.Size = new System.Drawing.Size(1644, 1125);
-            this.splitContainer1.SplitterDistance = 571;
-            this.splitContainer1.SplitterWidth = 5;
+            this.splitContainer1.Size = new System.Drawing.Size(1592, 1121);
+            this.splitContainer1.SplitterDistance = 567;
+            this.splitContainer1.SplitterWidth = 6;
             this.splitContainer1.TabIndex = 0;
             // 
             // lvChars
             // 
             this.lvChars.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvChars.HideSelection = false;
             this.lvChars.LargeImageList = this.ilChars;
             this.lvChars.Location = new System.Drawing.Point(0, 0);
-            this.lvChars.Margin = new System.Windows.Forms.Padding(4);
+            this.lvChars.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.lvChars.Name = "lvChars";
-            this.lvChars.Size = new System.Drawing.Size(1644, 571);
+            this.lvChars.Size = new System.Drawing.Size(1592, 567);
             this.lvChars.TabIndex = 0;
             this.lvChars.UseCompatibleStateImageBehavior = false;
             this.lvChars.ItemActivate += new System.EventHandler(this.lvChars_ItemActivate);
@@ -460,7 +485,7 @@ namespace SCI_Translator.ResView
             // ilChars
             // 
             this.ilChars.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.ilChars.ImageSize = new System.Drawing.Size(16, 16);
+            this.ilChars.ImageSize = new System.Drawing.Size(32, 32);
             this.ilChars.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // plPic
@@ -469,9 +494,9 @@ namespace SCI_Translator.ResView
             this.plPic.BackColor = System.Drawing.SystemColors.AppWorkspace;
             this.plPic.Dock = System.Windows.Forms.DockStyle.Fill;
             this.plPic.Location = new System.Drawing.Point(0, 53);
-            this.plPic.Margin = new System.Windows.Forms.Padding(4);
+            this.plPic.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.plPic.Name = "plPic";
-            this.plPic.Size = new System.Drawing.Size(1644, 496);
+            this.plPic.Size = new System.Drawing.Size(1592, 495);
             this.plPic.TabIndex = 0;
             // 
             // tsInstruments
@@ -480,7 +505,7 @@ namespace SCI_Translator.ResView
             this.tsInstruments.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.tsInstruments.Location = new System.Drawing.Point(0, 28);
             this.tsInstruments.Name = "tsInstruments";
-            this.tsInstruments.Size = new System.Drawing.Size(1644, 25);
+            this.tsInstruments.Size = new System.Drawing.Size(1592, 25);
             this.tsInstruments.TabIndex = 0;
             this.tsInstruments.Text = "toolStrip1";
             // 
@@ -505,10 +530,11 @@ namespace SCI_Translator.ResView
             this.tsbShiftDown,
             this.toolStripSeparator5,
             this.tsbCopy,
-            this.tsbPaste});
+            this.tsbPaste,
+            this.tsbGenOutline});
             this.tsControls.Location = new System.Drawing.Point(0, 0);
             this.tsControls.Name = "tsControls";
-            this.tsControls.Size = new System.Drawing.Size(1644, 28);
+            this.tsControls.Size = new System.Drawing.Size(1592, 28);
             this.tsControls.TabIndex = 0;
             this.tsControls.Text = "toolStrip1";
             // 
@@ -635,7 +661,7 @@ namespace SCI_Translator.ResView
             this.tsbCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbCopy.Name = "tsbCopy";
             this.tsbCopy.Size = new System.Drawing.Size(29, 25);
-            this.tsbCopy.Text = "toolStripButton1";
+            this.tsbCopy.Text = "Copy character";
             this.tsbCopy.Click += new System.EventHandler(this.tsbCopy_Click);
             // 
             // tsbPaste
@@ -648,13 +674,23 @@ namespace SCI_Translator.ResView
             this.tsbPaste.Text = "Paste character";
             this.tsbPaste.Click += new System.EventHandler(this.tsbPaste_Click);
             // 
+            // tsbGenOutline
+            // 
+            this.tsbGenOutline.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbGenOutline.Image = global::SCI_Translator.Properties.Resources.type;
+            this.tsbGenOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbGenOutline.Name = "tsbGenOutline";
+            this.tsbGenOutline.Size = new System.Drawing.Size(29, 25);
+            this.tsbGenOutline.Text = "Generate outline";
+            this.tsbGenOutline.Click += new System.EventHandler(this.tsbGenOutline_Click);
+            // 
             // FontView
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.Controls.Add(this.splitContainer1);
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "FontView";
-            this.Size = new System.Drawing.Size(1644, 1125);
+            this.Size = new System.Drawing.Size(1592, 1121);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();
@@ -665,6 +701,5 @@ namespace SCI_Translator.ResView
             this.ResumeLayout(false);
 
         }
-
     }
 }

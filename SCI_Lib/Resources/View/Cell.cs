@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SCI_Lib.Resources.Picture;
+using SCI_Lib.Utils;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -24,6 +26,8 @@ namespace SCI_Lib.Resources.View
 
         public byte TransparentColor { get; set; }
 
+        public uint PaletteOffset { get; internal set; }
+
         public byte[] Pixels { get; set; }
 
         public Image GetImage()
@@ -32,8 +36,19 @@ namespace SCI_Lib.Resources.View
 
             var bmp = new Bitmap(Width, Height, PixelFormat.Format8bppIndexed);
             var pal = bmp.Palette;
-            for (int i = 0; i < 256; i++)
-                pal.Entries[i] = palette.Colors[i];
+            for (int i = 0; i < palette.Colors.Length; i++)
+            {
+                var col = palette.Colors[i];
+                if (col.IsEmpty) col = View.Package.GlobalPalette.Colors[palette.ColStart + i];
+
+                pal.Entries[palette.ColStart + i] = col;
+            }
+
+            if (palette.ColStart > 0)
+            {
+                for (int i = 0; i < palette.ColStart; i++)
+                    pal.Entries[i] = View.Package.GlobalPalette.Colors[i];
+            }
 
             bmp.Palette = pal;
 
@@ -49,6 +64,11 @@ namespace SCI_Lib.Resources.View
             bmp.UnlockBits(data);
 
             return bmp;
+        }
+
+        public void Write(ByteBuilder bbRLE, ByteBuilder bbLiterals)
+        {
+            ImageEncoder.WriteImage(bbRLE, bbLiterals, Pixels, Width, TransparentColor);
         }
     }
 }

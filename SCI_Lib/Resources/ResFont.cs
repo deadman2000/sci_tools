@@ -84,13 +84,12 @@ namespace SCI_Lib.Resources
             ushort cnt = (ushort)(_font.Frames.Count & 0xFFFF);
 
             ByteBuilder bb = new ByteBuilder();
-            bb.AddByte(0);
-            bb.AddShortLE(cnt);
-            bb.AddShortLE(_font.FontHeight);
-            bb.AddByte(0);
+            bb.AddShortBE(0);
+            bb.AddShortBE(cnt);
+            bb.AddShortBE(_font.FontHeight);
 
             for (int i = 0; i < cnt; i++)
-                bb.AddShortLE(0);
+                bb.AddShortBE(0);
 
             byte bit;
             byte bitMask;
@@ -132,5 +131,20 @@ namespace SCI_Lib.Resources
             return bb.GetArray();
         }
 
+        public void GenerateOutline(ResFont sourceResFont, int startChar, int endChar)
+        {
+            var font = GetFont();
+            var sourceFont = sourceResFont.GetFont();
+
+            while (font.Frames.Count < endChar + 1)
+            {
+                font.Frames.Add(null);
+            }
+
+            for (int i = startChar; i <= endChar; i++)
+            {
+                font.Frames[i] = sourceFont[i].GetOutline();
+            }
+        }
     }
 }
