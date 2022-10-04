@@ -1,5 +1,7 @@
 ﻿using SCI_Lib.Resources.View;
+using SCI_Lib.Utils;
 using System;
+using System.IO;
 
 namespace SCI_Lib.Resources
 {
@@ -35,6 +37,14 @@ namespace SCI_Lib.Resources
         public void SetView(SCIView view)
         {
             _view = view;
+        }
+
+        protected override void WriteHeader(Stream stream)
+        {
+            var header = new byte[26];
+            header[0] = (byte)Type;
+            header[1] = 0x80;
+            stream.Write(header);
         }
 
         public override byte[] GetPatch()

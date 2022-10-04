@@ -183,10 +183,15 @@ namespace SCI_Lib.Resources
             return mem.ToArray();
         }
 
-        public void Save(Stream stream, byte[] data)
+        protected virtual void WriteHeader(Stream stream)
         {
             stream.WriteByte((byte)Type);
             stream.WriteByte(0);
+        }
+
+        public void Save(Stream stream, byte[] data)
+        {
+            WriteHeader(stream);
             stream.Write(data, 0, data.Length);
         }
 
