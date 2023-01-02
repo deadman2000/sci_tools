@@ -152,7 +152,7 @@ namespace SCI_Lib
 
         public string GetOpCodeName(byte type)
         {
-            if (_opcodes == null) _opcodes = LoadOpCodes();
+            _opcodes ??= LoadOpCodes();
             return _opcodes[type]?.Name;
         }
 

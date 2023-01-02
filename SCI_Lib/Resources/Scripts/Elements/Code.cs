@@ -102,7 +102,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public override string ToString()
         {
-            return $"{Address:x4}: {Name} {ArgsToString(),-25}";
+            return $"{Address:x4}: {Type:x2} {ArgsToHex(),-8} \t {Name} {ArgsToString(),-25}";
         }
 
         public void Read(byte[] data, ref ushort offset)
@@ -216,6 +216,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x68:
                 case 0x6b:
                 case 0x6d:
+                case 0x6f: // ipTos
+                case 0x71: // dpTos
                 case 0x73:
                 case 0x75:
                     Arguments.Add(data[offset++]);
@@ -313,7 +315,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x7f:
                     throw new Exception("This operator is not exists");
 
-                default: throw new NotImplementedException();
+                default: throw new NotImplementedException($"OpCode {Type:X02} '{Name}' arg's unknown");
             }
         }
 
