@@ -52,8 +52,8 @@ namespace SCI_Translator.ResView
                 lines[r] = (string)dgvText[2, r].Value;
             }
 
-            ((ResText)_res).SetStrings(lines);
-            _res.SavePatch();
+            ((ResText)_tres).SetStrings(lines);
+            _tres.SavePatch();
         }
 
         private void InitializeComponent()
