@@ -51,7 +51,7 @@ namespace SCI_Lib.Resources.Scripts
 
         public List<Section> Sections { get; } = new List<Section>();
 
-        public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings).Where(s => !s.IsClassName);
+        public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings);
 
         public IEnumerable<BaseElement> AllElements => _elements.Values.Where(e => !(e is StringPart));
 
