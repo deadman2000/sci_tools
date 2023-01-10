@@ -13,7 +13,7 @@ namespace SCI_Lib.Resources.Picture
         {
             OpCode = opcode;
 
-            if (SCIPicture.LOG) Console.WriteLine($"Code {opcode}");
+            if (SCIPicture1.LOG) Console.WriteLine($"Code {opcode}");
         }
 
         public PicCommand(PicOpCode opcode, byte[] args)
@@ -21,7 +21,7 @@ namespace SCI_Lib.Resources.Picture
             OpCode = opcode;
             Args = args;
 
-            if (SCIPicture.LOG) Console.WriteLine($"Code {opcode} len: {Args.Length}");
+            if (SCIPicture1.LOG) Console.WriteLine($"Code {opcode} len: {Args.Length}");
         }
 
         public virtual void Write(ByteBuilder bb)

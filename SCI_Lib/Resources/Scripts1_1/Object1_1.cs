@@ -6,19 +6,19 @@ using System.IO;
 
 namespace SCI_Lib.Resources.Scripts1_1
 {
-    public class Object1_1 : IClass, IDisposable
+    public class Object1_1 : IClass
     {
-        private readonly Script1_1 _script;
-        private readonly MemoryStream _heap;
+        private readonly byte[] _heap;
        
-        private ushort[] functionSelectors;
-        private ushort[] functionOffsets;
+        private ushort[] _functionSelectors;
+        private ushort[] _functionOffsets;
 
-        private ushort[] propertySelectors;
+        private ushort[] _propertySelectors;
 
-        private readonly ushort[] generalProps = new ushort[8];
+        private readonly ushort[] _generalProps = new ushort[8];
         private Dictionary<string, LocalVar> _props;
-        private LocalVar[] propertyValues;
+        private Dictionary<ushort, LocalVar> _propsInt;
+        private LocalVar[] _propertyValues;
 
         private bool _isInstance;
 
@@ -33,20 +33,22 @@ namespace SCI_Lib.Resources.Scripts1_1
             return false;
         }
 
-        public Object1_1(Script1_1 script, byte[] heapData, ushort offset)
+        public Object1_1(Script1_1 script, byte[] heap, ushort offset)
         {
-            _script = script;
-            _heap = new MemoryStream(heapData);
+            Script = script;
+            _heap = heap;
             Offset = offset;
         }
 
-        public Script1_1 Script => _script;
+        public Script1_1 Script { get; }
 
         public ushort Offset { get; }
 
         public int? ExportInd { get; set; }
 
         public Dictionary<string, LocalVar> Properties => _props ??= PrepareProps();
+
+        public Dictionary<ushort, LocalVar> PropsInt => _propsInt ??= PreparePropsInt();
 
         public bool TryGetProperty(string name, out ushort value)
         {
@@ -61,7 +63,7 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         public bool HasProperty(string key) => Properties.ContainsKey(key);
 
-        public ushort this[GeneralProperty prop] => generalProps[(int)prop];
+        public ushort this[GeneralProperty prop] => _generalProps[(int)prop];
 
         public ushort this[string property]
         {
@@ -86,7 +88,7 @@ namespace SCI_Lib.Resources.Scripts1_1
                 var porpSuper = this[GeneralProperty.Super];
                 if (porpSuper == 0xFFFF) return null;
 
-                return _super = _script.Package.GetClass(porpSuper) as Object1_1;
+                return _super = Script.Package.GetClass(porpSuper) as Object1_1;
             }
         }
 
@@ -105,24 +107,24 @@ namespace SCI_Lib.Resources.Scripts1_1
 
             // Read properties
             stream.Seek(varOffset, SeekOrigin.Begin);
-            propertySelectors = new ushort[numVars];
+            _propertySelectors = new ushort[numVars];
             for (int i = 0; i < numVars; i++)
             {
-                propertySelectors[i] = stream.ReadUShortBE();
+                _propertySelectors[i] = stream.ReadUShortBE();
             }
 
-            propertyValues = new LocalVar[numVars];
+            _propertyValues = new LocalVar[numVars];
             for (int i = 0; i < numVars; i++)
             {
                 if (i < 5)
-                    generalProps[i] = 0;
+                    _generalProps[i] = 0;
                 else if (i < 8)
-                    generalProps[i] = heap.ReadUShortBE();
+                    _generalProps[i] = heap.ReadUShortBE();
                 else
                 {
-                    bool isString = _script.StringOffsets.Contains((ushort)heap.Position);
+                    bool isString = Script.StringOffsets.Contains((ushort)heap.Position);
                     var w = heap.ReadUShortBE();
-                    propertyValues[i] = new LocalVar { Value = w, IsObjectOrString = isString };
+                    _propertyValues[i] = new LocalVar { Value = w, IsObjectOrString = isString };
                 }
             }
 
@@ -131,24 +133,37 @@ namespace SCI_Lib.Resources.Scripts1_1
             // Methods
             stream.Seek(methodsOffset, SeekOrigin.Begin);
             var numMethods = stream.ReadUShortBE();
-            functionSelectors = new ushort[numMethods];
-            functionOffsets = new ushort[numMethods];
+            _functionSelectors = new ushort[numMethods];
+            _functionOffsets = new ushort[numMethods];
             for (int i = 0; i < numMethods; i++)
             {
-                functionSelectors[i] = stream.ReadUShortBE();
-                functionOffsets[i] = stream.ReadUShortBE();
+                _functionSelectors[i] = stream.ReadUShortBE();
+                _functionOffsets[i] = stream.ReadUShortBE();
             }
         }
 
         private Dictionary<string, LocalVar> PrepareProps()
         {
             var dict = new Dictionary<string, LocalVar>();
-            ushort[] sel = _isInstance ? Super.propertySelectors : propertySelectors;
+            ushort[] sel = _isInstance ? Super._propertySelectors : _propertySelectors;
 
-            for (int i = 8; i < propertyValues.Length; i++)
+            for (int i = 8; i < _propertyValues.Length; i++)
             {
-                var name = _script.Package.GetName(sel[i]);
-                dict[name] = propertyValues[i];
+                var name = Script.Package.GetName(sel[i]);
+                dict[name] = _propertyValues[i];
+            }
+
+            return dict;
+        }
+
+        private Dictionary<ushort, LocalVar> PreparePropsInt()
+        {
+            var dict = new Dictionary<ushort, LocalVar>();
+            ushort[] sel = _isInstance ? Super._propertySelectors : _propertySelectors;
+
+            for (int i = 8; i < _propertyValues.Length; i++)
+            {
+                dict[sel[i]] = _propertyValues[i];
             }
 
             return dict;
@@ -156,13 +171,7 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         private string GetString(ushort offset)
         {
-            _heap.Seek(offset, SeekOrigin.Begin);
-            return _heap.ReadString(_script.Package.GameEncoding);
-        }
-
-        public void Dispose()
-        {
-            _heap.Dispose();
+            return Script.Package.GameEncoding.GetString(_heap, offset);
         }
     }
 }

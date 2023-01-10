@@ -36,7 +36,7 @@ namespace SCI_Lib.Decompression
 
         protected bool IsFinished()
         {
-            return (_dwWrote == _szUnpacked) && (BytesRead >= _szPacked);
+            return _dwWrote == _szUnpacked; // && (BytesRead >= _szPacked);
         }
 
         public byte ReadByte()

@@ -37,18 +37,17 @@ namespace SCI_Translator.ResView
             dgvText.CurrentCell = dgvText.Rows[value].Cells[0];
         }
 
-        /*protected override void SaveContent()
+        protected override void SaveContent()
         {
             dgvText.CommitEdit(DataGridViewDataErrorContexts.Commit);
 
-            var tr = ((ResMessage)_res).GetMessages(true);
+            var tr = ((ResMessage)Current).GetMessages();
             for (int i = 0; i < tr.Count; i++)
             {
-                tr[i].Text = (string)dgvText[2, i].Value;
+                tr[i].Text = (string)dgvText[6, i].Value;
             }
-
-            ((ResMessage)_res).SetMessages(tr);
-        }*/
+            Current.SavePatch();
+        }
 
         private void InitializeComponent()
         {
@@ -83,7 +82,7 @@ namespace SCI_Translator.ResView
             this.colText});
             dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
@@ -92,12 +91,12 @@ namespace SCI_Translator.ResView
             this.dgvText.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvText.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dgvText.Location = new System.Drawing.Point(0, 0);
-            this.dgvText.Margin = new System.Windows.Forms.Padding(4);
+            this.dgvText.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.dgvText.MultiSelect = false;
             this.dgvText.Name = "dgvText";
             this.dgvText.RowHeadersVisible = false;
             this.dgvText.RowHeadersWidth = 51;
-            this.dgvText.Size = new System.Drawing.Size(1409, 1210);
+            this.dgvText.Size = new System.Drawing.Size(1357, 1205);
             this.dgvText.TabIndex = 1;
             // 
             // colTexID
@@ -163,17 +162,16 @@ namespace SCI_Translator.ResView
             this.colText.HeaderText = "Text";
             this.colText.MinimumWidth = 6;
             this.colText.Name = "colText";
-            this.colText.ReadOnly = true;
             this.colText.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.colText.Width = 600;
             // 
             // MsgView
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.Controls.Add(this.dgvText);
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "MsgView";
-            this.Size = new System.Drawing.Size(1409, 1210);
+            this.Size = new System.Drawing.Size(1357, 1205);
             ((System.ComponentModel.ISupportInitialize)(this.dgvText)).EndInit();
             this.ResumeLayout(false);
 

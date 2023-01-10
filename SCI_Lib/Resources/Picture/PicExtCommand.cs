@@ -10,7 +10,7 @@ namespace SCI_Lib.Resources.Picture
         public PicExtCommand(byte extcode) : base(PicOpCode.OPX)
         {
             _extcode = extcode;
-            if (SCIPicture.LOG) Console.WriteLine($"    Ex command: {extcode:X2}");
+            if (SCIPicture1.LOG) Console.WriteLine($"    Ex command: {extcode:X2}");
         }
 
         public override void Write(ByteBuilder bb)

@@ -25,7 +25,7 @@ namespace SCI_Translator.ResView
         private System.ComponentModel.IContainer components;
         private ToolStripMenuItem tsmiRevert;
 
-        private Script script;
+        private IScript script;
         private StringConst[] orig = null;
 
         public ScriptView()
@@ -37,13 +37,7 @@ namespace SCI_Translator.ResView
         {
             var resScript = (ResScript)Current;
 
-            script = resScript.GetScript() as Script;
-
-            if (script == null)
-            {
-                tbHex.Text = "Unsupported compression method";
-                return;
-            }
+            script = resScript.GetScript();
 
             SuspendLayout();
 
@@ -74,9 +68,12 @@ namespace SCI_Translator.ResView
                 i++;
             }
 
-            tbHex.Text = new HexBuilder().Decompile(script);
-            tbASM.Text = new SimpeScriptBuilder().Decompile(script);
-            tbASMC.Text = new CompanionBuilder().Decompile(script);
+            if (script is Script scr)
+            {
+                tbHex.Text = new HexBuilder().Decompile(scr);
+                tbASM.Text = new SimpeScriptBuilder().Decompile(scr);
+                tbASMC.Text = new CompanionBuilder().Decompile(scr);
+            }
 
             ResumeLayout();
             PerformLayout();

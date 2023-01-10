@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace SCI_Tools
@@ -13,7 +14,7 @@ namespace SCI_Tools
         {
             await Execute();
 
-            if (!NoWait)
+            if (!NoWait && !Debugger.IsAttached)
             {
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();

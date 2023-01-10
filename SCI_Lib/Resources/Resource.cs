@@ -154,7 +154,7 @@ namespace SCI_Lib.Resources
 
         public virtual byte[] GetPatch()
         {
-            throw new NotImplementedException();
+            return GetContent();
         }
 
         public virtual void SavePatch(string path = null)

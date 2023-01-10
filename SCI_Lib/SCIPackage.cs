@@ -93,6 +93,7 @@ namespace SCI_Lib
                 ResType.Picture => new ResPicture(),
                 ResType.View => new ResView(),
                 ResType.Palette => new ResPalette(),
+                ResType.Heap => new ResHeap(),
                 _ => new Resource(),
             };
         }
@@ -132,9 +133,9 @@ namespace SCI_Lib
 
         public IEnumerable<ResMessage> Messages => GetResources<ResMessage>();
 
-        public IEnumerable<Resource> GetResources(ResType resType) => Resources.FindAll(r => r.Type == resType);
+        public IEnumerable<Resource> GetResources(ResType resType) => Resources.Where(r => r.Type == resType);
 
-        public IEnumerable<T> GetResources<T>() where T : Resource => Resources.FindAll(r => r is T).Cast<T>();
+        public IEnumerable<T> GetResources<T>() where T : Resource => Resources.Where(r => r is T).Cast<T>();
 
         public Resource GetResource(ResType type, ushort number) => Resources.FirstOrDefault(r => r.Type == type && r.Number == number);
 
@@ -153,42 +154,41 @@ namespace SCI_Lib
         public string GetOpCodeName(byte type)
         {
             _opcodes ??= LoadOpCodes();
+            if (_opcodes == null) return null;
             return _opcodes[type]?.Name;
         }
 
-        private Dictionary<byte, OpCode> LoadOpCodes()
-        {
-            return GetResource<ResVocab>(998).GetVocabOpcodes();
-        }
+        private Dictionary<byte, OpCode> LoadOpCodes() => GetResource<ResVocab>(998)?.GetVocabOpcodes();
 
         private string[] _funcNames;
 
         public string GetFuncName(int ind)
         {
-            if (_funcNames == null) _funcNames = LoadFuncs();
+            _funcNames ??= LoadFuncs();
+            if (_funcNames == null) return null;
             if (ind >= _funcNames.Length) return $"kernel_{ind}";
             return _funcNames[ind];
         }
 
-        private string[] LoadFuncs()
-        {
-            return GetResource<ResVocab>(999).GetText();
-        }
+        private string[] LoadFuncs() => GetResource<ResVocab>(999)?.GetText();
 
         private string[] _names;
 
-        public string[] Names => _names ??= GetResource<ResVocab>(997).GetVocabNames();
-
         public string GetName(int ind)
         {
-            return Names[ind];
+            _names ??= LoadNames();
+            if (_names == null) return null;
+            return _names[ind];
         }
+
+        private string[] LoadNames() => GetResource<ResVocab>(997)?.GetVocabNames();
 
         public IEnumerable<Resource> GetTextResources()
         {
             return GetResources(ResType.Text)
                 .Union(GetResources(ResType.Script))
-                .Union(GetResources(ResType.Message));
+                .Union(GetResources(ResType.Message))
+                .Union(GetResources(ResType.Heap));
         }
 
         public void Pack(string directory)

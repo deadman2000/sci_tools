@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Resources.Scripts;
+﻿using Microsoft.VisualBasic;
+using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;
@@ -10,18 +11,7 @@ namespace SCI_Lib.Resources.Scripts1_1
 {
     public class Script1_1 : IScript
     {
-        private byte[] _sourceData;
-
-        private List<LocalVar> localVars = new List<LocalVar>();
-
-        public Script1_1(Resource res)
-        {
-            Resource = res;
-            _sourceData = res.GetContent();
-            ReadScriptSCI1_1();
-        }
-
-        public override string ToString() => Resource.ToString();
+        private readonly byte[] _sourceData;
 
         public Resource Resource { get; }
 
@@ -34,19 +24,26 @@ namespace SCI_Lib.Resources.Scripts1_1
 
         public List<Object1_1> Objects { get; } = new List<Object1_1>();
 
+        public List<LocalVar> LocalVars { get; } = new List<LocalVar>();
+
         public HashSet<ushort> StringOffsets { get; set; }
 
         public List<string> Strings { get; set; } = new List<string>();
+
+        public Script1_1(Resource res)
+        {
+            Resource = res;
+            _sourceData = res.GetContent();
+            ReadScriptSCI1_1();
+        }
 
         private void ReadScriptSCI1_1()
         {
             // https://github.com/scummvm/scummvm/blob/master/engines/sci/engine/script.cpp#L390
             // https://github.com/icefallgames/SCICompanion/blob/master/SCICompanionLib/Src/Compile/CompiledScript.cpp#L226
-            var heapRes = Package.GetResource(ResType.Heap, Resource.Number);
-
-            using var stream = new MemoryStream(_sourceData.Length);
-            stream.Write(_sourceData, 0, _sourceData.Length);
-            stream.Seek(0, SeekOrigin.Begin);
+            using var stream = new MemoryStream(_sourceData);
+            //stream.Write(_sourceData, 0, _sourceData.Length);
+            //stream.Seek(0, SeekOrigin.Begin);
 
             var endOfStringOffset = stream.ReadUShortBE();
             var heapPoints = ReadOffsets(stream, endOfStringOffset);
@@ -65,6 +62,9 @@ namespace SCI_Lib.Resources.Scripts1_1
                     ExportsOffsetsIsHeap[i] = true;
             }
 
+            var heapRes = Package.GetResource<ResHeap>(Resource.Number);
+            //var heap = heapRes.GetHeap();
+
             var heapData = heapRes.GetContent();
             using var heap = new MemoryStream(heapData);
 
@@ -75,7 +75,7 @@ namespace SCI_Lib.Resources.Scripts1_1
             {
                 bool isObjectOrString = StringOffsets.Contains((ushort)heap.Position);
                 ushort w = heap.ReadUShortBE();
-                localVars.Add(new LocalVar { Value = w, IsObjectOrString = isObjectOrString });
+                LocalVars.Add(new LocalVar { Value = w, IsObjectOrString = isObjectOrString });
             }
 
 
@@ -113,7 +113,7 @@ namespace SCI_Lib.Resources.Scripts1_1
             while (heap.Position < stringOffset);
         }
 
-        HashSet<ushort> ReadOffsets(MemoryStream stream, ushort offset)
+        private static HashSet<ushort> ReadOffsets(MemoryStream stream, ushort offset)
         {
             var oldPos = stream.Position;
             stream.Seek(offset, SeekOrigin.Begin);

@@ -54,20 +54,10 @@ namespace SCI_Lib.Resources.View
 
                 for (int j = 0; j < cellsCount; j++)
                 {
-                    var cell = new Cell(this);
-                    loop.Cells.Add(cell);
-
                     ms.Position = cellOffsets[j];
-
-                    cell.Width = ms.ReadUShortBE();
-                    cell.Height = ms.ReadUShortBE();
-                    cell.X = ms.ReadB();
-                    cell.Y = ms.ReadB();
-                    cell.TransparentColor = ms.ReadB();
-                    ms.Position++; // Skip unknown
-
-                    cell.Pixels = new byte[cell.Width * cell.Height];
-                    ImageEncoder.ReadImage(ms, ms, cell.Pixels, cell.TransparentColor);
+                    var cell = new Cell(Package, Palette);
+                    cell.ReadVGA(ms);
+                    loop.Cells.Add(cell);
                 }
             }
 
@@ -135,56 +125,16 @@ namespace SCI_Lib.Resources.View
                 {
                     for (int c = 0; c < cellCount; c++)
                     {
-                        var cell = new Cell(this);
+                        var cell = new Cell(Package, Palette);
+                        cell.ReadVGA11(data, (int)(cellOffset + cellHeaderSize * c));
                         loop.Cells.Add(cell);
-
-                        ms.Position = cellOffset + cellHeaderSize * c;
-
-                        cell.Width = ms.ReadUShortBE();
-                        cell.Height = ms.ReadUShortBE();
-                        cell.X = ms.ReadShortBE();
-                        cell.Y = ms.ReadShortBE();
-                        cell.TransparentColor = ms.ReadB();
-
-                        var always_0xa = ms.ReadB();
-                        var temp2 = ms.ReadB();
-                        var temp3 = ms.ReadB();
-                        var totalCellDataSize = ms.ReadUIntBE();
-                        var rleCellDataSize = ms.ReadUIntBE();
-                        cell.PaletteOffset = ms.ReadUIntBE();
-                        var offsetRLE = ms.ReadUIntBE();
-                        if (offsetRLE == 0) throw new FormatException();
-                        var offsetLiteral = ms.ReadUIntBE();
-                        var perRowOffsets = ms.ReadUIntBE();
-                        if (always_0xa == 0xa || always_0xa == 0x8a)
-                        {
-                            if (offsetLiteral == 0) throw new FormatException();
-                        }
-                        else
-                        {
-                            if (offsetLiteral != 0) throw new FormatException();
-                        }
-
-                        ms.Position = offsetRLE;
-                        if (offsetLiteral == 0)
-                        {
-                            cell.Pixels = ms.ReadBytes(cell.Width * cell.Height);
-                        }
-                        else
-                        {
-                            ms.Position = offsetRLE;
-                            var msLiteral = new MemoryStream(data);
-                            msLiteral.Position = offsetLiteral;
-                            cell.Pixels = new byte[cell.Width * cell.Height];
-                            ImageEncoder.ReadImage(ms, msLiteral, cell.Pixels, cell.TransparentColor);
-                        }
                     }
                 }
                 else
                 {
                     foreach (var c in Loops[loop.LoopMirror].Cells)
                     {
-                        var cell = new Cell(this);
+                        var cell = new Cell(Package, Palette);
                         loop.Cells.Add(cell);
                         cell.Width = c.Width;
                         cell.Height = c.Height;

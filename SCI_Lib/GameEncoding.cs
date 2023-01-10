@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SCI_Lib
@@ -29,8 +30,19 @@ namespace SCI_Lib
 
         public string GetString(byte[] data, int from, int length)
         {
+            if (length == 0) return string.Empty;
             char[] chars = Encoding.GetChars(data, from, length);
             return new string(chars);
+        }
+
+        public string GetString(byte[] data, int from)
+        {
+            for (int i = from; i < data.Length; i++)
+            {
+                if (data[i] == 0)
+                    return GetString(data, from, i - from);
+            }
+            return GetString(data, from, data.Length - from);
         }
 
         public string ByteToHexTable(byte[] data)

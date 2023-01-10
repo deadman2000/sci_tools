@@ -1,4 +1,6 @@
 ﻿using SCI_Lib.Resources.Picture;
+using SCI_Lib.Utils;
+using System.IO;
 
 namespace SCI_Lib.Resources
 {
@@ -10,7 +12,13 @@ namespace SCI_Lib.Resources
         {
             if (_pic != null) return _pic;
             var data = GetContent();
-            return _pic = new SCIPicture(data);
+            if (data[0] == 0x26)
+            {
+                return _pic = new SCIPicture11(Package, data);
+            }
+
+
+            return _pic = new SCIPicture1(data);
         }
 
         public void SetPicture(SCIPicture pic)
@@ -18,9 +26,16 @@ namespace SCI_Lib.Resources
             _pic = pic;
         }
 
-        public override byte[] GetPatch()
+        protected override void WriteHeader(Stream stream)
+        {
+            var header = new byte[26];
+            header[0] = (byte)Type;
+            stream.Write(header);
+        }
+
+        /*public override byte[] GetPatch()
         {
             return _pic.GetBytes();
-        }
+        }*/
     }
 }
