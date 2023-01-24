@@ -18,18 +18,20 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         static Section CreateObj(SectionType type)
         {
-            switch (type)
+            return type switch
             {
-                case SectionType.Object: return new ObjectSection();
-                case SectionType.Code: return new CodeSection();
-                case SectionType.String: return new StringSection();
-                case SectionType.Class: return new ClassSection();
-                case SectionType.Export: return new ExportSection();
-                case SectionType.Relocation: return new RelocationSection();
-                case SectionType.Preload: return new PreloadTextSection();
-                case SectionType.LocalVariables: return new LocalVariablesSection();
-                default: throw new NotImplementedException();
-            }
+                SectionType.Object => new ObjectSection(),
+                SectionType.Code => new CodeSection(),
+                SectionType.Synonym => new SynonymSecion(),
+                SectionType.Said => new SaidSection(),
+                SectionType.String => new StringSection(),
+                SectionType.Class => new ClassSection(),
+                SectionType.Export => new ExportSection(),
+                SectionType.Relocation => new RelocationSection(),
+                SectionType.Preload => new PreloadTextSection(),
+                SectionType.LocalVariables => new LocalVariablesSection(),
+                _ => throw new NotImplementedException(),
+            };
         }
 
         public virtual void SetupByOffset() { }
@@ -51,9 +53,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public abstract void Read(byte[] data, ushort offset, int length);
 
-        public virtual void Write(ByteBuilder bb)
-        {
-        }
+        public abstract void Write(ByteBuilder bb);
 
         public virtual void WriteOffsets(ByteBuilder bb)
         {

@@ -34,11 +34,11 @@ namespace SCI_Lib.SCI0
                 if (typeNum == 0xffff && fnOffset == 0xffffffff) break;
 
                 var type = SCI0_ResMap[typeNum >> 11];
-                var num =(ushort)(typeNum & 0x7ff);
+                var num = (ushort)(typeNum & 0x7ff);
                 var resNum = (byte)(fnOffset >> 26);
                 var offset = (int)(fnOffset & 0x3ffffff);
 
-                var res = CreateRes(type);
+                var res = CreateRes(type, num);
                 res.Init(this, type, num, resNum, offset);
                 Resources.Add(res);
             }

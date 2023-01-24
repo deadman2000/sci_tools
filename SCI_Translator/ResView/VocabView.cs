@@ -44,37 +44,42 @@ namespace SCI_Translator.ResView
         {
             var data = Current.GetContent();
 
-            var vocab = (ResVocab)Current;
-
             tbHex.Text = GameEncoding.ByteToHexTable(data);
 
-            if (_res.Number == 997)
+            switch (Current)
             {
-                var strings = vocab.GetVocabNames();
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < strings.Length; i++)
-                    sb.AppendFormat("{0:x3}: {1}", i, strings[i]).AppendLine();
-                tbVocab.Text = sb.ToString();
-            }
-            else if (_res.Number == 998)
-            {
-                var opcodes = vocab.GetVocabOpcodes();
-                StringBuilder sb = new StringBuilder();
-                foreach (var kv in opcodes)
-                    sb.AppendFormat("{0:x2}: {1} {2}", kv.Key, kv.Value.Type, kv.Value.Name).AppendLine();
-                tbVocab.Text = sb.ToString();
-            }
-            else if (_res.Number == 999)
-            {
-                var lines = vocab.GetText();
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < lines.Length; i++)
-                    sb.AppendLine($"{i,-3}: {lines[i]}");
-                tbVocab.Text = sb.ToString();
-            }
-            else
-            {
-                tbVocab.Text = "";
+                case ResVocab997 voc997:
+                    {
+                        var strings = voc997.GetVocabNames();
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < strings.Length; i++)
+                            sb.AppendFormat("{0:x3}: {1}", i, strings[i]).AppendLine();
+                        tbVocab.Text = sb.ToString();
+                    }
+                    break;
+
+                case ResVocab998 voc998:
+                    {
+                        var opcodes = voc998.GetVocabOpcodes();
+                        StringBuilder sb = new StringBuilder();
+                        foreach (var kv in opcodes)
+                            sb.AppendFormat("{0:x2}: {1} {2}", kv.Key, kv.Value.Type, kv.Value.Name).AppendLine();
+                        tbVocab.Text = sb.ToString();
+                    }
+                    break;
+
+                case ResVocab999 voc999:
+                    {
+                        var lines = voc999.GetText();
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < lines.Length; i++)
+                            sb.AppendLine($"{i,-3}: {lines[i]}");
+                        tbVocab.Text = sb.ToString();
+                    }
+                    break;
+                default:
+                    tbVocab.Text = "";
+                    break;
             }
         }
 

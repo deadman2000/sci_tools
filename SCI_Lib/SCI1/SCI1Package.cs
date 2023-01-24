@@ -94,7 +94,7 @@ namespace SCI_Lib.SCI1
                     }
                     else
                     {
-                        Resource res = CreateRes(offsets[i].Type);
+                        Resource res = CreateRes(offsets[i].Type, num);
                         res.Init(this, offsets[i].Type, num, resNum, offset);
                         Resources.Add(res);
                     }
@@ -127,7 +127,7 @@ namespace SCI_Lib.SCI1
                         }
 
                         var info = new ResourceFileInfo1((byte)rt, num, method);
-                        var res = CreateRes(rt);
+                        var res = CreateRes(rt, num);
                         res.Init(this, rt, num, resNum, info);
                         Resources.Add(res);
                     }

@@ -21,8 +21,7 @@ namespace SCI_Translator.ResView
         {
             dgvText.Rows.Clear();
 
-            ResText txt = (ResText)_res;
-            var en = txt.GetStrings();
+            var en = _res.GetStrings();
 
             if (_tres != null)
             {
@@ -51,8 +50,7 @@ namespace SCI_Translator.ResView
             {
                 lines[r] = (string)dgvText[2, r].Value;
             }
-
-            ((ResText)_tres).SetStrings(lines);
+            _tres.SetStrings(lines);
             _tres.SavePatch();
         }
 

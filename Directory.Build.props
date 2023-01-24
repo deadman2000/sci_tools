@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.0.9</Version>
+    <Authors>dead_man</Authors>
+    <Product>SCI_Tools</Product>
+    <Description>https://github.com/deadman2000/sci_tools</Description>
+  </PropertyGroup>
+</Project>

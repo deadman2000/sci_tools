@@ -8,7 +8,7 @@ namespace SCI_Lib.Resources.Scripts
 {
     public class Script : IScript
     {
-        private Dictionary<ushort, BaseElement> _elements = new Dictionary<ushort, BaseElement>();
+        private readonly Dictionary<ushort, BaseElement> _elements = new Dictionary<ushort, BaseElement>();
         private readonly StringSection _strings;
 
         public Script(Resource res)
@@ -23,9 +23,9 @@ namespace SCI_Lib.Resources.Scripts
                 SectionType type = (SectionType)Helpers.GetUShortBE(SourceData, i);
                 if (type == SectionType.None) break;
 
-                ushort size = (ushort)(Helpers.GetUShortBE(SourceData, i + 2) - 4);
-                i += 4;
-
+                ushort size = Helpers.GetUShortBE(SourceData, i + 2); // Size with header
+                i += 4; // Skip header
+                size -= 4;
                 Section sec = Section.Create(this, type, SourceData, i, size);
                 Sections.Add(sec);
                 i += size;

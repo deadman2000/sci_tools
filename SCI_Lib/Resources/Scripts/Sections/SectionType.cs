@@ -5,6 +5,8 @@
         None = 0,
         Object = 1,
         Code = 2,
+        Synonym = 3,
+        Said = 4,
         String = 5,
         Class = 6,
         Export = 7,

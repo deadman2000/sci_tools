@@ -81,12 +81,12 @@ namespace SCI_Lib
 
         protected abstract void SaveMap(FileStream fs);
 
-        protected virtual Resource CreateRes(ResType type)
+        protected virtual Resource CreateRes(ResType type, int num)
         {
             return type switch
             {
                 ResType.Text => new ResText(),
-                ResType.Vocabulary => new ResVocab(),
+                ResType.Vocabulary => CreateVocab(num),
                 ResType.Script => new ResScript(),
                 ResType.Font => new ResFont(),
                 ResType.Message => new ResMessage(),
@@ -95,6 +95,18 @@ namespace SCI_Lib
                 ResType.Palette => new ResPalette(),
                 ResType.Heap => new ResHeap(),
                 _ => new Resource(),
+            };
+        }
+
+        private static Resource CreateVocab(int num)
+        {
+            return num switch
+            {
+                0 => new ResVocab000(),
+                997 => new ResVocab997(),
+                998 => new ResVocab998(),
+                999 => new ResVocab999(),
+                _ => new ResVocab()
             };
         }
 
@@ -158,7 +170,7 @@ namespace SCI_Lib
             return _opcodes[type]?.Name;
         }
 
-        private Dictionary<byte, OpCode> LoadOpCodes() => GetResource<ResVocab>(998)?.GetVocabOpcodes();
+        private Dictionary<byte, OpCode> LoadOpCodes() => GetResource<ResVocab998>(998)?.GetVocabOpcodes();
 
         private string[] _funcNames;
 
@@ -170,7 +182,7 @@ namespace SCI_Lib
             return _funcNames[ind];
         }
 
-        private string[] LoadFuncs() => GetResource<ResVocab>(999)?.GetText();
+        private string[] LoadFuncs() => GetResource<ResVocab999>(999)?.GetText();
 
         private string[] _names;
 
@@ -181,7 +193,7 @@ namespace SCI_Lib
             return _names[ind];
         }
 
-        private string[] LoadNames() => GetResource<ResVocab>(997)?.GetVocabNames();
+        private string[] LoadNames() => GetResource<ResVocab997>(997)?.GetVocabNames();
 
         public IEnumerable<Resource> GetTextResources()
         {
