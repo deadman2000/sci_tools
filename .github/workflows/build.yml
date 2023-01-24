@@ -28,7 +28,8 @@ jobs:
     - name: Publish
       uses: brandedoutcast/publish-nuget@v2
       with:
-        PROJECT_FILE_PATH: Directory.Build.props
+        PROJECT_FILE_PATH: SCI_Lib/SCI_Lib.csproj
+        VERSION_FILE_PATH: Directory.Build.props
         VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
         TAG_FORMAT: '*'
         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
