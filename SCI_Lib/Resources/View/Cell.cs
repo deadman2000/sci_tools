@@ -132,5 +132,34 @@ namespace SCI_Lib.Resources.View
                 ImageEncoder.ReadImage(ms, msLiteral, Pixels, TransparentColor);
             }
         }
+
+
+        private byte ColorToPal(Color color)
+        {
+            int bestDiff = 0;
+            byte best = 0;
+
+            for (int i = 0; i < Palette.Colors.Length; i++)
+            {
+                var c = Palette.Colors[i];
+                if (c == color) return (byte)i;
+
+                var d = Math.Abs(c.R - color.R) + Math.Abs(c.G - color.G) + Math.Abs(c.B - color.B);
+                if (bestDiff == 0 || d < bestDiff)
+                {
+                    bestDiff = d;
+                    best = (byte)i;
+                }
+            }
+
+            return best;
+        }
+
+        public void SetImage(Bitmap bitmap)
+        {
+            for (int x = 0; x < bitmap.Width; x++)
+                for (int y = 0; y < bitmap.Height; y++)
+                    Pixels[x + y * Width] = ColorToPal(bitmap.GetPixel(x, y));
+        }
     }
 }
