@@ -27,7 +27,7 @@ namespace SCI_Lib.Resources.Picture
 
             Image = new byte[Width * Height];
 
-            ImageEncoder.ReadImage(stream, stream, Image, _transpCol);
+            ImageEncoder.ReadImage(stream, stream, Image, _transpCol, true);
 
             var readSize = stream.Position - startPos;
 

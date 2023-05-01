@@ -133,11 +133,25 @@ namespace SCI_Lib.Utils
                 orig.Y = (ushort)(orig.Y + (i & 7));
             return orig;
         }
+
+        public static PointByte ReadPointByte(this Stream stream)
+        {
+            PointByte p;
+            p.X = stream.ReadB();
+            p.Y = stream.ReadB();
+            return p;
+        }
     }
 
     public struct PointShort
     {
         public ushort X;
         public ushort Y;
+    }
+
+    public struct PointByte
+    {
+        public byte X;
+        public byte Y;
     }
 }

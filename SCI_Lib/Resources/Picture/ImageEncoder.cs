@@ -11,52 +11,63 @@ namespace SCI_Lib.Resources.Picture
         private static bool WRITE_BY_ROW = true; // Построчная запись
         private static bool USE_ADD_COUNT = false;
 
-        public static void ReadImage(Stream rle, Stream literal, byte[] img, byte transpColor)
+        public static void ReadImage(Stream rle, Stream literal, byte[] img, byte transpColor, bool isVGA)
         {
             int ind = 0;
             int addCount = 0;
             while (ind < img.Length)
             {
                 var d = rle.ReadB();
-                var cnt = (d & 0x3f) + addCount; // 2 бита - код, 6 - количество
-                var code = d >> 6;
-                if (LOG) Console.Write($"{code} x{cnt} ");
 
-                switch (code)
+                if (!isVGA)
                 {
-                    case 0: // Разные пиксели
-                        if (LOG) Console.Write("[");
-                        for (var i = 0; i < cnt; i++)
-                        {
-                            img[ind + i] = literal.ReadB();
-                            if (LOG) Console.Write($"{img[ind + i]:X2} ");
-                        }
-                        ind += cnt;
-                        addCount = 0;
-                        if (LOG) Console.WriteLine("]");
-                        break;
+                    byte c = (byte)(d & 0x0f);
+                    var cnt = (d & 0xf0) >> 4;
+                    for (var i = 0; i < cnt; i++)
+                        img[ind++] = c;
+                }
+                else
+                {
+                    var cnt = (d & 0x3f) + addCount; // 2 бита - код, 6 - количество
+                    var code = d >> 6;
+                    if (LOG) Console.Write($"{code} x{cnt} ");
 
-                    case 1: // Увеличиваем счетчик
-                        addCount += 64;
-                        if (LOG) Console.WriteLine();
-                        break;
+                    switch (code)
+                    {
+                        case 0: // Разные пиксели
+                            if (LOG) Console.Write("[");
+                            for (var i = 0; i < cnt; i++)
+                            {
+                                img[ind + i] = literal.ReadB();
+                                if (LOG) Console.Write($"{img[ind + i]:X2} ");
+                            }
+                            ind += cnt;
+                            addCount = 0;
+                            if (LOG) Console.WriteLine("]");
+                            break;
 
-                    case 2: // Одинаковые пиксели подряд
-                        var c = literal.ReadB();
-                        if (LOG) Console.WriteLine($"{c:X2}");
-                        for (var i = 0; i < cnt; i++)
-                            img[ind + i] = c;
-                        ind += cnt;
-                        addCount = 0;
-                        break;
+                        case 1: // Увеличиваем счетчик
+                            addCount += 64;
+                            if (LOG) Console.WriteLine();
+                            break;
 
-                    case 3: // Прозрачные пиксели подряд
-                        if (LOG) Console.WriteLine("T");
-                        for (var i = 0; i < cnt; i++)
-                            img[ind + i] = transpColor;
-                        ind += cnt;
-                        addCount = 0;
-                        break;
+                        case 2: // Одинаковые пиксели подряд
+                            var c = literal.ReadB();
+                            if (LOG) Console.WriteLine($"{c:X2}");
+                            for (var i = 0; i < cnt; i++)
+                                img[ind + i] = c;
+                            ind += cnt;
+                            addCount = 0;
+                            break;
+
+                        case 3: // Прозрачные пиксели подряд
+                            if (LOG) Console.WriteLine("T");
+                            for (var i = 0; i < cnt; i++)
+                                img[ind + i] = transpColor;
+                            ind += cnt;
+                            addCount = 0;
+                            break;
+                    }
                 }
             }
         }

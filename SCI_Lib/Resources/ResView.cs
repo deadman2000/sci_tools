@@ -19,15 +19,11 @@ namespace SCI_Lib.Resources
         {
             var view = new SCIView(Package);
 
-            if (Package.ViewFormat == ViewFormats.NotSet)
-            {
-                DetectFormat(data);
-            }
-
             switch (Package.ViewFormat)
             {
-                case ViewFormats.VGA: view.ReadVGA(data); break;
-                case ViewFormats.VGA1_1: view.ReadVGA11(data); break;
+                case ViewFormat.EGA: view.ReadEGA(data); break;
+                case ViewFormat.VGA: view.ReadVGA(data); break;
+                case ViewFormat.VGA1_1: view.ReadVGA11(data); break;
                 default: throw new NotImplementedException($"Read view format {Package.ViewFormat} is not implemented");
             }
 
@@ -53,37 +49,10 @@ namespace SCI_Lib.Resources
 
             switch (Package.ViewFormat)
             {
-                case ViewFormats.VGA: return _view.GetBytesVGA();
-                case ViewFormats.VGA1_1: return _view.GetBytesVGA11();
+                case ViewFormat.VGA: return _view.GetBytesVGA();
+                case ViewFormat.VGA1_1: return _view.GetBytesVGA11();
                 default: throw new NotImplementedException($"Write view format {Package.ViewFormat} is not implemented");
             }
-        }
-
-        private void DetectFormat(byte[] data)
-        {
-            try
-            {
-                var view = new SCIView(Package);
-                view.ReadVGA(data);
-                Package.ViewFormat = ViewFormats.VGA;
-                return;
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                var view = new SCIView(Package);
-                view.ReadVGA11(data);
-                Package.ViewFormat = ViewFormats.VGA1_1;
-                return;
-            }
-            catch
-            {
-            }
-
-            Package.ViewFormat = ViewFormats.Unknown;
         }
     }
 }

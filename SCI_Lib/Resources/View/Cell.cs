@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Resources.Picture;
 using SCI_Lib.Utils;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -33,6 +34,9 @@ namespace SCI_Lib.Resources.View
         public uint PaletteOffset { get; internal set; }
 
         public byte[] Pixels { get; set; }
+        public bool NoRLE { get; set; }
+
+        public PointByte[] Bones { get; set; }
 
         public Image GetImage()
         {
@@ -75,17 +79,28 @@ namespace SCI_Lib.Resources.View
             ImageEncoder.WriteImage(bbRLE, bbLiterals, Pixels, Width, TransparentColor);
         }
 
-        public void ReadVGA(Stream stream)
+        public void ReadEVGA(Stream stream, bool isVGA, int boneCount)
         {
             Width = stream.ReadUShortBE();
             Height = stream.ReadUShortBE();
             X = stream.ReadB();
             Y = stream.ReadB();
             TransparentColor = stream.ReadB();
-            stream.Position++; // Skip unknown
+
+            if (isVGA)
+                stream.Position++; // Skip unknown
+
+            if (boneCount > 0)
+            {
+                Bones = new PointByte[boneCount];
+                for (int i = 0; i < boneCount; i++)
+                {
+                    Bones[i] = stream.ReadPointByte();
+                }
+            }
 
             Pixels = new byte[Width * Height];
-            ImageEncoder.ReadImage(stream, stream, Pixels, TransparentColor);
+            ImageEncoder.ReadImage(stream, stream, Pixels, TransparentColor, isVGA);
         }
 
         public void ReadVGA11(byte[] data, int offset)
@@ -122,6 +137,7 @@ namespace SCI_Lib.Resources.View
             if (offsetLiteral == 0)
             {
                 Pixels = ms.ReadBytes(Width * Height);
+                NoRLE = true;
             }
             else
             {
@@ -129,7 +145,7 @@ namespace SCI_Lib.Resources.View
                 using var msLiteral = new MemoryStream(data);
                 msLiteral.Seek(offsetLiteral, SeekOrigin.Begin);
                 Pixels = new byte[Width * Height];
-                ImageEncoder.ReadImage(ms, msLiteral, Pixels, TransparentColor);
+                ImageEncoder.ReadImage(ms, msLiteral, Pixels, TransparentColor, true);
             }
         }
 

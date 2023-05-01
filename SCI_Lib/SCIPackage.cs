@@ -133,7 +133,55 @@ namespace SCI_Lib
 
         public bool ExternalMessages { get; set; }
 
-        public ViewFormats ViewFormat { get; set; } = ViewFormats.NotSet;
+        private ViewFormat _viewFormat = ViewFormat.NotSet;
+        public ViewFormat ViewFormat
+        {
+            get
+            {
+                if (_viewFormat == ViewFormat.NotSet) DetectViewFormat();
+                return _viewFormat;
+            }
+        }
+
+        private void DetectViewFormat()
+        {
+            var data = GetResources<ResView>().First().GetContent();
+
+            try
+            {
+                var view = new SCIView(this);
+                view.ReadVGA(data);
+                _viewFormat = ViewFormat.VGA;
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var view = new SCIView(this);
+                view.ReadVGA11(data);
+                _viewFormat = ViewFormat.VGA1_1;
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var view = new SCIView(this);
+                view.ReadEGA(data);
+                _viewFormat = ViewFormat.EGA;
+                return;
+            }
+            catch
+            {
+            }
+
+            _viewFormat = ViewFormat.Unknown;
+        }
 
         #region Resources
 

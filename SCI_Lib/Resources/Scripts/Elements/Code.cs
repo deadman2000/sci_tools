@@ -268,7 +268,10 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
                 case 0x72: // lofsa
                     val = (ushort)(data[offset++] + (data[offset++] << 8));
-                    Arguments.Add(new RefToElement(Script, addr, val) { Source = this });
+                    if (Script.Package.ViewFormat == ViewFormat.EGA)
+                        Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 2));
+                    else
+                        Arguments.Add(new RefToElement(Script, addr, val) { Source = this });
                     break;
 
                 // 4 bytes
