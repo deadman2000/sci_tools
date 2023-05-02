@@ -80,7 +80,7 @@ namespace SCI_Lib.Utils
             while (true)
             {
                 var b = stream.ReadByte();
-                if (b == 0) break;
+                if (b <= 0) break;
                 buff.Add((byte)b);
             }
             return encoding.GetString(buff.ToArray());
