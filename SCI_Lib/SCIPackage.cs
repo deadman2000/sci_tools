@@ -2,6 +2,7 @@
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.View;
+using SCI_Lib.Resources.Vocab;
 using SCI_Lib.SCI0;
 using SCI_Lib.SCI1;
 using System;
@@ -42,7 +43,9 @@ namespace SCI_Lib
             return GetResource<ResPalette>(999).GetPalette();
         }
 
-        public abstract string GetResFileName(Resource resource);
+        public string GetResFileName(Resource resource) => GetResFileName(resource.Type, resource.Number);
+
+        public abstract string GetResFileName(ResType type, int number);
 
         public SCIPackage(string directory, Encoding enc)
         {
@@ -81,7 +84,15 @@ namespace SCI_Lib
 
         protected abstract void SaveMap(FileStream fs);
 
-        protected virtual Resource CreateRes(ResType type, int num)
+        public Resource CreateResource(ResType type, ushort num)
+        {
+            var res = CreateRes(type, num);
+            res.Init(this, type, num, 1, -1);
+            Resources.Add(res);
+            return res;
+        }
+
+        protected virtual Resource CreateRes(ResType type, ushort num)
         {
             return type switch
             {
@@ -98,11 +109,14 @@ namespace SCI_Lib
             };
         }
 
-        private static Resource CreateVocab(int num)
+        private static Resource CreateVocab(ushort num)
         {
             return num switch
             {
                 0 => new ResVocab000(),
+                1 => new ResVocab001(),
+                900 => new ResVocab900(),
+                901 => new ResVocab901(),
                 997 => new ResVocab997(),
                 998 => new ResVocab998(),
                 999 => new ResVocab999(),
@@ -197,7 +211,15 @@ namespace SCI_Lib
 
         public IEnumerable<T> GetResources<T>() where T : Resource => Resources.Where(r => r is T).Cast<T>();
 
-        public Resource GetResource(ResType type, ushort number) => Resources.FirstOrDefault(r => r.Type == type && r.Number == number);
+        public Resource GetResource(ResType type, ushort number)
+        {
+            var res = Resources.FirstOrDefault(r => r.Type == type && r.Number == number);
+            if (res != null) return res;
+
+            if (File.Exists(Path.Combine(GameDirectory, GetResFileName(type, number))))
+                return CreateResource(type, number);
+            return null;
+        }
 
         public Resource GetResource(string fileName) => Resources.FirstOrDefault(r => r.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
 
@@ -238,6 +260,7 @@ namespace SCI_Lib
         {
             _names ??= LoadNames();
             if (_names == null) return null;
+            if (ind >= _names.Length) return "???";
             return _names[ind];
         }
 
@@ -280,6 +303,50 @@ namespace SCI_Lib
             {
                 SaveMap(fs);
             }
+        }
+
+
+        private Dictionary<ushort, string> _idToWord;
+        private Dictionary<string, ushort[]> _wordId;
+
+        public Dictionary<ushort, string> GetWords() => _idToWord ??= ReadIdToWords();
+
+        private Dictionary<ushort, string> ReadIdToWords()
+        {
+            if (!(GetResource<ResVocab>(0) is ResVocab000 voc)) return null;
+            IEnumerable<Word> words = voc.GetWords();
+
+            if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
+                words = words.Union(vocTr.GetWords());
+
+            return words.GroupBy(w => w.Group).ToDictionary(g => g.Key, g => GetTranslated(g));
+        }
+
+        private Dictionary<string, ushort[]> ReadWordsToId()
+        {
+            if (!(GetResource<ResVocab>(0) is ResVocab000 voc)) return null;
+            IEnumerable<Word> words = voc.GetWords();
+
+            if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
+                words = words.Union(vocTr.GetWords());
+
+            return words.GroupBy(w => w.Text).ToDictionary(g => g.Key, g => g.Select(s => s.Group).Distinct().ToArray());
+        }
+
+        public ushort[] GetWordId(string word)
+        {
+            _wordId ??= ReadWordsToId();
+            if (_wordId.TryGetValue(word, out var id)) return id;
+            return null;
+        }
+
+        public void ResetWords() => _idToWord = null;
+
+        private static string GetTranslated(IEnumerable<Word> words)
+        {
+            var word = words.FirstOrDefault(w => w.Text[0] > 'z');
+            word ??= words.First();
+            return word.Text;
         }
     }
 }

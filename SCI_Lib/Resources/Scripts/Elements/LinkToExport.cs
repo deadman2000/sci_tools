@@ -25,8 +25,8 @@ namespace SCI_Lib.Scripts.Elements
 
         public void Write(ByteBuilder bb)
         {
-            bb.AddShortBE(_scrNumb);
-            bb.AddShortBE(_expNumb);
+            bb.AddUShortBE(_scrNumb);
+            bb.AddUShortBE(_expNumb);
         }
     }
 }

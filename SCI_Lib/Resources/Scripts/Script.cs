@@ -1,7 +1,9 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts
@@ -41,8 +43,6 @@ namespace SCI_Lib.Resources.Scripts
 
         public void Register(BaseElement el) => _elements[el.Address] = el;
 
-        public void Unregister(BaseElement el) => _elements.Remove(el.Address);
-
         public SCIPackage Package { get { return Resource.Package; } }
 
         public Resource Resource { get; }
@@ -69,7 +69,7 @@ namespace SCI_Lib.Resources.Scripts
 
             foreach (Section sec in Sections)
             {
-                bb.AddShortBE((ushort)sec.Type);
+                bb.AddUShortBE((ushort)sec.Type);
                 int sizePos = bb.Position;
                 bb.AddShortBE(0);
                 sec.Write(bb);
@@ -126,5 +126,12 @@ namespace SCI_Lib.Resources.Scripts
         }
 
         public string GetOpCodeName(byte type) => Package.GetOpCodeName(type);
+
+        public Section CreateSection(SectionType type)
+        {
+            Section sec = Section.Create(this, type, SourceData, 0, 0);
+            Sections.Add(sec);
+            return sec;
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Scripts.Elements;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -8,20 +10,69 @@ namespace SCI_Lib.Resources.Scripts.Builders
 {
     public class CompanionBuilder : IScriptBuilder
     {
-        StringBuilder sb = new StringBuilder();
+        readonly StringBuilder sb = new StringBuilder();
+        private Dictionary<ushort, string> _words;
+        private ushort[] _methods;
 
         public string Decompile(Script script)
         {
+            _words = script.Package.GetWords();
+
             sb.AppendFormat("(script {0})", script.Resource.Number).AppendLine();
             sb.AppendLine();
 
+            _methods = script.Get<ClassSection>(SectionType.Class)
+                .Union(script.Get<ObjectSection>())
+                .SelectMany(s => s.FuncCode)
+                .Select(f => f.TargetOffset)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToArray();
+
             script.Get<StringSection>().ForEach(s => WriteStrings(s));
-            script.Get<PreloadTextSection>().ForEach(s => sb.AppendLine("(said").AppendLine(")").AppendLine());
+            script.Get<SaidSection>().ForEach(s => WriteSaid(s));
+            script.Get<SynonymSecion>().ForEach(s => WriteSynonym(s));
             script.Get<LocalVariablesSection>().ForEach(s => WriteLocals(s));
             script.Get<ClassSection>(SectionType.Class).ForEach(s => WriteClass(s));
             script.Get<ObjectSection>().ForEach(s => WriteClass(s));
 
             return sb.ToString().TrimEnd();
+        }
+
+        private void WriteStrings(StringSection section)
+        {
+            sb.AppendLine("(string");
+            if (section != null)
+            {
+                foreach (var str in section.Strings)
+                    sb.AppendFormat("    string_{0:x4} \"{1}\"", str.Address, str.Value).AppendLine();
+            }
+            sb.AppendLine(")");
+            sb.AppendLine();
+        }
+
+        private void WriteSaid(SaidSection ss)
+        {
+            sb.AppendLine("(said");
+            foreach (var said in ss.Saids)
+                sb.AppendLine($"    said_{said.Address:x4} {said.Label}");
+            sb.AppendLine(")");
+            sb.AppendLine();
+        }
+
+        private string WordToStr(ushort word)
+        {
+            if (_words.TryGetValue(word, out var str)) return str;
+            return $"{word:X03}";
+        }
+
+        private void WriteSynonym(SynonymSecion ss)
+        {
+            sb.AppendLine("(synonym");
+            foreach (var syn in ss.Synonyms)
+                sb.AppendLine($"    {WordToStr(syn.WordA)} = {WordToStr(syn.WordB)}");
+            sb.AppendLine(")");
+            sb.AppendLine();
         }
 
         private void WriteLocals(LocalVariablesSection locals)
@@ -34,20 +85,8 @@ namespace SCI_Lib.Resources.Scripts.Builders
                     //var offset = locals.Refs[i]?.TargetOffset ?? 0;
                     //sb.Append($"    local{i} = ${offset:x4}" ).AppendLine();
 
-                    sb.Append($"    local{i} = ${locals.Vars[i]:x4}").AppendLine();
+                    sb.AppendLine($"    local{i} = ${locals.Vars[i]:x4}");
                 }
-            }
-            sb.AppendLine(")");
-            sb.AppendLine();
-        }
-
-        private void WriteStrings(StringSection section)
-        {
-            sb.AppendLine("(string");
-            if (section != null)
-            {
-                foreach (var str in section.Strings)
-                    sb.AppendFormat("    string_{0:x4} \"{1}\"", str.Address, str.Value).AppendLine();
             }
             sb.AppendLine(")");
             sb.AppendLine();
@@ -75,17 +114,24 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
             for (int i = 0; i < s.FuncNames.Length; i++)
             {
-                sb.AppendLine($"    (method ({pack.GetName(s.FuncNames[i])}) // method_{s.FuncCode[i].TargetOffset:x4}");
+                var addr = s.FuncCode[i].TargetOffset;
+                ushort endAddr = 0;
+                var ind = Array.IndexOf(_methods, addr);
+                if (ind != -1 && ind < _methods.Length - 1)
+                    endAddr = _methods[ind + 1];
 
-                Code code = s.Script.GetElement(s.FuncCode[i].TargetOffset) as Code;
+                sb.AppendLine($"    (method ({pack.GetName(s.FuncNames[i])}) // method_{addr:x4}");
+
+                Code code = s.Script.GetElement(addr) as Code;
                 while (code != null)
                 {
+                    if (code.Address == endAddr) break;
                     if (code.XRefs.Any(r => !(r is FuncRef)))
                         sb.AppendLine($"        {code.Label}");
 
                     sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {ArgsToString(code)}");
 
-                    if (code.IsReturn)
+                    if (endAddr == 0 && code.IsReturn)
                         break;
 
                     if (code.IsCall)
@@ -95,34 +141,43 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 }
 
                 sb.AppendLine("    )");
+                sb.AppendLine();
             }
 
             sb.AppendLine(")");
             sb.AppendLine();
         }
 
-        private string ArgsHexToString(Code code)
+        private static string ArgsHexToString(Code code)
         {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < code.Arguments.Count; i++)
             {
                 object a = code.Arguments[i];
-                if (a is byte)
-                    sb.Append($"{a:x2}");
-                else if (a is ushort)
-                    sb.Append($"{a:x4}");
-                else if (a is RefToElement r)
-                    sb.Append($"{r.Value:x4}");
-                else if (a is LinkToExport l)
-                    sb.AppendFormat("{0:x4} {1:x4}", l.ScriptNumber, l.ExportNumber);
-                else
-                    sb.Append(a.ToString());
-                sb.Append(" ");
+                switch (a)
+                {
+                    case byte _:
+                        sb.Append($"{a:x2}");
+                        break;
+                    case ushort _:
+                        sb.Append($"{a:x4}");
+                        break;
+                    case RefToElement r:
+                        sb.Append($"{r.Value:x4}");
+                        break;
+                    case LinkToExport l:
+                        sb.AppendFormat("{0:x4} {1:x4}", l.ScriptNumber, l.ExportNumber);
+                        break;
+                    default:
+                        sb.Append(a.ToString());
+                        break;
+                }
+                sb.Append(' ');
             }
             return sb.ToString().Trim();
         }
 
-        private string ArgsToString(Code code)
+        private static string ArgsToString(Code code)
         {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < code.Arguments.Count; i++)
@@ -143,7 +198,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
                     sb.AppendFormat("{0:x} procedure_{1:x4}", l.ScriptNumber, l.ExportNumber);
                 else
                     sb.Append(a.ToString());
-                sb.Append(" ");
+                sb.Append(' ');
             }
             return sb.ToString().Trim();
         }

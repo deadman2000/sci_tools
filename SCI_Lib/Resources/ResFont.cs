@@ -85,8 +85,8 @@ namespace SCI_Lib.Resources
 
             ByteBuilder bb = new ByteBuilder();
             bb.AddShortBE(0);
-            bb.AddShortBE(cnt);
-            bb.AddShortBE(_font.FontHeight);
+            bb.AddUShortBE(cnt);
+            bb.AddUShortBE(_font.FontHeight);
 
             for (int i = 0; i < cnt; i++)
                 bb.AddShortBE(0);

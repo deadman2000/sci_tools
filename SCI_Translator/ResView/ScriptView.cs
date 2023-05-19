@@ -20,7 +20,6 @@ namespace SCI_Translator.ResView
         private TabPage tabPage4;
         private DataGridViewTextBoxColumn colInd;
         private DataGridViewTextBoxColumn colString;
-        private DataGridViewTextBoxColumn colTranslate;
         private ContextMenuStrip cmsStrings;
         private System.ComponentModel.IContainer components;
         private ToolStripMenuItem tsmiRevert;
@@ -92,15 +91,7 @@ namespace SCI_Translator.ResView
         {
             string str = sc.GetStringEscape();
             //str = str.Replace("$0D", "\r").Replace("$0A", "\n");
-            string[] parts = str.Split(new string[] { "#G" }, StringSplitOptions.None);
-
-            if (parts.Length > 1)
-            {
-                row.Cells[1].Value = parts[0];
-                row.Cells[2].Value = parts[1];
-            }
-            else
-                row.Cells[1].Value = str;
+            row.Cells[1].Value = str;
 
         }
 
@@ -109,15 +100,7 @@ namespace SCI_Translator.ResView
             dgvStrings.CommitEdit(DataGridViewDataErrorContexts.Commit);
             foreach (DataGridViewRow row in dgvStrings.Rows)
             {
-                string s1 = (string)row.Cells[1].Value;
-                string s2 = (string)row.Cells[2].Value;
-
-                string val;
-                if (!String.IsNullOrEmpty(s2))
-                    val = s1 + "#G" + s2;
-                else
-                    val = s1;
-
+                string val = (string)row.Cells[1].Value;
                 var sc = (StringConst)row.Tag;
                 sc.SetValueUnescape(val);
 
@@ -164,7 +147,6 @@ namespace SCI_Translator.ResView
             this.dgvStrings = new System.Windows.Forms.DataGridView();
             this.colInd = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colString = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTranslate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cmsStrings = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiRevert = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -215,8 +197,7 @@ namespace SCI_Translator.ResView
             this.dgvStrings.ColumnHeadersHeight = 29;
             this.dgvStrings.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.colInd,
-            this.colString,
-            this.colTranslate});
+            this.colString});
             this.dgvStrings.ContextMenuStrip = this.cmsStrings;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
@@ -252,14 +233,6 @@ namespace SCI_Translator.ResView
             this.colString.Name = "colString";
             this.colString.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.colString.Width = 300;
-            // 
-            // colTranslate
-            // 
-            this.colTranslate.HeaderText = "Translate";
-            this.colTranslate.MinimumWidth = 6;
-            this.colTranslate.Name = "colTranslate";
-            this.colTranslate.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colTranslate.Width = 300;
             // 
             // cmsStrings
             // 

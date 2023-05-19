@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using SCI_Lib.Resources.Scripts;
+﻿using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;
@@ -132,10 +131,9 @@ namespace SCI_Lib.Resources.Scripts1_1
             throw new NotImplementedException();
         }
 
-        static readonly StringConst[] empty = Array.Empty<StringConst>();
         public IEnumerable<StringConst> AllStrings()
         {
-            return empty;
+            return Array.Empty<StringConst>();
         }
 
         public IClass GetClass(ushort id)

@@ -1,9 +1,10 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Utils;
+using System;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
-    class LocalVariablesSection : Section
+    public class LocalVariablesSection : Section
     {
         public override void Read(byte[] data, ushort offset, int length)
         {
@@ -16,6 +17,15 @@ namespace SCI_Lib.Resources.Scripts.Sections
         }
 
         public object[] Vars { get; private set; }
+
+        public int Count => Vars.Length;
+
+        public ushort this[int index] => Vars[index] switch
+        {
+            ushort us => us,
+            RefToElement r => r.Address,
+            _ => throw new Exception(),
+        };
 
         public override void SetupByOffset()
         {
@@ -39,7 +49,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 switch (v)
                 {
                     case ushort s:
-                        bb.AddShortBE(s);
+                        bb.AddUShortBE(s);
                         break;
                     case RefToElement r:
                         r.Write(bb);
@@ -52,29 +62,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
         {
             foreach (var v in Vars)
                 (v as RefToElement)?.WriteOffset(bb);
-        }
-    }
-
-    class LocalVariablesSection2 : Section
-    {
-        public override void Read(byte[] data, ushort offset, int length)
-        {
-            Refs = new ushort[length / 2];
-
-            for (int i = 0; i < Refs.Length; i++)
-            {
-                Refs[i] = ReadShortBE(data, ref offset);
-            }
-        }
-
-        public ushort[] Refs { get; private set; }
-
-        public override void Write(ByteBuilder bb)
-        {
-            foreach (var r in Refs)
-            {
-                bb.AddShortBE(r);
-            }
         }
     }
 }

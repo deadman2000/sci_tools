@@ -12,10 +12,9 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public ushort Value { get; set; }
 
-        public override void Write(ByteBuilder bb)
+        protected override void WriteData(ByteBuilder bb)
         {
-            Address = (ushort)bb.Position;
-            bb.AddShortBE(Value);
+            bb.AddUShortBE(Value);
         }
 
         public override void WriteOffset(ByteBuilder bb)

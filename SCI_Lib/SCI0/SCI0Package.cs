@@ -54,7 +54,7 @@ namespace SCI_Lib.SCI0
             return new ResourceFileInfo0(Path.Combine(GameDirectory, resourceFileName), offset);
         }
 
-        public override string GetResFileName(Resource resource) => $"{GetResName(resource.Type)}.{resource.Number:D3}";
+        public override string GetResFileName(ResType type, int number) => $"{GetResName(type)}.{number:D3}";
 
         private string GetResName(ResType type)
         {

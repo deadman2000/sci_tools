@@ -91,14 +91,12 @@ namespace SCI_Lib.Resources.Scripts.Elements
         {
             IsSetup = true;
             Reference = Script.GetElement(TargetOffset);
-            if (Reference != null)
-                Reference.XRefs.Add(this);
+            Reference?.XRefs.Add(this);
         }
 
-        public override void Write(ByteBuilder bb)
+        protected override void WriteData(ByteBuilder bb)
         {
             IsWrited = true;
-            Address = (ushort)bb.Position;
             switch (Size)
             {
                 case 1: bb.AddByte(0); break;

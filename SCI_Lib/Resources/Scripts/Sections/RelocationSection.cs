@@ -41,7 +41,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
         public override void Write(ByteBuilder bb)
         {
             _offset = bb.Position;
-            bb.AddShortBE((ushort)Refs.Length);
+            bb.AddUShortBE((ushort)Refs.Length);
             if (_additionalZero)
                 bb.AddShortBE(0);
             for (int i = 0; i < Refs.Length; i++)

@@ -131,7 +131,7 @@ namespace SCI_Lib.Resources.View
             bb.Zeros(6);
             bb.AddByte(ColStart);
             bb.Zeros(3);
-            bb.AddShortBE((ushort)Colors.Length);
+            bb.AddUShortBE((ushort)Colors.Length);
             bb.AddByte(0);
             bb.AddByte(Format);
             bb.AddIntBE(0);

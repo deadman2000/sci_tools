@@ -101,6 +101,10 @@ namespace SCI_Lib
             return escaper.Escape(str866);
         }
 
+        public string EscapeString(string str) => escaper.Escape(str.ToCharArray());
+
+        public string UnescapeString(string str) => GetString(GetBytesUnescape(str));
+
         abstract class Escaper
         {
             public abstract string Escape(char[] str866);

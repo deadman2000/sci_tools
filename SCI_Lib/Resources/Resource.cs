@@ -16,10 +16,14 @@ namespace SCI_Lib.Resources
             Package = package;
             Type = type;
             Number = number;
-            if (type == ResType.Message && package.ExternalMessages)
-                Volumes.Add(new VolumeOffset(resNum, offset, "RESOURCE.MSG"));
-            else
-                Volumes.Add(new VolumeOffset(resNum, offset));
+
+            if (offset >= 0)
+            {
+                if (type == ResType.Message && package.ExternalMessages)
+                    Volumes.Add(new VolumeOffset(resNum, offset, "RESOURCE.MSG"));
+                else
+                    Volumes.Add(new VolumeOffset(resNum, offset));
+            }
         }
 
         public void Init(SCIPackage package, ResType type, ushort number, byte resNum, ResourceFileInfo info)
@@ -81,10 +85,6 @@ namespace SCI_Lib.Resources
 
         private byte[] ReadContent(string dir, int volume = 0)
         {
-            var vol = Volumes[volume];
-
-            var info = GetInfo();
-
             var path = Path.Combine(dir, FileName);
             if (File.Exists(path)) // Если есть внешний файл, используем его
             {
@@ -98,6 +98,10 @@ namespace SCI_Lib.Resources
                 return fs.ReadBytes((int)(fs.Length - fs.Position));
             }
 
+            if (Volumes.Count == 0) return Array.Empty<byte>();
+
+            var vol = Volumes[volume];
+            var info = GetInfo();
 
             using (FileStream fs = File.OpenRead(Path.Combine(dir, vol.FileName)))
             {

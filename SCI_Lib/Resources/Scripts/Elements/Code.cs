@@ -474,11 +474,11 @@ namespace SCI_Lib.Resources.Scripts.Elements
         public override void SetupByOffset()
         {
             foreach (object a in Arguments)
-                if (a is RefToElement)
-                    ((RefToElement)a).SetupByOffset();
+                if (a is RefToElement r)
+                    r.SetupByOffset();
         }
 
-        public override void Write(ByteBuilder bb)
+        protected override void WriteData(ByteBuilder bb)
         {
             Address = (ushort)bb.Position;
             bb.AddByte(Type);
@@ -490,7 +490,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                         bb.AddByte(b);
                         break;
                     case ushort s:
-                        bb.AddShortBE(s);
+                        bb.AddUShortBE(s);
                         break;
                     case RefToElement r:
                         r.Write(bb);

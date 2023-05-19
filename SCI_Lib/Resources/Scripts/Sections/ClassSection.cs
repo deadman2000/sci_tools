@@ -122,8 +122,8 @@ namespace SCI_Lib.Resources.Scripts.Sections
         {
             bb.AddShortBE(0x1234);
             bb.AddShortBE(0);
-            bb.AddShortBE(funcList);
-            bb.AddShortBE((ushort)Selectors.Length);
+            bb.AddUShortBE(funcList);
+            bb.AddUShortBE((ushort)Selectors.Length);
 
             for (int i = 0; i < Selectors.Length; i++)
                 Selectors[i].Write(bb);
@@ -131,12 +131,12 @@ namespace SCI_Lib.Resources.Scripts.Sections
             if (Type == SectionType.Class)
             {
                 foreach (ushort vs in varselectors)
-                    bb.AddShortBE(vs);
+                    bb.AddUShortBE(vs);
             }
 
-            bb.AddShortBE((ushort)FuncNames.Length);
+            bb.AddUShortBE((ushort)FuncNames.Length);
             foreach (ushort val in FuncNames)
-                bb.AddShortBE(val);
+                bb.AddUShortBE(val);
 
             bb.AddShortBE(0);
 

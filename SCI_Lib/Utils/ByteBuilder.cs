@@ -31,13 +31,13 @@ namespace SCI_Lib.Utils
             _bytes.Add((byte)c);
         }
 
-        public void AddShortLE(ushort val)
+        public void AddUShortLE(ushort val)
         {
             _bytes.Add((byte)(val >> 8));
             _bytes.Add((byte)(val & 0xFF));
         }
 
-        public void AddShortBE(ushort val)
+        public void AddUShortBE(ushort val)
         {
             _bytes.Add((byte)(val & 0xFF));
             _bytes.Add((byte)(val >> 8));
@@ -78,6 +78,13 @@ namespace SCI_Lib.Utils
             _bytes.Add((byte)(val >> 16));
         }
 
+        public void AddThreeBytesLE(int val)
+        {
+            _bytes.Add((byte)(val >> 16));
+            _bytes.Add((byte)(val >> 8));
+            _bytes.Add((byte)(val & 0xFF));
+        }
+
         public void SetByte(int offset, byte val)
         {
             _bytes[offset] = val;
@@ -112,6 +119,11 @@ namespace SCI_Lib.Utils
         public void Zeros(int count)
         {
             for (int i = 0; i < count; i++) AddByte(0);
+        }
+
+        public void AddString(string value, GameEncoding encoding)
+        {
+            _bytes.AddRange(encoding.GetBytes(value));
         }
     }
 }

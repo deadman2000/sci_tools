@@ -45,7 +45,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public override void Write(ByteBuilder bb)
         {
-            bb.AddShortBE((ushort)Exports.Length);
+            bb.AddUShortBE((ushort)Exports.Length);
             foreach (ExportRef exp in Exports)
             {
                 if (exp != null)

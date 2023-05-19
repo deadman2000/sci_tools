@@ -12,7 +12,8 @@ namespace SCI_Lib.Resources.Scripts.Sections
             sec._offset = offset;
             sec._type = type;
             sec._size = length;
-            sec.Read(data, offset, length);
+            if (length > 0)
+                sec.Read(data, offset, length);
             return sec;
         }
 
@@ -67,6 +68,11 @@ namespace SCI_Lib.Resources.Scripts.Sections
         protected static ushort ReadShortBE(byte[] data, ref ushort offset)
         {
             return (ushort)(data[offset++] | (data[offset++] << 8));
+        }
+
+        protected static ushort ReadShortLE(byte[] data, ref ushort offset)
+        {
+            return (ushort)((data[offset++] << 8) | data[offset++]);
         }
 
     }

@@ -37,7 +37,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public virtual void SetupByOffset() { }
 
-        public abstract void Write(ByteBuilder bb);
+        public void Write(ByteBuilder bb)
+        {
+            Address = (ushort)bb.Position;
+            WriteData(bb);
+        }
+
+        protected abstract void WriteData(ByteBuilder bb);
 
         public abstract void WriteOffset(ByteBuilder bb);
 

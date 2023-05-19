@@ -38,6 +38,11 @@ namespace SCI_Lib.Utils
             return stream.ReadByte() | (stream.ReadByte() << 8) | (stream.ReadByte() << 16);
         }
 
+        public static int Read3ByteLE(this Stream stream)
+        {
+            return (stream.ReadByte() << 16) | (stream.ReadByte() << 8) | stream.ReadByte();
+        }
+
         public static int ReadIntBE(this Stream stream)
         {
             return stream.ReadByte() | (stream.ReadByte() << 8) | (stream.ReadByte() << 16) | (stream.ReadByte() << 24);
@@ -108,6 +113,11 @@ namespace SCI_Lib.Utils
             var b = stream.ReadB();
             stream.Seek(pos, SeekOrigin.Begin);
             return b;
+        }
+
+        public static bool IsEnd(this Stream stream)
+        {
+            return stream.Position >= stream.Length;
         }
 
         public static PointShort ReadPicAbsCoord(this Stream stream)

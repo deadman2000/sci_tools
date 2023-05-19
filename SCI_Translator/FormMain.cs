@@ -18,10 +18,13 @@ namespace SCI_Translator
         private readonly FontView fontView;
         private readonly ScriptView scriptView;
         private readonly VocabView vocabView;
+        private readonly WordsView wordsView;
+        private readonly SuffixesView suffixesView;
         private readonly MsgView msgView;
         private readonly PicView picView;
 
         private int? SelectRow;
+        private ResViewer _currentViewer;
 
         public FormMain(SCIPackage package, SCIPackage translate)
         {
@@ -39,6 +42,8 @@ namespace SCI_Translator
             sc.Panel2.Controls.Add(fontView = new FontView());
             sc.Panel2.Controls.Add(scriptView = new ScriptView());
             sc.Panel2.Controls.Add(vocabView = new VocabView());
+            sc.Panel2.Controls.Add(wordsView = new WordsView());
+            sc.Panel2.Controls.Add(suffixesView = new SuffixesView());
             sc.Panel2.Controls.Add(msgView = new MsgView());
             sc.Panel2.Controls.Add(picView = new PicView());
 
@@ -109,13 +114,15 @@ namespace SCI_Translator
             }
         }
 
-        ResViewer _currentViewer;
         private void ShowResource(Resource res, bool translated)
         {
             var info = res.GetInfo();
             tsslResourceInfo.Text = String.Format("{0}  {1} ({2:X8}h)  {3}", res.Type, res.Volumes[0].FileName, res.Volumes[0].Offset, info);
 
-            _currentViewer = GetViewer(res.Type);
+            if (_currentViewer != null)
+                _currentViewer.Save();
+
+            _currentViewer = GetViewer(res);
 
             Resource tres = _translate?.Get(res);
 
@@ -128,14 +135,17 @@ namespace SCI_Translator
             _currentViewer.BringToFront();
         }
 
-        private ResViewer GetViewer(ResType type)
+        private ResViewer GetViewer(Resource res)
         {
-            switch (type)
+            switch (res.Type)
             {
                 case ResType.Text: return textViewer;
                 case ResType.Font: return fontView;
                 case ResType.Script: return scriptView;
-                case ResType.Vocabulary: return vocabView;
+                case ResType.Vocabulary:
+                    if (res.Number == 0) return wordsView;
+                    if (res.Number == 901) return suffixesView;
+                    return vocabView;
                 case ResType.Message: return msgView;
                 case ResType.Picture: return picView;
                 default: return hexViewer;

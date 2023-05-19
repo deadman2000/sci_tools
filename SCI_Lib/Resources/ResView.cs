@@ -47,12 +47,12 @@ namespace SCI_Lib.Resources
         {
             if (_view == null) throw new Exception("Patch view is not set");
 
-            switch (Package.ViewFormat)
+            return Package.ViewFormat switch
             {
-                case ViewFormat.VGA: return _view.GetBytesVGA();
-                case ViewFormat.VGA1_1: return _view.GetBytesVGA11();
-                default: throw new NotImplementedException($"Write view format {Package.ViewFormat} is not implemented");
-            }
+                ViewFormat.VGA => _view.GetBytesVGA(),
+                ViewFormat.VGA1_1 => _view.GetBytesVGA11(),
+                _ => throw new NotImplementedException($"Write view format {Package.ViewFormat} is not implemented"),
+            };
         }
     }
 }

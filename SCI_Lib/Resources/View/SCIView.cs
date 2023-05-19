@@ -74,7 +74,7 @@ namespace SCI_Lib.Resources.View
             if (Loops.Count > 255) throw new Exception("Too many loops");
             bb.AddByte((byte)Loops.Count);
             bb.AddByte(80);
-            bb.AddShortBE(_mask);
+            bb.AddUShortBE(_mask);
             bb.AddShortBE(0);
 
             var palRefOffest = bb.Position;
@@ -162,12 +162,12 @@ namespace SCI_Lib.Resources.View
             bb.AddByte(_scaleFlags);
             bb.AddByte(_unknown1);
             bb.AddByte(_scaleRes);
-            bb.AddShortBE((ushort)Loops.Sum(l => l.Cells.Count));
+            bb.AddUShortBE((ushort)Loops.Sum(l => l.Cells.Count));
             var palRef = bb.Position;
             bb.AddIntBE(0); // Palette offset
             bb.AddByte(0x10); // Loop header size
             bb.AddByte(0x24); // Cell header size
-            bb.AddShortBE(_nativeResolution);
+            bb.AddUShortBE(_nativeResolution);
             bb.AddShortBE(0); // Unknown
 
             // Write loop headers
@@ -212,8 +212,8 @@ namespace SCI_Lib.Resources.View
                     // Setup first cell offset
                     if (j == 0) bb.SetIntBE(cellsRef[i], bb.Position);
 
-                    bb.AddShortBE(cell.Width);
-                    bb.AddShortBE(cell.Height);
+                    bb.AddUShortBE(cell.Width);
+                    bb.AddUShortBE(cell.Height);
                     bb.AddShortBE(cell.X);
                     bb.AddShortBE(cell.Y);
                     bb.AddByte(cell.TransparentColor);

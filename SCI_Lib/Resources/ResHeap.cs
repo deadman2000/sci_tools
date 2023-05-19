@@ -17,6 +17,11 @@ namespace SCI_Lib.Resources
             return _strings;
         }
 
+        public override void SetStrings(string[] strings)
+        {
+            _strings = strings;
+        }
+
         public void Read()
         {
             _data = GetContent();

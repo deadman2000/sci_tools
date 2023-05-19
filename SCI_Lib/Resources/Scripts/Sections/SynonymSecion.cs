@@ -6,11 +6,11 @@ namespace SCI_Lib.Resources.Scripts.Sections
 {
     public class SynonymSecion : Section
     {
-        public List<Synonym> Synonyms { get; set; }
+        public List<Synonym> Synonyms { get; set; } = new List<Synonym>();
 
         public override void Read(byte[] data, ushort offset, int length)
         {
-            Synonyms = new List<Synonym>();
+            Synonyms.Clear();
             var end = offset + length;
             while (true)
             {
@@ -31,10 +31,10 @@ namespace SCI_Lib.Resources.Scripts.Sections
         {
             foreach (var syn in Synonyms)
             {
-                bb.AddShortBE(syn.WordA);
-                bb.AddShortBE(syn.WordB);
+                bb.AddUShortBE(syn.WordA);
+                bb.AddUShortBE(syn.WordB);
             }
-            bb.AddShortBE(0xffff);
+            bb.AddUShortBE(0xffff);
         }
     }
 

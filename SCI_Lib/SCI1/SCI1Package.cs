@@ -234,7 +234,7 @@ namespace SCI_Lib.SCI1
             return new ResourceFileInfo1(Path.Combine(GameDirectory, resourceFileName), offset);
         }
 
-        public override string GetResFileName(Resource resource) => $"{resource.Number}.{GetExtension(resource.Type)}";
+        public override string GetResFileName(ResType type, int number) => $"{number}.{GetExtension(type)}";
 
         private static string GetExtension(ResType type)
         {

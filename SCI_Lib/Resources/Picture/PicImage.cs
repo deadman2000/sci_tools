@@ -41,8 +41,8 @@ namespace SCI_Lib.Resources.Picture
             var sizePos = bb.Position;
             bb.AddShortBE(0); // Потом вернемся, чтобы записать размер данных
 
-            bb.AddShortBE(Width);
-            bb.AddShortBE(Height);
+            bb.AddUShortBE(Width);
+            bb.AddUShortBE(Height);
             bb.AddShortBE(0);
             bb.AddByte(_transpCol);
             bb.AddByte(0);

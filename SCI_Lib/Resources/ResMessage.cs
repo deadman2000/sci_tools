@@ -86,7 +86,7 @@ namespace SCI_Lib.Resources
             bb.AddIntBE(header);
             int endOffset = bb.Position;
             bb.AddShortBE(0);
-            bb.AddShortBE((ushort)messages.Count);
+            bb.AddUShortBE((ushort)messages.Count);
 
             object[] extra = new object[messages.Count];
 
@@ -120,8 +120,8 @@ namespace SCI_Lib.Resources
             bb.AddIntBE(header);
             int endOffset = bb.Position;
             bb.AddShortBE(0);
-            bb.AddShortBE((ushort)messages.Count);
-            bb.AddShortBE((ushort)messages.Count);
+            bb.AddUShortBE((ushort)messages.Count);
+            bb.AddUShortBE((ushort)messages.Count);
 
             object[] extra = new object[messages.Count];
 

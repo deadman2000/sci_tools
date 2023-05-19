@@ -22,10 +22,16 @@ namespace SCI_Translator.ResView
             dgvText.Rows.Clear();
 
             var en = _res.GetStrings();
+            for (int i = 0; i < en.Length; i++)
+                en[i] = GameEncoding.EscapeString(en[i]);
 
             if (_tres != null)
             {
                 var tr = _tres.GetStrings();
+
+                for (int i = 0; i < en.Length; i++)
+                    tr[i] = GameEncoding.EscapeString(tr[i]);
+
                 for (int i = 0; i < en.Length; i++)
                     dgvText.Rows.Add(i, en[i], tr[i]);
             }
@@ -48,7 +54,7 @@ namespace SCI_Translator.ResView
             string[] lines = new string[dgvText.Rows.Count];
             for (int r = 0; r < dgvText.Rows.Count; r++)
             {
-                lines[r] = (string)dgvText[2, r].Value;
+                lines[r] = GameEncoding.UnescapeString((string)dgvText[2, r].Value);
             }
             _tres.SetStrings(lines);
             _tres.SavePatch();

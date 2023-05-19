@@ -27,9 +27,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public override string ToString() => $"string_{Address:x4} = {Value}";
 
-        public override void Write(ByteBuilder bb)
+        protected override void WriteData(ByteBuilder bb)
         {
-            Address = (ushort)bb.Position;
             bb.AddBytes(Bytes);
             bb.AddByte(0);
         }
@@ -68,7 +67,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public string String => OrigString.Value.Substring(_offset);
 
-        public override void Write(ByteBuilder bb)
+        protected override void WriteData(ByteBuilder bb)
         {
         }
 

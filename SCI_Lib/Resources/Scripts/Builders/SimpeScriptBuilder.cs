@@ -1,5 +1,9 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SCI_Lib.Resources.Scripts.Builders
@@ -7,9 +11,12 @@ namespace SCI_Lib.Resources.Scripts.Builders
     public class SimpeScriptBuilder : IScriptBuilder
     {
         readonly StringBuilder sb = new StringBuilder();
+        Dictionary<ushort, string> _words;
 
         public string Decompile(Script script)
         {
+            _words = script.Package.GetWords();
+
             foreach (Section sec in script.Sections)
                 WriteSection(sec);
 
@@ -43,11 +50,37 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 case StringSection ss:
                     Write(ss);
                     break;
+                case SynonymSecion ss:
+                    Write(ss);
+                    break;
+                case SaidSection ss:
+                    Write(ss);
+                    break;
                 default:
                     sb.AppendLine($"[Section {sec.Type}]");
                     break;
             }
             sb.AppendLine();
+        }
+
+        private void Write(SaidSection ss)
+        {
+            sb.AppendLine($"[{ss.Type} section]");
+            foreach (var said in ss.Saids)
+                sb.AppendLine($"\t{said.Label}");
+        }
+
+        private string WordToStr(ushort word)
+        {
+            if (_words.TryGetValue(word, out var str)) return str;
+            return $"{word:X03}";
+        }
+
+        private void Write(SynonymSecion ss)
+        {
+            sb.AppendLine($"[{ss.Type} section]");
+            foreach (var syn in ss.Synonyms)
+                sb.AppendLine($"\t{WordToStr(syn.WordA)} = {WordToStr(syn.WordB)}");
         }
 
         private void Write(ClassSection cs)

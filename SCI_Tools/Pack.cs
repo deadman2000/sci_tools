@@ -1,12 +1,11 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib;
-using SCI_Lib.Resources;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace SCI_Tools
 {
-    // pack -s D:\Projects\SCI_Translator\Conquest\TRANSLATE\ -d D:\Dos\GAMES\Conquest_rus\
+    // pack -s D:\Dos\GAMES\Conquest_rus\ -d c:\Projects\TranslateWeb\Conquest\
     [Command("pack", Description = "Package game resources")]
     class Pack : BaseCommand
     {
