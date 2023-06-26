@@ -16,9 +16,11 @@ namespace SCI_Translator.ResView
 
         public Resource Resource { get { return _res; } }
 
+        public virtual bool IsAutoSave => false;
+
         public void Save()
         {
-            if (_translated)
+            if (!DiffTranslate || _translated)
                 SaveContent();
         }
 

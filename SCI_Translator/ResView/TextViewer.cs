@@ -1,4 +1,5 @@
 ﻿using SCI_Lib.Resources;
+using System;
 using System.Windows.Forms;
 
 namespace SCI_Translator.ResView
@@ -29,10 +30,11 @@ namespace SCI_Translator.ResView
             {
                 var tr = _tres.GetStrings();
 
-                for (int i = 0; i < en.Length; i++)
+                for (int i = 0; i < tr.Length; i++)
                     tr[i] = GameEncoding.EscapeString(tr[i]);
 
-                for (int i = 0; i < en.Length; i++)
+                var cnt = Math.Min(en.Length, tr.Length);
+                for (int i = 0; i < cnt; i++)
                     dgvText.Rows.Add(i, en[i], tr[i]);
             }
             else

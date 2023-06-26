@@ -34,7 +34,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public ushort Value { get; }
 
-        public ushort TargetOffset { get; private set; }
+        public ushort TargetOffset { get; set; }
 
         public bool Relative { get; }
 
@@ -71,6 +71,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     type = "short";
                     comment = $";  ${s.Value:x4}";
                     break;
+                case SaidExpression s:
+                    return s.ToString();
                 case RefToElement r:
                     type = "ref_ref";
                     comment = $";  {r.Address:x4}";

@@ -59,7 +59,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 var val = c.Value;
 
                 var target = _script.GetElement(val);
-                if (target != null && target is StringConst) //  || (target is StringPart)
+                if (target != null && (target is StringConst || target is SaidExpression)) //  || (target is StringPart)
                 {
                     var r = new RefToElement(_script, c.Address, c.Value) { Source = this };
                     c.ReplaceBy(r);

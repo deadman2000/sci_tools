@@ -193,6 +193,16 @@ namespace SCI_Translator.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap mirror_horizontally {
+            get {
+                object obj = ResourceManager.GetObject("mirror_horizontally", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap paste_edit {
             get {
                 object obj = ResourceManager.GetObject("paste_edit", resourceCulture);

@@ -13,7 +13,7 @@ namespace SCI_Lib.Resources
 
         public Word[] GetWords() => _words ??= ReadWords();
 
-        public void SetWords(Word[] words)
+        public void SetWords(IEnumerable<Word> words)
         {
             _words = words.OrderBy(w => w.Text).ToArray();
         }

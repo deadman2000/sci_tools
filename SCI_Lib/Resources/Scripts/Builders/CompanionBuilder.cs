@@ -54,8 +54,12 @@ namespace SCI_Lib.Resources.Scripts.Builders
         private void WriteSaid(SaidSection ss)
         {
             sb.AppendLine("(said");
-            foreach (var said in ss.Saids)
-                sb.AppendLine($"    said_{said.Address:x4} {said.Label}");
+            for (int i = 0; i < ss.Saids.Count; i++)
+            {
+                SaidExpression said = ss.Saids[i];
+                sb.AppendLine($"    said[{i}] {said.Address:x4} {said.Label}");
+            }
+
             sb.AppendLine(")");
             sb.AppendLine();
         }
@@ -115,23 +119,29 @@ namespace SCI_Lib.Resources.Scripts.Builders
             for (int i = 0; i < s.FuncNames.Length; i++)
             {
                 var addr = s.FuncCode[i].TargetOffset;
-                ushort endAddr = 0;
-                var ind = Array.IndexOf(_methods, addr);
-                if (ind != -1 && ind < _methods.Length - 1)
-                    endAddr = _methods[ind + 1];
+                ushort lookTo = 0; // Адрес переходов
 
                 sb.AppendLine($"    (method ({pack.GetName(s.FuncNames[i])}) // method_{addr:x4}");
 
                 Code code = s.Script.GetElement(addr) as Code;
                 while (code != null)
                 {
-                    if (code.Address == endAddr) break;
-                    if (code.XRefs.Any(r => !(r is FuncRef)))
+                    if (code.XRefs.Any(r => r is not FuncRef))
                         sb.AppendLine($"        {code.Label}");
 
-                    sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {ArgsToString(code)}");
+                    string args;
+                    if (code.Name == "pushi")
+                        args = ArgsDecToString(code);
+                    else
+                        args = ArgsToString(code);
 
-                    if (endAddr == 0 && code.IsReturn)
+                    foreach (var arg in code.Arguments)
+                        if (arg is CodeRef cr)
+                            lookTo = Math.Max(lookTo, cr.TargetOffset);
+
+                    sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {args}");
+
+                    if (code.IsReturn && code.Address >= lookTo)
                         break;
 
                     if (code.IsCall)
@@ -150,10 +160,9 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         private static string ArgsHexToString(Code code)
         {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < code.Arguments.Count; i++)
+            StringBuilder sb = new();
+            foreach (object a in code.Arguments)
             {
-                object a = code.Arguments[i];
                 switch (a)
                 {
                     case byte _:
@@ -179,28 +188,65 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         private static string ArgsToString(Code code)
         {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < code.Arguments.Count; i++)
+            StringBuilder sb = new();
+            foreach (object a in code.Arguments)
             {
-                object a = code.Arguments[i];
-                if (a is byte)
-                    sb.Append($"{a:x}");
-                else if (a is ushort)
-                    sb.Append($"{a:x}");
-                else if (a is RefToElement r)
+                switch (a)
                 {
-                    if (r.Reference != null)
-                        sb.Append(r.Reference.Label);
-                    else
-                        sb.Append($"ref_{r.TargetOffset:x4}");
+                    case byte:
+                        sb.Append($"{a:x}");
+                        break;
+                    case ushort:
+                        sb.Append($"{a:x}");
+                        break;
+                    case RefToElement r:
+                        if (r.Reference != null)
+                            sb.Append(r.Reference.Label);
+                        else
+                            sb.Append($"ref_{r.TargetOffset:x4}");
+                        break;
+                    case LinkToExport l:
+                        sb.AppendFormat("{0:x} procedure_{1:x4}", l.ScriptNumber, l.ExportNumber);
+                        break;
+                    default:
+                        sb.Append(a.ToString());
+                        break;
                 }
-                else if (a is LinkToExport l)
-                    sb.AppendFormat("{0:x} procedure_{1:x4}", l.ScriptNumber, l.ExportNumber);
-                else
-                    sb.Append(a.ToString());
                 sb.Append(' ');
             }
             return sb.ToString().Trim();
         }
+
+        private static string ArgsDecToString(Code code)
+        {
+            StringBuilder sb = new();
+            foreach (object a in code.Arguments)
+            {
+                switch (a)
+                {
+                    case byte b:
+                        sb.Append(b);
+                        break;
+                    case ushort s:
+                        sb.Append(s);
+                        break;
+                    case RefToElement r:
+                        if (r.Reference != null)
+                            sb.Append(r.Reference.Label);
+                        else
+                            sb.Append($"ref_{r.TargetOffset:x4}");
+                        break;
+                    case LinkToExport l:
+                        sb.AppendFormat("{0:x} procedure_{1:x4}", l.ScriptNumber, l.ExportNumber);
+                        break;
+                    default:
+                        sb.Append(a.ToString());
+                        break;
+                }
+                sb.Append(' ');
+            }
+            return sb.ToString().Trim();
+        }
+
     }
 }

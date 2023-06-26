@@ -310,10 +310,11 @@ namespace SCI_Lib
         private Dictionary<string, ushort[]> _wordId;
 
         public Dictionary<ushort, string> GetWords() => _idToWord ??= ReadIdToWords();
+        public Dictionary<string, ushort[]> GetWordIds() => _wordId ??= ReadWordsToId();
 
         private Dictionary<ushort, string> ReadIdToWords()
         {
-            if (!(GetResource<ResVocab>(0) is ResVocab000 voc)) return null;
+            if (GetResource<ResVocab>(0) is not ResVocab000 voc) return null;
             IEnumerable<Word> words = voc.GetWords();
 
             if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
@@ -324,7 +325,7 @@ namespace SCI_Lib
 
         private Dictionary<string, ushort[]> ReadWordsToId()
         {
-            if (!(GetResource<ResVocab>(0) is ResVocab000 voc)) return null;
+            if (GetResource<ResVocab>(0) is not ResVocab000 voc) return null;
             IEnumerable<Word> words = voc.GetWords();
 
             if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
@@ -335,12 +336,15 @@ namespace SCI_Lib
 
         public ushort[] GetWordId(string word)
         {
-            _wordId ??= ReadWordsToId();
-            if (_wordId.TryGetValue(word, out var id)) return id;
+            if (GetWordIds().TryGetValue(word, out var id)) return id;
             return null;
         }
 
-        public void ResetWords() => _idToWord = null;
+        public void ResetWords()
+        {
+            _idToWord = null;
+            _wordId = null;
+        }
 
         private static string GetTranslated(IEnumerable<Word> words)
         {

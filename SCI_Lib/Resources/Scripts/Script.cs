@@ -133,5 +133,12 @@ namespace SCI_Lib.Resources.Scripts
             Sections.Add(sec);
             return sec;
         }
+
+        public Code GetOperator(ushort address)
+        {
+            if (_elements.TryGetValue(address, out var el) && el is Code code)
+                return code;
+            return null;
+        }
     }
 }

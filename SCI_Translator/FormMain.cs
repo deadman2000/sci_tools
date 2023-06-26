@@ -2,6 +2,7 @@
 using SCI_Lib.Resources;
 using SCI_Translator.ResView;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -73,6 +74,12 @@ namespace SCI_Translator
             }
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (_currentViewer != null && _currentViewer.IsAutoSave)
+                _currentViewer.Save();
+        }
+
         string ResTypeName(ResType type)
         {
             switch (type)
@@ -83,24 +90,19 @@ namespace SCI_Translator
             }
         }
 
-        string ResTypeKey(ResType type)
+        static string ResTypeKey(ResType type) => type switch
         {
-            switch (type)
-            {
-                case ResType.View: return "character";
-                case ResType.Picture: return "image";
-                case ResType.Script: return "script";
-                case ResType.Text: return "book";
-                case ResType.Sound: return "music";
-                case ResType.Audio:
-                case ResType.AudioPath:
-                case ResType.CDAudio: return "sound";
-                case ResType.Font: return "font";
-                case ResType.Cursor: return "cursor";
-                case ResType.Palette: return "palette";
-                default: return "file";
-            }
-        }
+            ResType.View => "character",
+            ResType.Picture => "image",
+            ResType.Script => "script",
+            ResType.Text => "book",
+            ResType.Sound => "music",
+            ResType.Audio or ResType.AudioPath or ResType.CDAudio => "sound",
+            ResType.Font => "font",
+            ResType.Cursor => "cursor",
+            ResType.Palette => "palette",
+            _ => "file",
+        };
 
         private void tv_AfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -119,7 +121,7 @@ namespace SCI_Translator
             var info = res.GetInfo();
             tsslResourceInfo.Text = String.Format("{0}  {1} ({2:X8}h)  {3}", res.Type, res.Volumes[0].FileName, res.Volumes[0].Offset, info);
 
-            if (_currentViewer != null)
+            if (_currentViewer != null && _currentViewer.IsAutoSave)
                 _currentViewer.Save();
 
             _currentViewer = GetViewer(res);
@@ -133,6 +135,9 @@ namespace SCI_Translator
                 SelectRow = null;
             }
             _currentViewer.BringToFront();
+
+            tsbTranslated.Visible = _currentViewer.DiffTranslate;
+            tsbSave.Enabled = !_currentViewer.DiffTranslate || translated;
         }
 
         private ResViewer GetViewer(Resource res)

@@ -14,7 +14,7 @@ namespace SCI_Translator.ResView
     {
         private Panel panel1;
         private TextBox tbSearch;
-        private System.Windows.Forms.DataGridView dgvWords;
+        private DataGridView dgvWords;
 
         private List<WordTranslate> _dataSet;
         private DataGridViewTextBoxColumn colClass;
@@ -30,6 +30,8 @@ namespace SCI_Translator.ResView
         }
 
         public override bool DiffTranslate => false;
+
+        public override bool IsAutoSave => true;
 
         protected override void Reload()
         {
@@ -93,7 +95,7 @@ namespace SCI_Translator.ResView
                     {
                         Cl = first.Class,
                         Group = first.Group,
-                        Src = groupWords
+                        Translate = groupWords
                     });
                 }
             }
@@ -101,6 +103,8 @@ namespace SCI_Translator.ResView
 
         protected override void SaveContent()
         {
+            if (_trvoc001 == null) return;
+
             dgvWords.CommitEdit(DataGridViewDataErrorContexts.Commit);
             List<Word> words = new();
             HashSet<string> hashs = new();
@@ -119,7 +123,7 @@ namespace SCI_Translator.ResView
                 }
             }
 
-            _trvoc001.SetWords(words.OrderBy(w => w.Text).ToArray());
+            _trvoc001.SetWords(words);
             _trvoc001.SavePatch();
             _tres.Package.ResetWords();
         }

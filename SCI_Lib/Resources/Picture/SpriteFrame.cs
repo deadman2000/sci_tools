@@ -49,44 +49,44 @@ namespace SCI_Lib.Pictures
             Height = h;
         }
 
-        public void ShiftLeft(byte c)
+        public void ShiftLeft(byte color)
         {
             for (int x = 0; x < Width - 1; x++)
                 for (int y = 0; y < Height; y++)
                     _pixelMap[x, y] = _pixelMap[x + 1, y];
 
             for (int y = 0; y < Height; y++)
-                _pixelMap[Width - 1, y] = c;
+                _pixelMap[Width - 1, y] = color;
         }
 
-        public void ShiftRight(byte c)
+        public void ShiftRight(byte color)
         {
             for (int x = Width - 1; x > 0; x--)
                 for (int y = 0; y < Height; y++)
                     _pixelMap[x, y] = _pixelMap[x - 1, y];
 
             for (int y = 0; y < Height; y++)
-                _pixelMap[0, y] = c;
+                _pixelMap[0, y] = color;
         }
 
-        public void ShiftUp(byte c)
+        public void ShiftUp(byte color)
         {
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height - 1; y++)
                     _pixelMap[x, y] = _pixelMap[x, y + 1];
 
             for (int x = 0; x < Width; x++)
-                _pixelMap[x, Height - 1] = c;
+                _pixelMap[x, Height - 1] = color;
         }
 
-        public void ShiftDown(byte c)
+        public void ShiftDown(byte color)
         {
             for (int x = 0; x < Width; x++)
                 for (int y = Height - 1; y > 0; y--)
                     _pixelMap[x, y] = _pixelMap[x, y - 1];
 
             for (int x = 0; x < Width; x++)
-                _pixelMap[x, 0] = c;
+                _pixelMap[x, 0] = color;
         }
 
         public void Draw(Bitmap bitmap, int tx, int ty)
@@ -120,7 +120,26 @@ namespace SCI_Lib.Pictures
         {
             if (Height <= 1) return new SpriteFrame(this);
 
-            var frame = new SpriteFrame(Width, Height);
+            var th = Height;
+            var tw = Width;
+
+            // Check right
+            for (int y = 0; y < Height; y++)
+                if (_pixelMap[Width - 1, y] > 0)
+                {
+                    tw++;
+                    break;
+                }
+
+            // Check bottom
+            for (int x = 0; x < Width; x++)
+                if (_pixelMap[x, Height - 1] > 0)
+                {
+                    th++;
+                    break;
+                }
+
+            var frame = new SpriteFrame(tw, th);
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
@@ -132,14 +151,24 @@ namespace SCI_Lib.Pictures
                                 if (dx == 0 && dy == 0) continue;
                                 var tx = x + dx;
                                 var ty = y + dy;
-                                if (tx < 0 || ty < 0 || tx == Width || ty == Height) continue;
-                                if (_pixelMap[tx, ty] > 0) continue;
+                                if (tx < 0 || ty < 0 || tx == tw || ty == th) continue;
+                                //if (_pixelMap[tx, ty] > 0) continue;
 
                                 frame._pixelMap[tx, ty] = 1;
                             }
                     }
 
             return frame;
+        }
+
+        public void MirrorHoriz()
+        {
+            for (int x = 0; x < Width / 2; x++)
+                for (int y = 0; y < Height; y++)
+                {
+                    var x2 = Width - x - 1;
+                    (_pixelMap[x, y], _pixelMap[x2, y]) = (_pixelMap[x2, y], _pixelMap[x, y]);
+                }
         }
     }
 }

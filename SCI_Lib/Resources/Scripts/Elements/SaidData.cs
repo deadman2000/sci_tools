@@ -27,8 +27,19 @@ namespace SCI_Lib.Resources.Scripts.Elements
             IsOperator = false;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is not SaidData s) return false;
+            return Data == s.Data;
+        }
+
+        public override int GetHashCode() => Data.GetHashCode();
+
+        public override string ToString() => Hex;
+
         //public string Hex => IsOperator ? $"{Data:x02}" : $"{Data:x03}";
         public string Hex => IsOperator ? Letter : $"{Data:x03}";
+
 
         public string Letter => Data switch
         {

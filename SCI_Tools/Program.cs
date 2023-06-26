@@ -13,7 +13,8 @@ namespace SCI_Tools
         typeof(ExtractPic),
         typeof(ExtractView),
         typeof(Pack),
-        typeof(MapFont)
+        typeof(MapFont),
+        typeof(PatchColonel)
     )]
     partial class Program
     {

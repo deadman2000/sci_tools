@@ -34,10 +34,22 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public override string ToString() => Label;
 
-        public void Set(string expression)
+        public bool Set(string expression)
         {
-            Expression = Parse(expression);
+            var parsed = Parse(expression);
+            if (IsEqual(Expression, parsed)) return false;
+            Expression = parsed;
             _label = null;
+            return true;
+        }
+
+        private static bool IsEqual(SaidData[] e1, SaidData[] e2)
+        {
+            //return Array.Equals(e1, e2);
+            if (e1.Length != e2.Length) return false;
+            for (int i = 0; i < e1.Length; i++)
+                if (!e1[i].Equals(e2[i])) return false;
+            return true;
         }
 
         private SaidData[] Parse(string expression)
@@ -48,7 +60,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             {
                 var c = expression[i];
                 if (char.IsWhiteSpace(c)) continue;
-                if (char.IsLetterOrDigit(c))
+                if (char.IsLetterOrDigit(c) || c == '*' || c == '!')
                     buff.Add(c);
                 else
                 {
@@ -77,7 +89,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             buff.Clear();
             var ids = Script.Package.GetWordId(word);
             if (ids == null) throw new Exception($"Word not found {word}");
-            if (ids.Length > 1) throw new Exception($"Multiple ids for word '{word}'");
+            if (ids.Length > 1) Console.WriteLine($"WARN: Multiple ids for word '{word}'");
             return ids[0];
         }
 

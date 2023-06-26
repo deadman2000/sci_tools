@@ -18,6 +18,13 @@ namespace SCI_Lib.Resources.Vocab
             Group = group;
         }
 
+        public Word(string text, WordClass cl, ushort group)
+        {
+            Text = text;
+            Class = cl;
+            Group = group;
+        }
+
         public int Id => ((ushort)Class << 12) | Group;
 
         public string Text { get; set; }

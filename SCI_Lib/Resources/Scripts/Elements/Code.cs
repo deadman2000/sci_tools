@@ -439,37 +439,17 @@ namespace SCI_Lib.Resources.Scripts.Elements
             }
         }
 
-        public bool IsCall
+        public bool IsCall => Name switch
         {
-            get
-            {
-                switch (Name)
-                {
-                    case "self":
-                    case "send":
-                    case "super":
-                    case "call":
-                    case "calle":
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
+            "self" or "send" or "super" or "call" or "calle" => true,
+            _ => false,
+        };
 
-        public bool IsReturn
+        public bool IsReturn => Name switch
         {
-            get
-            {
-                switch (Name)
-                {
-                    case "ret":
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
+            "ret" => true,
+            _ => false,
+        };
 
         public override void SetupByOffset()
         {

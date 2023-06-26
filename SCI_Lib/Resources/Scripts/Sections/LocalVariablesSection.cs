@@ -33,7 +33,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
             {
                 ushort val = (ushort)Vars[i];
                 var el = _script.GetElement(val);
-                if (el is StringConst)
+                if (el is StringConst || el is SaidExpression)
                 {
                     var r = new RefToElement(_script, (ushort)(Address + i * 2), val) { Source = this };
                     r.SetupByOffset();

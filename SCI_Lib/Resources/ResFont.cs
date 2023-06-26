@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Pictures;
 using SCI_Lib.Utils;
 using System;
+using System.Drawing;
 using System.IO;
 
 namespace SCI_Lib.Resources
@@ -131,20 +132,18 @@ namespace SCI_Lib.Resources
             return bb.GetArray();
         }
 
-        public void GenerateOutline(ResFont sourceResFont, int startChar, int endChar)
+        public void GenerateOutline(ResFont sourceResFont, int startChar, int endChar = 0)
         {
-            var font = GetFont();
-            var sourceFont = sourceResFont.GetFont();
+            var dst = GetFont();
+            var src = sourceResFont.GetFont();
+            if (endChar == 0)
+                endChar = src.Frames.Count - 1;
 
-            while (font.Frames.Count < endChar + 1)
-            {
-                font.Frames.Add(null);
-            }
+            while (dst.Frames.Count < endChar + 1)
+                dst.Frames.Add(null);
 
             for (int i = startChar; i <= endChar; i++)
-            {
-                font.Frames[i] = sourceFont[i].GetOutline();
-            }
+                dst.Frames[i] = src[i].GetOutline();
         }
     }
 }

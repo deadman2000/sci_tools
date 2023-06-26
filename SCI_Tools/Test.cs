@@ -4,6 +4,7 @@ using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
+using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Scripts1_1;
 using SCI_Lib.Resources.Vocab;
@@ -29,38 +30,27 @@ namespace SCI_Tools
                 //var s = new SaidExtract(package);
                 //s.Process(291);
 
-                /*CBSkipButtonPatch(37, 101);
-                CBSkipButtonPatch(301);
-                CBSkipButtonPatch(302);
-                CBSkipButtonPatch(303);
-                CBSkipButtonPatch(305);
-                CBSkipButtonPatch(321);
-                CBSkipButtonPatch(323);
-                CBSkipButtonPatch(330);
-                CBSkipButtonPatch(333);
-                CBSkipButtonPatch(350);
-                CBSkipButtonPatch(353);
-                CBSkipButtonPatch(354);*/
+                var resTxt = translate.GetResource<ResText>(208);
+                var strings = resTxt.GetStrings();
+                var result = new string[strings.Length];
 
-                //PrintSaids(17);
-                //PatchSaid(3, 19, "потяни,позвони/трость<(кольцо,веревка,колокол)");
-                //PatchSaid(3, 20, "потяни,позвони/(кольцо,веревка,колокол)<трость");
-                //PatchSaid(7, 1, "<под/мост");
-                //PatchSaid(7, 10, "осмотри<мост");
-                //PatchSaid(10, 5, "<up");
-                //PatchSaid(12, 5, "<up");
-                //PatchSaid(12, 7, "постучи<в/погреб<дверцу");
-                //AddSynonym(14, "домик", "дом");
-                //PatchSaid(15, 4, "<up");
-                //PatchSaid(16, 3, "<down");
-                //PatchSaid(16, 4, "<up");
-                //PatchSaid(17, 3, "<up");
-                //AddSynonym(65, "ваза", "урна");
+                var res = translate.GetResource<ResScript>(208);
+                var scr = res.GetScript() as Script;
+                var vars = scr.Get<LocalVariablesSection>()[0].Vars;
 
+                for (int verb = 0; verb <= 10; verb++)
+                {
+                    var from = (ushort)vars[150 + verb * 2];
+                    var to = from + (ushort)vars[150 + verb * 2 + 1];
+                    for (int noun = from; noun < to; noun++)
+                    {
+                        var txtRes = (ushort)vars[1 + noun * 2];
+                        var txtInd = (ushort)vars[1 + noun * 2 + 1];
+                        var v = ((SaidExpression)((RefToElement)vars[93 + verb]).Reference).Label.TrimEnd('>');
+                        Console.WriteLine($"{noun}  {v}{vars[104 + noun]}   {txtRes}:{txtInd}");
+                    }
+                }
 
-
-                //FixRLE(527);
-                //FixRLE(456);
 
                 //FindTextCall(374, 3);
 
@@ -123,7 +113,15 @@ namespace SCI_Tools
 
                 /*CopyOriginalFont(0);
                 CopyOriginalFont(1);
-                CopyOriginalFont(4);*/
+                CopyOriginalFont(4);
+                CopyOriginalFont(103);*/
+                //GenerateOutline(103, 104);
+
+                //PatchFont();
+
+                // LB2 Fix
+                //FixRLE(527);
+                //FixRLE(456);
             }
             catch (Exception ex)
             {
@@ -131,80 +129,6 @@ namespace SCI_Tools
             }
 
             return Task.CompletedTask;
-        }
-
-        private void CBSkipButtonPatch(ushort scriptNum, byte srcKey = 0x73)
-        {
-            // script.301   036a:35 73              ldi 73
-            var res = translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-            bool found = false;
-            foreach (var codeSec in scr.Get<CodeSection>())
-            {
-                var op = codeSec.Operators.Find(o => o.Name == "ldi" && (byte)o.Arguments[0] == srcKey);
-                if (op != null)
-                {
-                    op.Arguments[0] = (byte)32;
-                    found = true;
-                    break;
-                }
-            }
-            if (found)
-                res.SavePatch();
-            else
-                Console.WriteLine($"{scriptNum} Operator not found");
-        }
-
-        private void AddSynonym(ushort scriptNum, string w1, string w2)
-        {
-            var res = translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-            SynonymSecion section;
-
-            var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
-                section = scr.CreateSection(SectionType.Synonym) as SynonymSecion;
-            else
-                section = sections[0];
-            var w1Ids = translate.GetWordId(w1);
-            if (w1Ids == null || w1Ids.Length > 1) throw new Exception();
-            var w2Ids = translate.GetWordId(w2);
-            if (w2Ids == null || w2Ids.Length > 1) throw new Exception();
-
-            var id1 = w1Ids[0];
-            var id2 = w2Ids[0];
-
-            if (section.Synonyms.Exists(s => (s.WordA == id1 && s.WordB == id2) || (s.WordA == id2 && s.WordB == id1)))
-                return;
-
-            section.Synonyms.Add(new Synonym
-            {
-                WordA = w1Ids[0],
-                WordB = w2Ids[0]
-            });
-
-            res.SavePatch();
-        }
-
-        private void PrintSaids(ushort scriptNum)
-        {
-            var res = translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
-            for (int i = 0; i < saidSection.Saids.Count; i++)
-            {
-                var said = saidSection.Saids[i];
-                Console.WriteLine($"{i} = {said}     {said.Hex}");
-            }
-        }
-
-        private void PatchSaid(ushort scriptNum, int ind, string str)
-        {
-            var res = translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
-            saidSection.Saids[ind].Set(str);
-            res.SavePatch();
         }
 
         private void FindTextCall(int text, int index)
@@ -291,6 +215,7 @@ namespace SCI_Tools
 
         private void CopyOriginalFont(ushort num)
         {
+            // Заменяет символы в переводном шрифте на оригинальные
             var srcRes = package.GetResource<ResFont>(num);
             var trRes = translate.GetResource<ResFont>(num);
             var font = srcRes.GetFont();
@@ -301,6 +226,34 @@ namespace SCI_Tools
 
             trRes.SetFont(trFont);
             trRes.SavePatch();
+        }
+
+        private void PatchFont()
+        {
+            // Добавляет пространство в 1 пиксель справа и сдвигет шрифт вниз
+            // Camelot 103
+            var res = translate.GetResource<ResFont>(103);
+            var fnt = res.GetFont();
+            for (int i = 0x80; i < fnt.Frames.Count; i++)
+            {
+                var f = fnt.Frames[i];
+                if (f.Width == 1) continue;
+                f.Resize(f.Width + 1, f.Height + 1);
+                f.ShiftDown(0);
+            }
+
+            res.SetFont(fnt);
+            res.SavePatch();
+        }
+
+        private void GenerateOutline(ushort src, ushort dst)
+        {
+            // Генерирует обводный шрифт
+            // Camelot 103->104
+            var res = translate.GetResource<ResFont>(src);
+            var fntOutline = translate.GetResource<ResFont>(dst);
+            fntOutline.GenerateOutline(res, 0x80);
+            fntOutline.SavePatch();
         }
 
         void FixRLE(ushort num)
