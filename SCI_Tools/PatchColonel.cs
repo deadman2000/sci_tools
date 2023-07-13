@@ -1,15 +1,15 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib;
-using System.Collections.Generic;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-using SCI_Lib.Resources.Vocab;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Vocab;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCI_Tools
 {
@@ -37,6 +37,8 @@ namespace SCI_Tools
 
         public void Patch()
         {
+            PatchScr777();
+
             //FindRuDuplicate();
             //PrintSaids(25);
             //BuildUsageMap();
@@ -49,8 +51,6 @@ namespace SCI_Tools
 
             //var scripts = _wordsUsage.Values.SelectMany(v => v).Distinct().OrderBy(v => v);
             //foreach (var scr in scripts) Console.WriteLine($"{scr,-4:D03}_");
-
-            PatchScr14();
 
             CreateWord("для", WordClass.Association);
 
@@ -82,6 +82,7 @@ namespace SCI_Tools
             CreateWord("стойло", WordClass.Noun);
             CreateWord("кабинет", WordClass.Noun);
             CreateWord("тростник", WordClass.Noun);
+            CreateWord("ветер", WordClass.Noun);
 
             CreateWord("по", WordClass.Proposition);
 
@@ -96,9 +97,14 @@ namespace SCI_Tools
             CreateWord("задвинь", WordClass.ImperativeVerb);
             CreateWord("выключи", WordClass.ImperativeVerb);
             CreateWord("запряги", WordClass.ImperativeVerb);
+            CreateWord("спустись,слезь", WordClass.ImperativeVerb);
+            CreateWord("вылей", WordClass.ImperativeVerb);
 
-            Save();
-            _translate.ResetWords();
+            if (_changed.Any())
+            {
+                Save();
+                _translate = SCIPackage.Load(GameDir);
+            }
 
             ReplaceWord("desk", "стол");
             ReplaceWord("case", "ящик");
@@ -126,7 +132,7 @@ namespace SCI_Tools
             PatchSaid(3, 28, "загляни/мышь<летучий");
             PatchSaid(3, 29, "лови,возьми/мышь<летучий");
             PatchSaid(3, 30, "загляни/лестница");
-            PatchSaid(3, 31, "(заберись,поднимись)[/лестница<по,башня]");
+            PatchSaid(3, 31, "(заберись,поднимись,спустись)[/лестница<по,башня]");
 
             PatchSaid(4, 2, "/сад[<розовый]");
 
@@ -157,12 +163,13 @@ namespace SCI_Tools
             PatchSaid(12, 7, "постучи<в/погреб<дверь");
             PatchSaid(12, 15, "возьми/фонарь");
             PatchSaid(12, 16, "осмотри/фонарь");
+            PatchSaid(12, 20, "(войди,иди,залезь)<в/будка");
             AddSynonym(12, "лампа", "фонарь");
 
+            PatchScr14();
             PatchSaid(14, 2, "/дорожка");
             PatchSaid(14, 3, "возьми,оторви,развяжи,загляни/веревка");
             PatchSaid(14, 8, "заберись<(в,на)/качели");
-            PatchSaid(14, 10, "загляни/дверь,погреб[/погреб]");
             PatchSaid(14, 17, "загляни<(в,сквозь)/окно,дом");
             PatchSaid(14, 23, "загляни/дом");
 
@@ -210,8 +217,8 @@ namespace SCI_Tools
             PatchSaid(24, 10, "поговори/адвокат");
             RemoveSynonym(24, "fellow", "адвокат");
 
-            PatchSaid(25, 13, "(загляни,используй)/монокль/отпечаток"); // используй монокль на отпечатке
-            PatchSaid(25, 14, "загляни/отпечаток/монокль"); // осмотри отпечаток через монокль
+            PatchSaid(25, 13, "(загляни,используй)/монокль/след"); // используй монокль на следе
+            PatchSaid(25, 14, "загляни/след/монокль"); // осмотри след через монокль
             PatchSaid(25, 16, "загляни/скалка");
             PatchSaid(25, 17, "возьми/скалка");
 
@@ -268,6 +275,7 @@ namespace SCI_Tools
             PatchSaid(35, 5, "/посуда");
             PatchSaid(35, 9, "мой/рука");
             PatchSaid(35, 10, "возьми/посуда");
+            PatchSaid(35, 21, "возьми/кость");
             PatchSaid(35, 29, "загляни[<на]/кофейник");
             PatchSaid(35, 32, "спроси/кухарка/кость<о");
             PatchSaid(35, 33, "спроси/лил/кость<о");
@@ -308,9 +316,9 @@ namespace SCI_Tools
             PatchSaid(38, 8, "загляни/стойка[<барный]");
             PatchSaid(38, 20, "загляни/(герти,девочка)<глаз");
             PatchSaid(38, 24, "выпей,налей,возьми/графин,алкоголь,напиток");
-            PatchSaid(38, 29, "загляни<в/стакан");
+            PatchSaid(38, 29, "загляни<в/стакан[/!*]");
             PatchSaid(38, 30, "возьми/стакан");
-            PatchSaid(38, 31, "загляни<используй<монокль/стакан");
+            PatchSaid(38, 31, "используй/монокль/стакан"); // используй монокль на стакане
             PatchSaid(38, 32, "загляни/стакан[<на]/монокль"); // осмотри стакан через монокль
             PatchSaid(38, 33, "загляни/отпечаток/стакан");
             PatchSaid(38, 34, "загляни/стакан/монокль>");
@@ -415,12 +423,12 @@ namespace SCI_Tools
             RemoveSynonyms(48, "чемодан");
             RemoveSynonyms(48, "коробка");
 
-            PatchRoom49();
+            PatchScr49();
             PatchSaid(49, 2, "/бильярдная");
             PatchSaid(49, 4, "/гостевой,(комната<гостевой)");
 
             PatchSaid(50, 4, "/гостевой,(комната<гостевой)");
-            PatchSaid(50, 25, "загляни/отпечаток/монокль"); // осмотри отпечаток через монокль
+            PatchSaid(50, 25, "загляни/след/монокль"); // осмотри след через монокль
 
             PatchSaid(52, 1, "/*<панель,дверца>");
             PatchSaid(52, 2, "открой/рукоять");
@@ -448,12 +456,12 @@ namespace SCI_Tools
             PatchSaid(57, 2, "опусти,задвинь/засов");
             PatchSaid(57, 6, "загляни,почитай/пластина,табличка");
             PatchSaid(57, 11, "/*<(ячейка,(дверца<ячейка))>"); // сломай ячейку тростью
-            PatchSaid(57, 16, "(разбей,взломай)/трость"); // сломай ячейку тростью
-            PatchSaid(57, 17, "(разбей,взломай)<используй<трость");
-            PatchSaid(57, 19, "(разбей,взломай)/кочерга"); // сломай ячейку кочергой
-            PatchSaid(57, 20, "(разбей,взломай)<используй<кочерга");
-            PatchSaid(57, 22, "(разбей,взломай)/лом"); // сломай ячейку ломом
-            PatchSaid(57, 23, "(разбей,взломай)<используй<лом");
+            PatchSaid(57, 16, "(разбей,взломай,открой)/трость"); // сломай ячейку тростью
+            PatchSaid(57, 17, "(разбей,взломай,открой)/<трость");
+            PatchSaid(57, 19, "(разбей,взломай,открой)/кочерга"); // сломай ячейку кочергой
+            PatchSaid(57, 20, "(разбей,взломай,открой)/<кочерга");
+            PatchSaid(57, 22, "(разбей,взломай,открой)/лом"); // сломай ячейку ломом
+            PatchSaid(57, 23, "(разбей,взломай,открой)/<лом"); // открой ломом ячейку
             PatchSaid(57, 33, "отопри,вытащи,двигай,подними");
             PatchSaid(57, 52, "закрой>");
             PatchSaid(57, 56, "погаси,выключи");
@@ -486,6 +494,7 @@ namespace SCI_Tools
             PatchSaid(61, 35, "загляни[<на]/карета");
             PatchSaid(61, 38, "загляни[<на]/стол");
 
+            PatchScr63();
             PatchSaid(63, 2, "[<вокруг,на][/комната]");
             PatchSaid(63, 4, "/дом[<играй]");
             PatchSaid(63, 9, "напиши,нарисуй,очисть/доска");
@@ -531,6 +540,7 @@ namespace SCI_Tools
             PatchSaid(69, 44, "погладь");
             PatchSaid(69, 54, "загляни<(в,сквозь)/окно");
 
+            PatchSaid(73, 1, "используй/монокль/банка,этикетка");
             PatchSaid(73, 7, "почитай,загляни/этикетка,надпись");
             PatchSaid(73, 11, "/занавеска<душевой");
             PatchSaid(73, 17, "прими/душ");
@@ -546,8 +556,9 @@ namespace SCI_Tools
             PatchSaid(73, 42, "открой,(загляни<в)/шкаф[<бельевой]");
             PatchSaid(73, 43, "загляни<за/шкаф[<бельевой]");
             PatchSaid(73, 44, "загляни/шкаф[<бельевой]");
+            AddSynonym(73, "ведро", "корзина");
 
-            PatchRoom74();
+            PatchScr74();
             PatchSaid(74, 2, "/(комната<туалетный),гардеробная");
             PatchSaid(74, 22, "открой,(загляни<в)/ящик,(стол<туалетный)");
             PatchSaid(74, 23, "загляни/стол<туалетный");
@@ -608,37 +619,152 @@ namespace SCI_Tools
             PatchSaid(207, 3, "/дорога");
 
             PatchSaid(208, 36, "/тростник");
+            PatchSaid(208, 39, "/ветер");
 
-
-
-
-
+            PatchSaid(210, 9, "<в/комод");
             PatchSaid(210, 18, "<в/окно");
+            PatchSaid(210, 25, "/лампа");
+            PatchSaid(210, 36, "/комод");
+
             PatchSaid(213, 4, "/полка[<каминный]");
 
+            PatchSaid(217, 2, "/напиток,стакан");
+            PatchSaid(217, 5, "возьми/напиток,стакан");
+
             PatchSaid(229, 2, "покорми,дай/(кость<бьюргард),(бьюргард<кость)");
+            PatchSaid(229, 11, "толкни,двигай");
+            PatchSaid(229, 17, "чисть,мой/миска,посуда");
+
+            PatchSaid(230, 2, "поговори/человек");
+            PatchSaid(230, 8, "загляни/напиток,стакан");
+            PatchSaid(230, 9, "загляни/рука");
+            PatchSaid(230, 12, "/напиток,стакан");
 
             PatchSaid(231, 5, "возьми,двигай,нажми/кресло<инвалидный");
+            PatchSaid(231, 12, "дай,покажи/*<горничная"); // дай горничной блокнот
+            PatchSaid(231, 13, "дай,покажи/горничная<*"); // дай блокнот горничной
+
+            PatchSaid(232, 4, "возьми,кури>");
+            PatchSaid(232, 11, "загляни,поговори/человек");
+
+            PatchSaid(233, 1, "выключи,включи/виктрола,проигрыватель");
+            PatchSaid(233, 6, "кури");
+            PatchSaid(233, 8, "расскажи[/актриса]/(смерть<герти),герти<о");
+
             PatchSaid(236, 0, "возьми/скалка");
             PatchSaid(236, 1, "загляни/скалка");
+
+            PatchSaid(237, 2, "загляни/кларенс");
+            PatchSaid(237, 5, "поговори/кларенс");
+            PatchSaid(237, 9, "загляни/люди");
+            PatchSaid(237, 10, "загляни,поговори/человек,мужчина");
+            PatchSaid(237, 11, "поговори/люди");
+            PatchSaid(237, 12, "загляни/доктор,человек,мужчина,люди");
+            RemoveSynonyms(237, "men");
+
+            PatchSaid(238, 0, "/напиток,стакан>");
+
+            PatchSaid(239, 1, "покорми,дай,брось/кость");
+            PatchSaid(239, 2, "покорми,дай,брось/кость[/бьюргард,будка]");
+            PatchSaid(239, 3, "дай/бьюргард<*");
+            PatchSaid(239, 5, "возьми/кость");
+            PatchSaid(239, 15, "зови");
+
             PatchSaid(240, 1, "возьми,двигай,нажми/кресло<инвалидный");
 
+            PatchSaid(241, 2, "загляни/напиток,стакан");
+            PatchSaid(241, 4, "возьми/напиток,стакан");
+            PatchSaid(241, 5, "выпей/напиток");
+            RemoveSynonyms(241, "выпей");
+            AddSynonym(241, "алкоголь", "напиток");
+
+            PatchSaid(242, 9, "погаси,выключи");
+
+            PatchSaid(243, 29, "/вентиль");
+            PatchSaid(243, 70, "//вентиль");
+
+            PatchSaid(245, 5, "загляни,поговори/человек");
+
+            PatchScr246();
             PatchSaid(246, 9, "пофлиртуй<с/дворецкий");
             PatchSaid(246, 18, "(загляни<в),открой/шкафчик");
             PatchSaid(246, 19, "загляни/шкафчик,зеркало");
             AddSynonym(246, "аптечка", "шкафчик");
 
+            PatchScr259();
+            PatchSaid(259, 4, "загляни/люди");
+            PatchSaid(259, 5, "поговори/люди");
+            PatchSaid(259, 15, "загляни/напиток,стакан,алкоголь");
+            PatchSaid(259, 16, "возьми/напиток,стакан,алкоголь");
+
+            PatchSaid(261, 3, "дай,покажи/горничная<*");
+
             RemoveSynonym(266, "кресло", "сели");
 
+            PatchSaid(270, 0, "послушай/лил,анри");
+            PatchSaid(270, 3, "покажи/*");
+
+            PatchSaid(272, 0, "загляни/напиток,стакан");
+            PatchSaid(272, 1, "возьми/напиток,стакан,алкоголь");
+
+            PatchSaid(273, 4, "загляни/напиток,стакан");
+            PatchSaid(273, 5, "возьми/напиток,стакан");
+
+            PatchScr277();
+            PatchSaid(277, 0, "корми,дай/бьюргард<*>"); // дай кость псу
+            PatchSaid(277, 2, "/кость,(*<кость)"); // дай кость псу, дай псу кость
+            PatchSaid(277, 3, "дай,покажи/бьюргард<*"); // покажи кость псу
+            PatchSaid(277, 5, "брось/кость");
+            PatchSaid(277, 17, "дай/руди<*");
+            PatchSaid(277, 19, "покажи/руди<*");
+            PatchSaid(277, 25, "пофлиртуй/руди");
+
+            PatchSaid(282, 1, "загляни/доска");
+            PatchSaid(282, 2, "возьми/доска");
+
+            PatchSaid(378, 3, "/напиток,стакан");
+            PatchSaid(378, 7, "возьми/напиток,стакан");
+
+            PatchSaid(379, 1, "загляни/напиток,стакан");
+            PatchSaid(379, 3, "возьми/напиток,стакан");
+            PatchSaid(379, 4, "выпей/напиток");
+            RemoveSynonyms(379, "выпей");
+            AddSynonym(379, "алкоголь", "напиток");
+
+            PatchSaid(381, 1, "пофлиртуй<с/дворецкий");
+
+            PatchScr382();
+            PatchSaid(382, 11, "пофлиртуй");
+
+            PatchScr385();
+            PatchSaid(385, 8, "пофлиртуй/руди");
+
+            PatchSaid(407, 3, "высморкай[/нос]");
+            PatchSaid(407, 26, "спроси/*<о");
+            PatchSaid(407, 27, "спроси//*<о");
             PatchSaid(407, 38, "программировал<кто/игра"); // кто программировал игру
 
-            // !! не работает 'осмотри кочергу моноклем'. whichItem - монокль, а не кочерга
-            // said осмотри кочергу моноклем > & / 8a4 < fff
+            PatchSaid(410, 0, "вылей<из/масло/масленка");
+            PatchSaid(410, 1, "(загляни<в),открой/масленка");
+            PatchSaid(410, 2, "смаж[/*]");
             PatchSaid(410, 3, "/монокль>"); //  смотри в монокль
             PatchSaid(410, 4, "/*<монокль>"); // осмотри моноклем кочергу
-            PatchSaid(410, 6, "загляни[<на]/монокль/!*");
+            PatchSaid(410, 5, "загляни/*/монокль>"); // осмотри * через монокль
+            PatchSaid(410, 6, "загляни[<на]/монокль[<!*][/!*]>"); // осмотри монокль
+            PatchSaid(410, 7, "надень,вставь"); // надень,вставь монокль
+            PatchSaid(410, 9, "<в/монокль[<!*]"); // чтобы срабатывало "осмотри * в монокль", но срабатывало "посмотри в монокль"
+            PatchSaid(410, 13, "вытащи,разряди/пуля[/пистолет<из]");
+            PatchSaid(410, 19, "кури/окурок");
+            PatchSaid(410, 21, "спроси/*<о");
+            PatchSaid(410, 22, "спроси//*<о");
+            PatchSaid(410, 38, "зажги,включи");
+            PatchSaid(410, 39, "погаси,выключи");
+            PatchSaid(410, 41, "вращай/*<страница");
 
-            PatchSaid(413, 85, "find");
+            PatchScr413();
+            PatchSaid(413, 46, "//вентиль");
+            PatchSaid(413, 70, "/<вентиль");
+            PatchSaid(413, 85, "ищи[/!*]");
 
             RemoveSynDubl();
 
@@ -658,6 +784,8 @@ namespace SCI_Tools
             Save();
         }
 
+        void Changed(Resource res) => _changed.Add(res);
+
         private void PatchScr14()
         {
             // Исправление действия "осмотри веревку"
@@ -672,11 +800,11 @@ namespace SCI_Tools
             {
                 r.TargetOffset = 0x4bb;
                 r.SetupByOffset();
-                _changed.Add(res);
+                Changed(res);
             }
         }
 
-        private void PatchRoom49()
+        private void PatchScr49()
         {
             // Исправление действия "осмотри бтльярдную" и пр.
             var res = _translate.GetResource<ResScript>(49);
@@ -690,13 +818,27 @@ namespace SCI_Tools
                     {
                         Console.WriteLine($"Patch room 49 at {op.Address:x04}");
                         op.Arguments[0] = (byte)0x1c;
-                        _changed.Add(res);
+                        Changed(res);
                     }
                 }
             }
         }
 
-        private void PatchRoom74()
+        private void PatchScr63()
+        {
+            // Исправление действия "осмотри игрушки" в 3 акте
+            var res = _translate.GetResource<ResScript>(63);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0x3fb) ?? throw new Exception("PatchRoom63 failed");
+            if (op.Name == "push0") return;
+            if (op.Name != "push1") throw new Exception("PatchRoom63 failed");
+
+            op.Type = 0x76;
+            Changed(res);
+        }
+
+        private void PatchScr74()
         {
             // Исправление действия "выключи виктролу"
             var res = _translate.GetResource<ResScript>(74);
@@ -708,8 +850,176 @@ namespace SCI_Tools
             if (val != 40)
             {
                 op.Arguments[0] = (byte)40;
-                _changed.Add(res);
+                Changed(res);
             }
+        }
+
+        private void PatchScr246()
+        {
+            // Меняем ветвление условий, чтобы срабатывал запрос "пофлиртуй с дворецким"
+            var res = _translate.GetResource<ResScript>(246);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0x463);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr246 failed");
+
+            var r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x4de) return;
+
+            r.TargetOffset = 0x4f6;
+            r.SetupByOffset();
+
+            op = scr.GetOperator(0x4ce);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr246 failed");
+
+            r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x529) return;
+
+            r.TargetOffset = 0x4de;
+            r.SetupByOffset();
+
+            Changed(res);
+        }
+
+        private void PatchScr277()
+        {
+            // Меняем ветвление условий, чтобы срабатывал запрос "пофлиртуй с руди"
+            var res = _translate.GetResource<ResScript>(277);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0x4e0);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr277 failed");
+
+            var r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x5d0) return;
+
+            r.TargetOffset = 0x5e5;
+            r.SetupByOffset();
+
+            op = scr.GetOperator(0x563);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr277 failed");
+
+            r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x5e5) return;
+
+            r.TargetOffset = 0x5d0;
+            r.SetupByOffset();
+
+            Changed(res);
+        }
+
+        private void PatchScr259()
+        {
+            // Исправление действия "слушай руди"
+            var res = _translate.GetResource<ResScript>(259);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0xd30) ?? throw new Exception("PatchScr259 failed");
+            if (op.Name == "pushi") return;
+            if (op.Name != "push2") throw new Exception("PatchScr259 failed");
+
+            // заменяем оператор на pushi 3 
+            op.Type = 0x39;
+            op.Arguments.Clear();
+            op.Arguments.Add((byte)3);
+
+            // меняем на callb 1 6
+            var op2 = scr.GetOperator(0xd36) ?? throw new Exception("PatchScr259 failed");
+            op2.Arguments[1] = (byte)6;
+
+            // Вставляем оператор push1
+            op.InjectNext(0x78);
+
+            Changed(res);
+        }
+
+        private void PatchScr382()
+        {
+            // Меняем ветвление условий, чтобы срабатывал запрос "пофлиртуй с дживсом"
+            var res = _translate.GetResource<ResScript>(382);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0x5d9);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr382 failed");
+
+            var r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x6b4) return;
+
+            r.TargetOffset = 0x6c9;
+            r.SetupByOffset();
+
+            op = scr.GetOperator(0x6a4);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr382 failed");
+
+            r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x6c9) return;
+
+            r.TargetOffset = 0x6b4;
+            r.SetupByOffset();
+
+            Changed(res);
+        }
+
+        private void PatchScr385()
+        {
+            // Меняем ветвление условий, чтобы срабатывал запрос "пофлиртуй с руди"
+            var res = _translate.GetResource<ResScript>(385);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0xe4);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr385 failed");
+
+            var r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x17a) return;
+
+            r.TargetOffset = 0x18f;
+            r.SetupByOffset();
+
+            op = scr.GetOperator(0x16a);
+            if (op == null || op.Name != "bnt") throw new Exception("PatchScr385 failed");
+
+            r = op.Arguments[0] as CodeRef;
+            if (r.TargetOffset != 0x18f) throw new Exception("PatchScr385 failed");
+
+            r.TargetOffset = 0x17a;
+            r.SetupByOffset();
+
+            Changed(res);
+        }
+
+        private void PatchScr413()
+        {
+            // дай <предмет> <кому-то>
+            var res = _translate.GetResource<ResScript>(413);
+            var scr = res.GetScript() as Script;
+            var saidSection = scr.Get<SaidSection>()[0];
+            for (int i = 57; i <= 80; i++)
+            {
+                var said = saidSection.Saids[i].ToString();
+                if (said.StartsWith('<'))
+                {
+                    if (saidSection.Saids[i].Set("/" + said))
+                        Changed(res);
+                }
+            }
+        }
+
+        private void PatchScr777()
+        {
+            // Смещаем капли крови
+            var res = _translate.GetResource<ResScript>(777);
+            var scr = res.GetScript();
+            var drip1 = scr.Get<ClassSection>().Find(c => c.Name == "Drip1");
+            if (((ShortElement)drip1.Selectors[4]).Value == 165) return;
+
+            ((ShortElement)drip1.Selectors[4]).Value = 165; // Y
+            ((ShortElement)drip1.Selectors[5]).Value = 41;  // X
+
+            var drip3 = scr.Get<ClassSection>().Find(c => c.Name == "Drip3");
+            ((ShortElement)drip3.Selectors[4]).Value = 164; // Y
+            ((ShortElement)drip3.Selectors[5]).Value = 295; // X
+
+            Changed(res);
         }
 
         private void ReplaceWord(string wordFrom, string wordTo, params ushort[] scripts)
@@ -800,7 +1110,7 @@ namespace SCI_Tools
             }
 
             if (changed)
-                _changed.Add(res);
+                Changed(res);
         }
 
         Dictionary<ushort, ushort[]> _wordsUsage;
@@ -861,7 +1171,7 @@ namespace SCI_Tools
             res.SetWords(words);
 
             if (changed)
-                _changed.Add(res);
+                Changed(res);
         }
 
 
@@ -901,6 +1211,7 @@ namespace SCI_Tools
                 res.SavePatch();
             }
             _changed.Clear();
+            _wordsUsage = null;
         }
 
         private void CBSkipButtonReplace(ushort scriptNum, char sym = 's')
@@ -920,7 +1231,7 @@ namespace SCI_Tools
                 }
             }
             if (found)
-                _changed.Add(res);
+                Changed(res);
         }
 
         private void AddSynonym(ushort scriptNum, string w1, string w2)
@@ -952,7 +1263,7 @@ namespace SCI_Tools
                 WordB = w2Ids[0]
             });
 
-            _changed.Add(res);
+            Changed(res);
         }
 
         private void RemoveSynonym(ushort scriptNum, string w1, string w2)
@@ -976,7 +1287,7 @@ namespace SCI_Tools
                 if ((syn.WordA == w1Id && syn.WordB == w2Id) || (syn.WordA == w2Id && syn.WordB == w1Id))
                 {
                     section.Synonyms.RemoveAt(i);
-                    _changed.Add(res);
+                    Changed(res);
                     i--;
                 }
             }
@@ -1001,7 +1312,7 @@ namespace SCI_Tools
                 if (syn.WordA == wid || syn.WordB == wid)
                 {
                     section.Synonyms.RemoveAt(i);
-                    _changed.Add(res);
+                    Changed(res);
                     i--;
                 }
             }
@@ -1021,7 +1332,7 @@ namespace SCI_Tools
                         {
                             synSec.Synonyms.RemoveAt(i);
                             i--;
-                            _changed.Add(res);
+                            Changed(res);
                         }
                     }
                 }
@@ -1046,7 +1357,7 @@ namespace SCI_Tools
             var scr = res.GetScript() as Script;
             var saidSection = scr.Get<SaidSection>()[0];
             if (saidSection.Saids[ind].Set(str))
-                _changed.Add(res);
+                Changed(res);
         }
 
     }

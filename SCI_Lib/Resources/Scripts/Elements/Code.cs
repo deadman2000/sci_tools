@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Scripts.Elements;
+﻿using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Scripts.Elements;
 using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
@@ -11,19 +12,23 @@ namespace SCI_Lib.Resources.Scripts.Elements
     public class Code : BaseElement
     {
         private string _name;
+        private CodeSection _section;
 
-        public Code(Script script, ushort address, Code prev)
-            : base(script, address)
+        public Code(CodeSection section, ushort address, Code prev)
+            : base(section.Script, address)
         {
+            _section = section;
+            Prev = prev;
             if (prev != null)
                 prev.Next = this;
         }
 
 
-        public byte Type { get; private set; }
+        public byte Type { get; set; }
 
         public List<object> Arguments { get; private set; }
 
+        public Code Prev { get; private set; }
         public Code Next { get; private set; }
 
         public string Name
@@ -229,7 +234,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     break;
 
                 // 3 bytes
-                case 0x2e:
                 case 0x34:
                 case 0x3e:
                 case 0x43: // callk
@@ -259,7 +263,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     Arguments.Add(data[offset++]);
                     break;
 
-
+                case 0x2e: // bt
                 case 0x30: // bnt
                 case 0x32: // jmp
                     val = (ushort)(data[offset++] + (data[offset++] << 8));
@@ -334,7 +338,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                         return 2;
                 }
 
-                if (Type <= 0x2e) return 1;
+                if (Type < 0x2e) return 1;
 
                 switch (Type)
                 {
@@ -501,6 +505,17 @@ namespace SCI_Lib.Resources.Scripts.Elements
                         throw new NotImplementedException();
                 }
             }
+        }
+
+        public void InjectNext(byte type, params object[] args)
+        {
+            var ind = _section.Operators.IndexOf(this);
+            var oldNext = Next;
+            var code = new Code(_section, 0, this);
+            code.Type = type;
+            code.Arguments = new List<object>(args);
+            _section.Operators.Insert(ind + 1, code);
+            code.Next = oldNext;
         }
     }
 }

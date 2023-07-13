@@ -82,6 +82,14 @@ namespace SCI_Lib.Resources
             return ReadContent(Package.GameDirectory, volume);
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is not Resource res) return false;
+            return res.Type == Type && res.Number == Number;
+        }
+
+        public override int GetHashCode() => Type.GetHashCode() ^ Number.GetHashCode();
+
 
         private byte[] ReadContent(string dir, int volume = 0)
         {

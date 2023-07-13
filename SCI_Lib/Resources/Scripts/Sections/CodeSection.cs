@@ -15,7 +15,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
             while (i < offset + length)
             {
-                Code c = new(_script, i, prev);
+                Code c = new(this, i, prev);
                 c.Read(data, ref i);
                 Operators.Add(c);
                 prev = c;

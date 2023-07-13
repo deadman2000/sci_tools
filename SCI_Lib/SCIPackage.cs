@@ -67,7 +67,9 @@ namespace SCI_Lib
                 ReadMap(messagesPath);
             }
 
-            Resources = Resources.OrderBy(r => r.Type).ThenBy(r => r.Number).ToList();
+            Resources = Resources
+                .Distinct()
+                .OrderBy(r => r.Type).ThenBy(r => r.Number).ToList();
 
             SeparateHeapResources = Resources.Any(r => r.Type == ResType.Heap);
         }

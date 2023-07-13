@@ -9,8 +9,8 @@ namespace SCI_Lib.Utils
     // Colonel's Bequest
     public class SaidExtract
     {
-        static readonly string[] themes = new string[] { "Сели", "Кларенс", "полковник", "Этель", "Фифи", "Герти", "Глория", "Дживс", "Лилиан", "Рудольф", "Уилбур", "Бьюргард", "Блейз", "саквояж", "Библия", "кость", "трость", "окурок", "дневник", "маховичок", "ожерелье", "магия", "сокровище", "рычаг", "попугай", "платок", "Сара", "призрак", "плантация", "Крутон" };
-        static readonly int[] themeFlags = new int[] { 2, 64, 512, 8, 16, 1, 4, 1024, 32, 256, 128, 8256, 8320, 8200, 10240, 8704, 8196, 9216, 8224, 8208, 12288, 16384, 16385, 8194, 16388, 16392, 16400, 16416, 16448, 16512 };
+        static readonly List<string> themes = new List<string> { "Сели", "Кларенс", "полковник", "Этель", "Фифи", "Герти", "Глория", "Дживс", "Лилиан", "Рудольф", "Уилбур", "Бьюргард", "Блейз", "саквояж", "Библия", "кость", "трость", "окурок", "дневник", "маховичок", "ожерелье", "магия", "сокровище", "рычаг", "попугай", "платок", "Сара", "призрак", "плантация", "Крутон" };
+        static readonly List<int> themeFlags = new List<int> { 2, 64, 512, 8, 16, 1, 4, 1024, 32, 256, 128, 8256, 8320, 8200, 10240, 8704, 8196, 9216, 8224, 8208, 12288, 16384, 16385, 8194, 16388, 16392, 16400, 16416, 16448, 16512 };
         private readonly SCIPackage _package;
 
         public SaidExtract(SCIPackage package)
@@ -20,6 +20,15 @@ namespace SCI_Lib.Utils
 
         public string[] Process(ushort resNum)
         {
+            if (resNum == 223)
+            {
+                themes.Add("боа");
+                themeFlags.Add(8192);
+
+                themes.Add("сигаре");
+                themeFlags.Add(8193);
+            }
+
             var resTxt = _package.GetResource<ResText>(resNum);
             var strings = resTxt.GetStrings();
             var result = new string[strings.Length];
@@ -97,12 +106,19 @@ namespace SCI_Lib.Utils
                 var v = vars[refBegin + ind];
                 if (v == ushort.MaxValue)
                     break;
-                Console.WriteLine($"{v} ({v:x3})");
-                var themes = GetThemes(v);
-                if (themes.Count == 0)
-                    result[txtInd] = actions[act] + " *";
+                //Console.WriteLine($"{v} ({v:x3})");
+                if (v == 0)
+                {
+                    result[txtInd] = "...";
+                }
                 else
-                    result[txtInd] = actions[act] + " " + string.Join(" и ", themes);
+                {
+                    var themes = GetThemes(v);
+                    if (themes.Count == 0)
+                        result[txtInd] = actions[act] + " *";
+                    else
+                        result[txtInd] = actions[act] + " " + string.Join(" и ", themes);
+                }
                 Console.WriteLine(result[txtInd]);
             }
 
@@ -111,7 +127,7 @@ namespace SCI_Lib.Utils
 
         static List<string> GetThemes(ushort val)
         {
-            for (int i = 0; i < themes.Length; i++)
+            for (int i = 0; i < themes.Count; i++)
             {
                 if (val == themeFlags[i])
                 {
@@ -120,7 +136,7 @@ namespace SCI_Lib.Utils
             }
 
             List<string> list = new();
-            for (int i = 0; i < themes.Length; i++)
+            for (int i = 0; i < themes.Count; i++)
             {
                 var mask = themeFlags[i];
                 if ((val & mask) == mask)
@@ -128,6 +144,9 @@ namespace SCI_Lib.Utils
                     list.Add(themes[i]);
                 }
             }
+
+            if (list.Count == 0)
+                Console.WriteLine($"NOT FOUND {val}");
             return list;
         }
     }

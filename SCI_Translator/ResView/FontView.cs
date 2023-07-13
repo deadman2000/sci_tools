@@ -222,51 +222,76 @@ namespace SCI_Translator.ResView
                 for (int i = 0x80; i <= 0xF3; i++)
                 {
                     char or = (char)0;
+                    bool mirror = false;
                     switch (GameEncoding.AllChars[i])
                     {
-                        case 'а': or = 'a'; break;
                         case 'А': or = 'A'; break;
+                        case 'Б': or = 'B'; break;
                         case 'В': or = 'B'; break;
-                        case 'е': or = 'e'; break;
+                        case 'Г': or = 'F'; break;
                         case 'Е': or = 'E'; break;
+                        case 'Ё': or = 'E'; break;
+                        case 'Ж': or = 'W'; break;
+                        case 'З': or = '3'; break;
+                        case 'И': or = 'N'; mirror = true; break;
+                        case 'Й': or = 'N'; mirror = true; break;
                         case 'К': or = 'K'; break;
-                        case 'м': or = 'm'; break;
+                        case 'Л': or = 'N'; break;
                         case 'М': or = 'M'; break;
                         case 'Н': or = 'H'; break;
-                        case 'о': or = 'o'; break;
                         case 'О': or = 'O'; break;
-                        case 'п': or = 'n'; break;
-                        case 'р': or = 'p'; break;
+                        case 'П': or = 'H'; break;
                         case 'Р': or = 'P'; break;
-                        case 'с': or = 'c'; break;
                         case 'С': or = 'C'; break;
                         case 'Т': or = 'T'; break;
-                        case 'у': or = 'y'; break;
                         case 'У': or = 'Y'; break;
-                        case 'х': or = 'x'; break;
                         case 'Х': or = 'X'; break;
-                        case 'ш': or = 'w'; break;
+                        case 'Ц': or = 'U'; break;
+                        case 'Ч': or = 'N'; break;
                         case 'Ш': or = 'W'; break;
-                        case 'щ': or = 'w'; break;
                         case 'Щ': or = 'W'; break;
-                        case 'ж': or = 'w'; break;
-                        case 'Ж': or = 'W'; break;
+                        case 'Ь': or = 'B'; break;
+                        case 'Э': or = 'C'; mirror = true; break;
+                        case 'Ю': or = 'I'; break;
+                        case 'Я': or = 'R'; mirror = true; break;
+                        case 'а': or = 'a'; break;
+                        case 'б': or = 'b'; break;
+                        case 'в': or = 'b'; break;
+                        case 'г': or = 'z'; break;
+                        case 'д': or = 'n'; mirror = true; break;
+                        case 'е': or = 'e'; break;
                         case 'ё': or = 'e'; break;
-                        case 'Ё': or = 'E'; break;
-                        case 'И': or = 'N'; break;
-                        case 'Й': or = 'N'; break;
-                        case 'Э': or = 'G'; break;
-                        case 'Я': or = 'R'; break;
+                        case 'ж': or = 'w'; break;
+                        case 'з': or = 'g'; break;
                         case 'и': or = 'u'; break;
                         case 'к': or = 'k'; break;
-                        case 'Б': or = '6'; break;
-                        case 'З': or = '3'; break;
+                        case 'л': or = 'n'; mirror = true; break;
+                        case 'м': or = 'm'; break;
+                        case 'н': or = 'n'; break;
+                        case 'о': or = 'o'; break;
+                        case 'п': or = 'n'; break;
+                        case 'р': or = 'p'; break;
+                        case 'с': or = 'c'; break;
+                        case 'у': or = 'y'; break;
+                        case 'ф': or = 'o'; break;
+                        case 'х': or = 'x'; break;
+                        case 'ц': or = 'u'; break;
+                        case 'ш': or = 'w'; break;
+                        case 'щ': or = 'w'; break;
+                        case 'ь': or = 'o'; break;
+                        case 'э': or = 'c'; mirror = true; break;
+                        case 'ю': or = 'o'; break;
+                        case 'я': or = 'a'; break;
                     }
 
                     SpriteFrame frm;
 
                     if (or != 0)
+                    {
                         frm = new SpriteFrame(spr[(byte)or]);
+                        if (mirror)
+                            frm.MirrorHoriz();
+                    }
                     else
                         frm = new SpriteFrame(1, 1);
 
@@ -421,303 +446,283 @@ namespace SCI_Translator.ResView
 
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.lvChars = new System.Windows.Forms.ListView();
-            this.ilChars = new System.Windows.Forms.ImageList(this.components);
-            this.plPic = new System.Windows.Forms.Panel();
-            this.tsInstruments = new System.Windows.Forms.ToolStrip();
-            this.tsControls = new System.Windows.Forms.ToolStrip();
-            this.tscbChar = new System.Windows.Forms.ToolStripComboBox();
-            this.tsbResize = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbUndo = new System.Windows.Forms.ToolStripButton();
-            this.tsbRedo = new System.Windows.Forms.ToolStripButton();
-            this.tsbExchange = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.tscbScale = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbShiftLeft = new System.Windows.Forms.ToolStripButton();
-            this.tsbShiftRight = new System.Windows.Forms.ToolStripButton();
-            this.tsbShiftUp = new System.Windows.Forms.ToolStripButton();
-            this.tsbShiftDown = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbCopy = new System.Windows.Forms.ToolStripButton();
-            this.tsbPaste = new System.Windows.Forms.ToolStripButton();
-            this.tsbGenOutline = new System.Windows.Forms.ToolStripButton();
-            this.tsbMirror = new System.Windows.Forms.ToolStripButton();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
-            this.tsControls.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            splitContainer1 = new SplitContainer();
+            lvChars = new ListView();
+            ilChars = new ImageList(components);
+            plPic = new Panel();
+            tsInstruments = new ToolStrip();
+            tsControls = new ToolStrip();
+            tscbChar = new ToolStripComboBox();
+            tsbResize = new ToolStripButton();
+            toolStripSeparator1 = new ToolStripSeparator();
+            tsbUndo = new ToolStripButton();
+            tsbRedo = new ToolStripButton();
+            tsbExchange = new ToolStripButton();
+            toolStripSeparator3 = new ToolStripSeparator();
+            toolStripSeparator2 = new ToolStripSeparator();
+            tscbScale = new ToolStripComboBox();
+            toolStripSeparator4 = new ToolStripSeparator();
+            tsbShiftLeft = new ToolStripButton();
+            tsbShiftRight = new ToolStripButton();
+            tsbShiftUp = new ToolStripButton();
+            tsbShiftDown = new ToolStripButton();
+            toolStripSeparator5 = new ToolStripSeparator();
+            tsbCopy = new ToolStripButton();
+            tsbPaste = new ToolStripButton();
+            tsbGenOutline = new ToolStripButton();
+            tsbMirror = new ToolStripButton();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            tsControls.SuspendLayout();
+            SuspendLayout();
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(0, 0);
+            splitContainer1.Margin = new Padding(4, 5, 4, 5);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Orientation = Orientation.Horizontal;
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.lvChars);
+            splitContainer1.Panel1.Controls.Add(lvChars);
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.plPic);
-            this.splitContainer1.Panel2.Controls.Add(this.tsInstruments);
-            this.splitContainer1.Panel2.Controls.Add(this.tsControls);
-            this.splitContainer1.Size = new System.Drawing.Size(1710, 1116);
-            this.splitContainer1.SplitterDistance = 564;
-            this.splitContainer1.SplitterWidth = 6;
-            this.splitContainer1.TabIndex = 0;
+            splitContainer1.Panel2.Controls.Add(plPic);
+            splitContainer1.Panel2.Controls.Add(tsInstruments);
+            splitContainer1.Panel2.Controls.Add(tsControls);
+            splitContainer1.Size = new Size(1645, 1115);
+            splitContainer1.SplitterDistance = 563;
+            splitContainer1.SplitterWidth = 6;
+            splitContainer1.TabIndex = 0;
             // 
             // lvChars
             // 
-            this.lvChars.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lvChars.HideSelection = false;
-            this.lvChars.LargeImageList = this.ilChars;
-            this.lvChars.Location = new System.Drawing.Point(0, 0);
-            this.lvChars.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.lvChars.Name = "lvChars";
-            this.lvChars.Size = new System.Drawing.Size(1710, 564);
-            this.lvChars.TabIndex = 0;
-            this.lvChars.UseCompatibleStateImageBehavior = false;
-            this.lvChars.ItemActivate += new System.EventHandler(this.lvChars_ItemActivate);
+            lvChars.Dock = DockStyle.Fill;
+            lvChars.HideSelection = false;
+            lvChars.LargeImageList = ilChars;
+            lvChars.Location = new Point(0, 0);
+            lvChars.Margin = new Padding(4, 5, 4, 5);
+            lvChars.Name = "lvChars";
+            lvChars.Size = new Size(1645, 563);
+            lvChars.TabIndex = 0;
+            lvChars.UseCompatibleStateImageBehavior = false;
+            lvChars.ItemActivate += lvChars_ItemActivate;
             // 
             // ilChars
             // 
-            this.ilChars.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.ilChars.ImageSize = new System.Drawing.Size(32, 32);
-            this.ilChars.TransparentColor = System.Drawing.Color.Transparent;
+            ilChars.ColorDepth = ColorDepth.Depth8Bit;
+            ilChars.ImageSize = new Size(32, 32);
+            ilChars.TransparentColor = Color.Transparent;
             // 
             // plPic
             // 
-            this.plPic.AutoScroll = true;
-            this.plPic.BackColor = System.Drawing.SystemColors.AppWorkspace;
-            this.plPic.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.plPic.Location = new System.Drawing.Point(0, 53);
-            this.plPic.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.plPic.Name = "plPic";
-            this.plPic.Size = new System.Drawing.Size(1710, 493);
-            this.plPic.TabIndex = 0;
+            plPic.AutoScroll = true;
+            plPic.BackColor = SystemColors.AppWorkspace;
+            plPic.Dock = DockStyle.Fill;
+            plPic.Location = new Point(0, 53);
+            plPic.Margin = new Padding(4, 5, 4, 5);
+            plPic.Name = "plPic";
+            plPic.Size = new Size(1645, 493);
+            plPic.TabIndex = 0;
             // 
             // tsInstruments
             // 
-            this.tsInstruments.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.tsInstruments.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.tsInstruments.Location = new System.Drawing.Point(0, 28);
-            this.tsInstruments.Name = "tsInstruments";
-            this.tsInstruments.Size = new System.Drawing.Size(1710, 25);
-            this.tsInstruments.TabIndex = 0;
-            this.tsInstruments.Text = "toolStrip1";
+            tsInstruments.GripStyle = ToolStripGripStyle.Hidden;
+            tsInstruments.ImageScalingSize = new Size(20, 20);
+            tsInstruments.Location = new Point(0, 28);
+            tsInstruments.Name = "tsInstruments";
+            tsInstruments.Size = new Size(1645, 25);
+            tsInstruments.TabIndex = 0;
+            tsInstruments.Text = "toolStrip1";
             // 
             // tsControls
             // 
-            this.tsControls.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.tsControls.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.tsControls.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tscbChar,
-            this.tsbResize,
-            this.toolStripSeparator1,
-            this.tsbUndo,
-            this.tsbRedo,
-            this.tsbExchange,
-            this.toolStripSeparator3,
-            this.toolStripSeparator2,
-            this.tscbScale,
-            this.toolStripSeparator4,
-            this.tsbShiftLeft,
-            this.tsbShiftRight,
-            this.tsbShiftUp,
-            this.tsbShiftDown,
-            this.toolStripSeparator5,
-            this.tsbCopy,
-            this.tsbPaste,
-            this.tsbGenOutline,
-            this.tsbMirror});
-            this.tsControls.Location = new System.Drawing.Point(0, 0);
-            this.tsControls.Name = "tsControls";
-            this.tsControls.Size = new System.Drawing.Size(1710, 28);
-            this.tsControls.TabIndex = 0;
-            this.tsControls.Text = "toolStrip1";
+            tsControls.GripStyle = ToolStripGripStyle.Hidden;
+            tsControls.ImageScalingSize = new Size(20, 20);
+            tsControls.Items.AddRange(new ToolStripItem[] { tscbChar, tsbResize, toolStripSeparator1, tsbUndo, tsbRedo, tsbExchange, toolStripSeparator3, toolStripSeparator2, tscbScale, toolStripSeparator4, tsbShiftLeft, tsbShiftRight, tsbShiftUp, tsbShiftDown, toolStripSeparator5, tsbCopy, tsbPaste, tsbGenOutline, tsbMirror });
+            tsControls.Location = new Point(0, 0);
+            tsControls.Name = "tsControls";
+            tsControls.Size = new Size(1645, 28);
+            tsControls.TabIndex = 0;
+            tsControls.Text = "toolStrip1";
             // 
             // tscbChar
             // 
-            this.tscbChar.Name = "tscbChar";
-            this.tscbChar.Size = new System.Drawing.Size(99, 28);
-            this.tscbChar.SelectedIndexChanged += new System.EventHandler(this.tscbChar_SelectedIndexChanged);
+            tscbChar.Name = "tscbChar";
+            tscbChar.Size = new Size(99, 28);
+            tscbChar.SelectedIndexChanged += tscbChar_SelectedIndexChanged;
             // 
             // tsbResize
             // 
-            this.tsbResize.Image = global::SCI_Translator.Properties.Resources.arrow_inout;
-            this.tsbResize.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbResize.Name = "tsbResize";
-            this.tsbResize.Size = new System.Drawing.Size(75, 25);
-            this.tsbResize.Text = "Resize";
-            this.tsbResize.Click += new System.EventHandler(this.tsbResize_Click);
+            tsbResize.Image = Properties.Resources.arrow_inout;
+            tsbResize.ImageTransparentColor = Color.Magenta;
+            tsbResize.Name = "tsbResize";
+            tsbResize.Size = new Size(75, 25);
+            tsbResize.Text = "Resize";
+            tsbResize.Click += tsbResize_Click;
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 28);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(6, 28);
             // 
             // tsbUndo
             // 
-            this.tsbUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbUndo.Image = global::SCI_Translator.Properties.Resources.arrow_undo;
-            this.tsbUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbUndo.Name = "tsbUndo";
-            this.tsbUndo.Size = new System.Drawing.Size(29, 25);
-            this.tsbUndo.Text = "Undo";
-            this.tsbUndo.Click += new System.EventHandler(this.tsbUndo_Click);
+            tsbUndo.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbUndo.Image = Properties.Resources.arrow_undo;
+            tsbUndo.ImageTransparentColor = Color.Magenta;
+            tsbUndo.Name = "tsbUndo";
+            tsbUndo.Size = new Size(29, 25);
+            tsbUndo.Text = "Undo";
+            tsbUndo.Click += tsbUndo_Click;
             // 
             // tsbRedo
             // 
-            this.tsbRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbRedo.Image = global::SCI_Translator.Properties.Resources.arrow_redo;
-            this.tsbRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbRedo.Name = "tsbRedo";
-            this.tsbRedo.Size = new System.Drawing.Size(29, 25);
-            this.tsbRedo.Text = "Redo";
-            this.tsbRedo.Click += new System.EventHandler(this.tsbRedo_Click);
+            tsbRedo.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbRedo.Image = Properties.Resources.arrow_redo;
+            tsbRedo.ImageTransparentColor = Color.Magenta;
+            tsbRedo.Name = "tsbRedo";
+            tsbRedo.Size = new Size(29, 25);
+            tsbRedo.Text = "Redo";
+            tsbRedo.Click += tsbRedo_Click;
             // 
             // tsbExchange
             // 
-            this.tsbExchange.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsbExchange.Image = global::SCI_Translator.Properties.Resources.arrow_out;
-            this.tsbExchange.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbExchange.Name = "tsbExchange";
-            this.tsbExchange.Size = new System.Drawing.Size(134, 25);
-            this.tsbExchange.Text = "Exchange chars";
-            this.tsbExchange.Click += new System.EventHandler(this.tsbExchange_Click);
+            tsbExchange.Alignment = ToolStripItemAlignment.Right;
+            tsbExchange.Image = Properties.Resources.arrow_out;
+            tsbExchange.ImageTransparentColor = Color.Magenta;
+            tsbExchange.Name = "tsbExchange";
+            tsbExchange.Size = new Size(134, 25);
+            tsbExchange.Text = "Exchange chars";
+            tsbExchange.Click += tsbExchange_Click;
             // 
             // toolStripSeparator3
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 28);
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new Size(6, 28);
             // 
             // toolStripSeparator2
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 28);
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(6, 28);
             // 
             // tscbScale
             // 
-            this.tscbScale.Name = "tscbScale";
-            this.tscbScale.Size = new System.Drawing.Size(99, 28);
-            this.tscbScale.TextChanged += new System.EventHandler(this.tscbScale_TextChanged);
+            tscbScale.Name = "tscbScale";
+            tscbScale.Size = new Size(99, 28);
+            tscbScale.TextChanged += tscbScale_TextChanged;
             // 
             // toolStripSeparator4
             // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(6, 28);
             // 
             // tsbShiftLeft
             // 
-            this.tsbShiftLeft.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShiftLeft.Image = global::SCI_Translator.Properties.Resources.arrow_left;
-            this.tsbShiftLeft.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShiftLeft.Name = "tsbShiftLeft";
-            this.tsbShiftLeft.Size = new System.Drawing.Size(29, 25);
-            this.tsbShiftLeft.Text = "Shift left";
-            this.tsbShiftLeft.Click += new System.EventHandler(this.tsbShiftLeft_Click);
+            tsbShiftLeft.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbShiftLeft.Image = Properties.Resources.arrow_left;
+            tsbShiftLeft.ImageTransparentColor = Color.Magenta;
+            tsbShiftLeft.Name = "tsbShiftLeft";
+            tsbShiftLeft.Size = new Size(29, 25);
+            tsbShiftLeft.Text = "Shift left";
+            tsbShiftLeft.Click += tsbShiftLeft_Click;
             // 
             // tsbShiftRight
             // 
-            this.tsbShiftRight.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShiftRight.Image = global::SCI_Translator.Properties.Resources.arrow_right;
-            this.tsbShiftRight.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShiftRight.Name = "tsbShiftRight";
-            this.tsbShiftRight.Size = new System.Drawing.Size(29, 25);
-            this.tsbShiftRight.Text = "Shift right";
-            this.tsbShiftRight.Click += new System.EventHandler(this.tsbShiftRight_Click);
+            tsbShiftRight.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbShiftRight.Image = Properties.Resources.arrow_right;
+            tsbShiftRight.ImageTransparentColor = Color.Magenta;
+            tsbShiftRight.Name = "tsbShiftRight";
+            tsbShiftRight.Size = new Size(29, 25);
+            tsbShiftRight.Text = "Shift right";
+            tsbShiftRight.Click += tsbShiftRight_Click;
             // 
             // tsbShiftUp
             // 
-            this.tsbShiftUp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShiftUp.Image = global::SCI_Translator.Properties.Resources.arrow_up;
-            this.tsbShiftUp.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShiftUp.Name = "tsbShiftUp";
-            this.tsbShiftUp.Size = new System.Drawing.Size(29, 25);
-            this.tsbShiftUp.Text = "Shift up";
-            this.tsbShiftUp.Click += new System.EventHandler(this.tsbShiftUp_Click);
+            tsbShiftUp.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbShiftUp.Image = Properties.Resources.arrow_up;
+            tsbShiftUp.ImageTransparentColor = Color.Magenta;
+            tsbShiftUp.Name = "tsbShiftUp";
+            tsbShiftUp.Size = new Size(29, 25);
+            tsbShiftUp.Text = "Shift up";
+            tsbShiftUp.Click += tsbShiftUp_Click;
             // 
             // tsbShiftDown
             // 
-            this.tsbShiftDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShiftDown.Image = global::SCI_Translator.Properties.Resources.arrow_down;
-            this.tsbShiftDown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShiftDown.Name = "tsbShiftDown";
-            this.tsbShiftDown.Size = new System.Drawing.Size(29, 25);
-            this.tsbShiftDown.Text = "Shift down";
-            this.tsbShiftDown.Click += new System.EventHandler(this.tsbShiftDown_Click);
+            tsbShiftDown.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbShiftDown.Image = Properties.Resources.arrow_down;
+            tsbShiftDown.ImageTransparentColor = Color.Magenta;
+            tsbShiftDown.Name = "tsbShiftDown";
+            tsbShiftDown.Size = new Size(29, 25);
+            tsbShiftDown.Text = "Shift down";
+            tsbShiftDown.Click += tsbShiftDown_Click;
             // 
             // toolStripSeparator5
             // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 28);
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(6, 28);
             // 
             // tsbCopy
             // 
-            this.tsbCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbCopy.Image = global::SCI_Translator.Properties.Resources.copy_edit;
-            this.tsbCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbCopy.Name = "tsbCopy";
-            this.tsbCopy.Size = new System.Drawing.Size(29, 25);
-            this.tsbCopy.Text = "Copy character";
-            this.tsbCopy.Click += new System.EventHandler(this.tsbCopy_Click);
+            tsbCopy.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbCopy.Image = Properties.Resources.copy_edit;
+            tsbCopy.ImageTransparentColor = Color.Magenta;
+            tsbCopy.Name = "tsbCopy";
+            tsbCopy.Size = new Size(29, 25);
+            tsbCopy.Text = "Copy character";
+            tsbCopy.Click += tsbCopy_Click;
             // 
             // tsbPaste
             // 
-            this.tsbPaste.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbPaste.Image = global::SCI_Translator.Properties.Resources.paste_edit;
-            this.tsbPaste.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbPaste.Name = "tsbPaste";
-            this.tsbPaste.Size = new System.Drawing.Size(29, 25);
-            this.tsbPaste.Text = "Paste character";
-            this.tsbPaste.Click += new System.EventHandler(this.tsbPaste_Click);
+            tsbPaste.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbPaste.Image = Properties.Resources.paste_edit;
+            tsbPaste.ImageTransparentColor = Color.Magenta;
+            tsbPaste.Name = "tsbPaste";
+            tsbPaste.Size = new Size(29, 25);
+            tsbPaste.Text = "Paste character";
+            tsbPaste.Click += tsbPaste_Click;
             // 
             // tsbGenOutline
             // 
-            this.tsbGenOutline.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbGenOutline.Image = global::SCI_Translator.Properties.Resources.type;
-            this.tsbGenOutline.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbGenOutline.Name = "tsbGenOutline";
-            this.tsbGenOutline.Size = new System.Drawing.Size(29, 25);
-            this.tsbGenOutline.Text = "Generate outline";
-            this.tsbGenOutline.Click += new System.EventHandler(this.tsbGenOutline_Click);
+            tsbGenOutline.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbGenOutline.Image = Properties.Resources.type;
+            tsbGenOutline.ImageTransparentColor = Color.Magenta;
+            tsbGenOutline.Name = "tsbGenOutline";
+            tsbGenOutline.Size = new Size(29, 25);
+            tsbGenOutline.Text = "Generate outline";
+            tsbGenOutline.Click += tsbGenOutline_Click;
             // 
             // tsbMirror
             // 
-            this.tsbMirror.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbMirror.Image = global::SCI_Translator.Properties.Resources.mirror_horizontally;
-            this.tsbMirror.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbMirror.Name = "tsbMirror";
-            this.tsbMirror.Size = new System.Drawing.Size(29, 25);
-            this.tsbMirror.Text = "toolStripButton1";
-            this.tsbMirror.Click += new System.EventHandler(this.tsbMirror_Click);
+            tsbMirror.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbMirror.Image = Properties.Resources.mirror_horizontally;
+            tsbMirror.ImageTransparentColor = Color.Magenta;
+            tsbMirror.Name = "tsbMirror";
+            tsbMirror.Size = new Size(29, 25);
+            tsbMirror.Text = "toolStripButton1";
+            tsbMirror.Click += tsbMirror_Click;
             // 
             // FontView
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.Controls.Add(this.splitContainer1);
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Name = "FontView";
-            this.Size = new System.Drawing.Size(1710, 1116);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.Panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
-            this.tsControls.ResumeLayout(false);
-            this.tsControls.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            Controls.Add(splitContainer1);
+            Margin = new Padding(4, 5, 4, 5);
+            Name = "FontView";
+            Size = new Size(1645, 1115);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            tsControls.ResumeLayout(false);
+            tsControls.PerformLayout();
+            ResumeLayout(false);
         }
     }
 }

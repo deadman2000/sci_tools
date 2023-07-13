@@ -92,6 +92,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
         public override void SetupByOffset()
         {
             IsSetup = true;
+            Reference?.XRefs.Remove(this);
             Reference = Script.GetElement(TargetOffset);
             Reference?.XRefs.Add(this);
         }

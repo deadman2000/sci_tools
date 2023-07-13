@@ -25,7 +25,9 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public string GetStringEscape() => GameEncoding.GetStringEscape(Bytes);
 
-        public override string ToString() => $"string_{Address:x4} = {Value}";
+        public override string ToString() => $"string_{Address:x4} = \"{Value}\"";
+
+        public override string Label => ToString();
 
         protected override void WriteData(ByteBuilder bb)
         {

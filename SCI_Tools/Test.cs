@@ -1,5 +1,4 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using Nest;
 using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
@@ -27,10 +26,37 @@ namespace SCI_Tools
         {
             try
             {
-                //var s = new SaidExtract(package);
-                //s.Process(291);
+                HashSet<string> words = new();
+                foreach (var res in translate.GetResources<ResScript>())
+                {
+                    var scr = res.GetScript() as Script;
+                    var strings = scr.AllStrings().ToList();
+                    foreach (var cs in scr.Get<CodeSection>())
+                    {
+                        foreach (var op in cs.Operators)
+                        {
+                            if (op.Name == "callb")
+                            {
+                                if ((byte)op.Arguments[0] == 0x19 && (byte)op.Arguments[1] == 2)
+                                {
+                                    var r = op.Prev.Prev.Arguments[0] as CodeRef;
+                                    var s = r.Reference as StringConst;
+                                    words.Add(s.Value);
+                                    var ind = strings.IndexOf(s);
+                                    Console.WriteLine($"{res.Number}:{ind}  {s.Value}");
+                                }
+                            }
+                        }
+                    }
+                }
 
-                var resTxt = translate.GetResource<ResText>(208);
+                foreach (var w in words.OrderBy(w => w))
+                    Console.WriteLine(w);
+
+                //var s = new SaidExtract(package);
+                //s.Process(223);
+
+                /*var resTxt = translate.GetResource<ResText>(208);
                 var strings = resTxt.GetStrings();
                 var result = new string[strings.Length];
 
@@ -49,7 +75,7 @@ namespace SCI_Tools
                         var v = ((SaidExpression)((RefToElement)vars[93 + verb]).Reference).Label.TrimEnd('>');
                         Console.WriteLine($"{noun}  {v}{vars[104 + noun]}   {txtRes}:{txtInd}");
                     }
-                }
+                }*/
 
 
                 //FindTextCall(374, 3);
