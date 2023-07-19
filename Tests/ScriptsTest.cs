@@ -34,7 +34,8 @@ namespace Tests
                 {
                     var descr = $"Res: {scr.Resource} Ref at {r.Address:x4} Target: {r.TargetOffset:x4} Source: {r.Source}";
                     Assert.IsNotNull(r.Reference, descr);
-                    Assert.IsInstanceOf<RefToElement>(r.Reference, descr);
+                    if (r.Reference is not RefToElement && r.Reference is not PropertyElement)
+                        Assert.Fail(descr);
                 }
             }
         }
@@ -72,7 +73,7 @@ namespace Tests
                 scr.GetBytes();
 
                 foreach (var e in scr.AllElements)
-                    Assert.IsTrue(e.IsAddressSet, $"{e}");
+                    Assert.IsTrue(e.IsAddressSet, $"{e} is not set address");
             }
         }
 

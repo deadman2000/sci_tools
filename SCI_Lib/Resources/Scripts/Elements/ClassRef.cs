@@ -11,6 +11,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             : base(cl.Script, cl.Selectors[0].Address)
         {
             _class = cl;
+            IsAddressSet = true;
         }
 
         public override void WriteOffset(ByteBuilder bb)

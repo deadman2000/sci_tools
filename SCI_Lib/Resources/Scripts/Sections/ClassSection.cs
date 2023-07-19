@@ -21,12 +21,12 @@ namespace SCI_Lib.Resources.Scripts.Sections
             funcList = ReadShortBE(data, ref offset);
             int selectorsCount = ReadShortBE(data, ref offset);
 
-            Selectors = new BaseElement[selectorsCount];
+            Selectors = new PropertyElement[selectorsCount];
             for (int i = 0; i < selectorsCount; i++)
             {
                 var addr = offset;
                 var val = ReadShortBE(data, ref offset);
-                Selectors[i] = new ShortElement(_script, addr, val);
+                Selectors[i] = new PropertyElement(this, i, addr, val);
             }
 
             if (Type == SectionType.Class)
@@ -50,42 +50,24 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 FuncCode[i] = new FuncRef(_script, addr, ReadShortBE(data, ref offset)) { Source = this };
             }
 
-            _script.Register(new ClassRef(this));
+            //_script.Register(Selectors[0]);
         }
 
         public override void SetupByOffset()
         {
             for (int i = 0; i < Selectors.Length; i++)
             {
-                ShortElement c = (ShortElement)Selectors[i];
+                var c = Selectors[i];
                 var val = c.Value;
 
                 var target = _script.GetElement(val);
                 if (target != null && (target is StringConst || target is SaidExpression)) //  || (target is StringPart)
                 {
-                    var r = new RefToElement(_script, c.Address, c.Value) { Source = this };
-                    c.ReplaceBy(r);
-                    Selectors[i] = r;
-                    r.SetupByOffset();
+                    c.Reference = target;
                 }
             }
 
-            {
-                if (Selectors[3] is ShortElement s)
-                {
-                    StringPart p = _script.GetStringPart(s.Value);
-                    if (p != null)
-                    {
-                        _script.Register(p);
-                        var r = new RefToElement(_script, s.Address, s.Value) { Source = this };
-                        s.ReplaceBy(r);
-                        Selectors[3] = r;
-                        r.SetupByOffset();
-                    }
-                }
-            }
-
-            var nameRef = (Selectors[3] as RefToElement)?.Reference;
+            var nameRef = Selectors[3].Reference;
             if (nameRef != null)
             {
                 if (nameRef is StringConst s)
@@ -104,11 +86,11 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 r.SetupByOffset();
         }
 
-        public ushort Id => ((ShortElement)Selectors[0]).Value;
+        public ushort Id => Selectors[0].Value;
 
         public string Name { get; private set; }
 
-        public BaseElement[] Selectors { get; private set; }
+        public PropertyElement[] Selectors { get; private set; }
 
         public ushort[] Varselectors => varselectors ?? SuperClass.Varselectors;
 
@@ -118,7 +100,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         private ClassSection _superClass;
 
-        public ClassSection SuperClass => _superClass ??= Package.GetClass(((ShortElement)Selectors[1]).Value) as ClassSection;
+        public ClassSection SuperClass => _superClass ??= Package.GetClass(Selectors[1].Value) as ClassSection;
 
         public override void Write(ByteBuilder bb)
         {

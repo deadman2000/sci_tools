@@ -67,9 +67,9 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     type = "string";
                     comment = ";  '" + s.GetStringEscape() + "'";
                     break;
-                case ShortElement s:
-                    type = "short";
-                    comment = $";  ${s.Value:x4}";
+                case PropertyElement p:
+                    type = "prop";
+                    comment = $";  ${p.ValueStr:x4}";
                     break;
                 case SaidExpression s:
                     return s.ToString();
