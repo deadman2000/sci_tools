@@ -8,6 +8,8 @@ namespace SCI_Lib.Resources.Scripts.Sections
     {
         private bool _additionalZero;
 
+        public RefToElement[] Refs { get; private set; }
+
         public override void Read(byte[] data, ushort offset, int length)
         {
             int cnt = ReadShortBE(data, ref offset);
@@ -26,11 +28,10 @@ namespace SCI_Lib.Resources.Scripts.Sections
             {
                 var addr = offset;
                 ushort val = ReadShortBE(data, ref offset);
-                Refs[i] = new RefToElement(_script, addr, val) { Source = this };
+                var el = new RefToElement(_script, addr, val) { Source = this };
+                Refs[i] = el;
             }
         }
-
-        public RefToElement[] Refs { get; private set; }
 
         public override void SetupByOffset()
         {

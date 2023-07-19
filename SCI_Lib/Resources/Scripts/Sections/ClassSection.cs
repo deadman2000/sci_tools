@@ -49,6 +49,8 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 var addr = offset;
                 FuncCode[i] = new FuncRef(_script, addr, ReadShortBE(data, ref offset)) { Source = this };
             }
+
+            _script.Register(new ClassRef(this));
         }
 
         public override void SetupByOffset()

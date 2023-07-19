@@ -8,6 +8,29 @@ namespace SCI_Lib.Resources.View
 {
     public class Palette
     {
+        public static readonly Palette EGA = new()
+        {
+            Colors = new Color[16]
+            {
+                Color.FromArgb(0x00, 0x00, 0x00),
+                Color.FromArgb(0x00, 0x00, 0xA0),
+                Color.FromArgb(0x00, 0xA0, 0x00),
+                Color.FromArgb(0x00, 0xA0, 0xA0),
+                Color.FromArgb(0xA0, 0x00, 0x00),
+                Color.FromArgb(0xA0, 0x00, 0xA0),
+                Color.FromArgb(0xA0, 0x50, 0x00),
+                Color.FromArgb(0xA0, 0xA0, 0xA0),
+                Color.FromArgb(0x50, 0x50, 0x50),
+                Color.FromArgb(0x50, 0x50, 0xff),
+                Color.FromArgb(0x00, 0xff, 0x50),
+                Color.FromArgb(0xff, 0xff, 0x50),
+                Color.FromArgb(0xff, 0x50, 0x50),
+                Color.FromArgb(0xff, 0x50, 0xff),
+                Color.FromArgb(0xff, 0xff, 0x50),
+                Color.FromArgb(0xff, 0xff, 0xff)
+            }
+        };
+
         public Color[] Colors { get; set; }
 
         public byte ColStart { get; private set; }

@@ -26,7 +26,12 @@ namespace SCI_Tools
         {
             try
             {
-                HashSet<string> words = new();
+                var res = package.GetResource<ResScript>(100);
+                var script = res.GetScript() as Script;
+                
+                Console.WriteLine(new CompanionBuilder().Decompile(script));
+
+                /*HashSet<string> words = new();
                 foreach (var res in translate.GetResources<ResScript>())
                 {
                     var scr = res.GetScript() as Script;
@@ -51,7 +56,7 @@ namespace SCI_Tools
                 }
 
                 foreach (var w in words.OrderBy(w => w))
-                    Console.WriteLine(w);
+                    Console.WriteLine(w);*/
 
                 //var s = new SaidExtract(package);
                 //s.Process(223);
@@ -139,8 +144,8 @@ namespace SCI_Tools
 
                 /*CopyOriginalFont(0);
                 CopyOriginalFont(1);
-                CopyOriginalFont(4);
-                CopyOriginalFont(103);*/
+                CopyOriginalFont(4);*/
+                //CopyOriginalFont(103);
                 //GenerateOutline(103, 104);
 
                 //PatchFont();

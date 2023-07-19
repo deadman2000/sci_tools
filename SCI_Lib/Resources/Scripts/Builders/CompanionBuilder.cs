@@ -29,6 +29,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 .OrderBy(s => s)
                 .ToArray();
 
+            script.Get<CodeSection>().ForEach(c => WriteProc(c));
             script.Get<StringSection>().ForEach(s => WriteStrings(s));
             script.Get<SaidSection>().ForEach(s => WriteSaid(s));
             script.Get<SynonymSecion>().ForEach(s => WriteSynonym(s));
@@ -37,6 +38,47 @@ namespace SCI_Lib.Resources.Scripts.Builders
             script.Get<ObjectSection>().ForEach(s => WriteClass(s));
 
             return sb.ToString().TrimEnd();
+        }
+
+        private void WriteProc(CodeSection cs)
+        {
+            sb.AppendFormat("(procedure (localproc_{0:x4})", cs.Address).AppendLine();
+            
+            var code = cs.Operators.FirstOrDefault();
+            WriteCode(code);
+            
+            sb.AppendLine(")");
+            sb.AppendLine();
+        }
+
+        private void WriteCode(Code code)
+        {
+            ushort lookTo = 0; // Адрес переходов
+            while (code != null)
+            {
+                if (code.XRefs.Any(r => r is not FuncRef))
+                    sb.AppendLine($"        {code.Label}");
+
+                string args;
+                if (code.Name == "pushi")
+                    args = ArgsDecToString(code);
+                else
+                    args = ArgsToString(code);
+
+                foreach (var arg in code.Arguments)
+                    if (arg is CodeRef cr)
+                        lookTo = Math.Max(lookTo, cr.TargetOffset);
+
+                sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {args}");
+
+                if (code.IsReturn && code.Address >= lookTo)
+                    break;
+
+                if (code.IsCall)
+                    sb.AppendLine();
+
+                code = code.Next;
+            }
         }
 
         private void WriteStrings(StringSection section)
@@ -119,36 +161,11 @@ namespace SCI_Lib.Resources.Scripts.Builders
             for (int i = 0; i < s.FuncNames.Length; i++)
             {
                 var addr = s.FuncCode[i].TargetOffset;
-                ushort lookTo = 0; // Адрес переходов
 
                 sb.AppendLine($"    (method ({pack.GetName(s.FuncNames[i])}) // method_{addr:x4}");
 
                 Code code = s.Script.GetElement(addr) as Code;
-                while (code != null)
-                {
-                    if (code.XRefs.Any(r => r is not FuncRef))
-                        sb.AppendLine($"        {code.Label}");
-
-                    string args;
-                    if (code.Name == "pushi")
-                        args = ArgsDecToString(code);
-                    else
-                        args = ArgsToString(code);
-
-                    foreach (var arg in code.Arguments)
-                        if (arg is CodeRef cr)
-                            lookTo = Math.Max(lookTo, cr.TargetOffset);
-
-                    sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {args}");
-
-                    if (code.IsReturn && code.Address >= lookTo)
-                        break;
-
-                    if (code.IsCall)
-                        sb.AppendLine();
-
-                    code = code.Next;
-                }
+                WriteCode(code);
 
                 sb.AppendLine("    )");
                 sb.AppendLine();

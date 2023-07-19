@@ -300,16 +300,8 @@ namespace SCI_Lib.Resources.View
             var compressed = (flags & 0x40) != 0;
             var hasBones = (flags & 0x20) != 0;
 
-            ushort bones = 0;
-            if (hasBones)
-            {
-                bones = ms.ReadUShortBE();
-                BoneNames = new List<string>(bones);
-                for (int i = 0; i < bones; i++)
-                    BoneNames.Add(ms.ReadString(Package.GameEncoding));
-            }
-
-            var version = ms.ReadUShortBE();
+            var mirrorBits = ms.ReadUShortBE();
+            ms.Position += 2;
             var palOffset = ms.ReadUShortBE();
 
             ushort[] loopOffsets = new ushort[loopsCount];
@@ -321,7 +313,8 @@ namespace SCI_Lib.Resources.View
                 ms.Position = palOffset;
                 Palette = Palette.Read(ms);
             }
-
+            else
+                Palette = Palette.EGA;
 
             Loops = new List<Loop>(loopsCount);
             for (int i = 0; i < loopsCount; i++)
@@ -340,7 +333,7 @@ namespace SCI_Lib.Resources.View
                 {
                     ms.Position = cellOffsets[j];
                     var cell = new Cell(Package, Palette);
-                    cell.ReadEVGA(ms, false, bones);
+                    cell.ReadEVGA(ms, false, 0);
                     loop.Cells.Add(cell);
                 }
             }

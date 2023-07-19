@@ -7,8 +7,8 @@ namespace SCI_Lib.Decompression
 {
     class DecompressorLZW1 : Decompressor
     {
-        Stack<byte> stack = new Stack<byte>();
-        LZWToken[] tokens = new LZWToken[0x1004];
+        private readonly Stack<byte> stack = new();
+        private readonly LZWToken[] tokens = new LZWToken[0x1004];
 
         protected override void GoUnpack()
         {
@@ -113,6 +113,6 @@ namespace SCI_Lib.Decompression
     {
         public byte data;
         public ushort next;
-        public override string ToString() => $"{data:X02} => {next:X04}";
+        public override readonly string ToString() => $"{data:X02} => {next:X04}";
     };
 }

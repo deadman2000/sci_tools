@@ -198,7 +198,10 @@ namespace SCI_Lib.Resources.Scripts.Builders
         {
             sb.AppendLine($"[Relocation section]");
             for (int i = 0; i < rs.Refs.Length; i++)
-                sb.AppendLine($"\tpointer[{i}] = {rs.Refs[i].Value:x4}; {rs.Refs[i]}");
+            {
+                var r = rs.Refs[i];
+                sb.AppendLine($"pointer_{r.Address:x4} = {r.Value:x4}; {r}");
+            }
         }
 
         private void Write(StringSection ss)
@@ -206,7 +209,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
             sb.AppendLine($"[String section]");
             foreach (var s in ss.Strings)
             {
-                sb.AppendLine($"{s.Address:x4} = '{s.GetStringEscape()}'");
+                sb.AppendLine($"string_{s.Address:x4} = '{s.GetStringEscape()}'");
             }
         }
     }

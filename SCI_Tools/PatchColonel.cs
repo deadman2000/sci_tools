@@ -1,56 +1,24 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Vocab;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCI_Tools
 {
     // patch_colonel -d D:\Dos\GAMES\Laura_Bow_RUS
     // Русификация Colonel's Bequest
     [Command("patch_colonel", Description = "Export font to images")]
-    class PatchColonel : BaseCommand
+    class PatchColonel : PatchCommand
     {
-        [Option(Description = "Game directory", ShortName = "d", LongName = "dir")]
-        [Required]
-        public string GameDir { get; set; }
-
-        private readonly HashSet<Resource> _changed = new();
-        private SCIPackage _translate;
-        private HashSet<ushort> _groups;
-
-        protected override Task Execute()
-        {
-            _translate = SCIPackage.Load(GameDir);
-            Patch();
-
-            return Task.CompletedTask;
-        }
-
-
-        public void Patch()
+        protected override void Patch()
         {
             PatchScr777();
 
             //FindRuDuplicate();
             //PrintSaids(25);
-            //BuildUsageMap();
-            /*foreach (var id in _wordsUsage.Keys)
-            {
-                var word = _translate.GetWords()[id];
-                if (word[0] >= 'a' && word[0] <= 'z')
-                    Console.WriteLine(word);
-            }*/
-
-            //var scripts = _wordsUsage.Values.SelectMany(v => v).Distinct().OrderBy(v => v);
-            //foreach (var scr in scripts) Console.WriteLine($"{scr,-4:D03}_");
 
             CreateWord("для", WordClass.Association);
 
@@ -100,11 +68,7 @@ namespace SCI_Tools
             CreateWord("спустись,слезь", WordClass.ImperativeVerb);
             CreateWord("вылей", WordClass.ImperativeVerb);
 
-            if (_changed.Any())
-            {
-                Save();
-                _translate = SCIPackage.Load(GameDir);
-            }
+            Commit();
 
             ReplaceWord("desk", "стол");
             ReplaceWord("case", "ящик");
@@ -384,6 +348,7 @@ namespace SCI_Tools
             PatchSaid(44, 43, "загляни/дверца[<!*]");
             RemoveSynonyms(44, "коробка");
             RemoveSynonym(44, "ворота", "желоб");
+            AddSynonym(44, "шахта", "желоб");
 
             PatchSaid(45, 4, "двигай/шкаф,(домик[<кукольный])");
             PatchSaid(45, 7, "загляни[<на]/комод");
@@ -781,10 +746,25 @@ namespace SCI_Tools
             CBSkipButtonReplace(353);
             CBSkipButtonReplace(354);
 
+            PatchScr781();
+
             Save();
         }
 
-        void Changed(Resource res) => _changed.Add(res);
+        private void PatchScr781()
+        {
+            var res = _translate.GetResource<ResScript>(781);
+            var scr = res.GetScript() as Script;
+
+            var op = scr.GetOperator(0x82b);
+            if (op == null || op.Name != "pushi") throw new Exception("PatchScr781 failed");
+            
+            if ((byte)op.Arguments[0] != 56)
+            {
+                op.Arguments[0] = (byte)56;
+                Changed(res);
+            }
+        }
 
         private void PatchScr14()
         {
@@ -1022,198 +1002,6 @@ namespace SCI_Tools
             Changed(res);
         }
 
-        private void ReplaceWord(string wordFrom, string wordTo, params ushort[] scripts)
-        {
-            var from = _translate.GetWordId(wordFrom)[0];
-            var to = _translate.GetWordId(wordTo)[0];
-
-            foreach (var scriptNum in scripts)
-                ReplaceWord(scriptNum, from, to);
-        }
-
-        private void ReplaceWord(string wordFrom, string wordTo)
-        {
-            var from = _translate.GetWordId(wordFrom)[0];
-            var to = _translate.GetWordId(wordTo)[0];
-
-            BuildUsageMap();
-
-            if (_wordsUsage.TryGetValue(from, out var nums))
-                foreach (var scriptNum in nums)
-                    ReplaceWord(scriptNum, from, to);
-        }
-
-        private void ReplaceWord(ushort scriptNum, ushort from, ushort to)
-        {
-            var res = _translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-
-            bool changed = false;
-            foreach (var saidSec in scr.Get<SaidSection>())
-            {
-                foreach (var said in saidSec.Saids)
-                {
-                    foreach (var e in said.Expression)
-                    {
-                        if (!e.IsOperator && e.Data == from)
-                        {
-                            e.Data = to;
-                            changed = true;
-                        }
-                    }
-                }
-
-                foreach (var synSec in scr.Get<SynonymSecion>())
-                {
-                    for (int i = 0; i < synSec.Synonyms.Count; i++)
-                    {
-                        var syn = synSec.Synonyms[i];
-
-                        if (syn.WordA == from)
-                        {
-                            if (syn.WordB == to || syn.WordA == syn.WordB)
-                            {
-                                synSec.Synonyms.RemoveAt(i);
-                                i--;
-                                changed = true;
-                            }
-                            else if (syn.WordB != to)
-                            {
-                                synSec.Synonyms[i] = new Synonym
-                                {
-                                    WordA = to,
-                                    WordB = syn.WordB
-                                };
-                                changed = true;
-                            }
-                        }
-                        else if (syn.WordB == from)
-                        {
-                            if (syn.WordA == to || syn.WordA == syn.WordB)
-                            {
-                                synSec.Synonyms.RemoveAt(i);
-                                i--;
-                                changed = true;
-                            }
-                            else if (syn.WordA != to)
-                            {
-                                synSec.Synonyms[i] = new Synonym
-                                {
-                                    WordA = syn.WordA,
-                                    WordB = to
-                                };
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (changed)
-                Changed(res);
-        }
-
-        Dictionary<ushort, ushort[]> _wordsUsage;
-        private void BuildUsageMap()
-        {
-            if (_wordsUsage != null) return;
-
-            var resources = _translate.GetResources<ResScript>()
-                .GroupBy(r => r.Number).Select(g => g.First());
-
-            var scripts = resources.Select(r => r.GetScript() as Script)
-                .Where(s => s != null)
-                .ToList();
-
-            _wordsUsage = scripts
-                .SelectMany(s => s.Get<SaidSection>().SelectMany(ss => ss.Saids)
-                        .SelectMany(s => s.Expression)
-                        .Where(e => !e.IsOperator)
-                        .Select(s => s.Data)
-                        .Union(s.Get<SynonymSecion>().SelectMany(s => s.Synonyms).Select(s => s.WordA))
-                        .Distinct()
-                        .Select(w => new { S = s, W = w })
-                )
-                .GroupBy(i => i.W)
-                .ToDictionary(g => g.Key, g => g.Select(n => n.S.Resource.Number).ToArray());
-        }
-
-        private void CreateWord(string newWords, WordClass cl)
-        {
-            var res = (ResVocab001)_translate.GetResource(ResType.Vocabulary, 1);
-            var words = new List<Word>(res.GetWords());
-
-            var wordsArr = newWords.Split(',');
-            ushort group = 0;
-            foreach (var word in wordsArr)
-            {
-                var exists = words.FirstOrDefault(w => w.Text == word && w.Class == cl);
-                if (exists != null)
-                {
-                    group = exists.Group;
-                    break;
-                }
-            }
-
-            if (group == 0)
-                group = NextWordGroup();
-
-            bool changed = false;
-            foreach (var word in wordsArr)
-            {
-                if (!words.Any(w => w.Text == word && w.Class == cl))
-                {
-                    words.Add(new Word(word, cl, group));
-                    changed = true;
-                }
-            }
-
-            res.SetWords(words);
-
-            if (changed)
-                Changed(res);
-        }
-
-
-        ushort NextWordGroup()
-        {
-            _groups ??= _translate.GetWords().Select(kv => kv.Key).ToHashSet();
-
-            for (ushort i = 1; i < 0xeff; i++)
-            {
-                if (!_groups.Contains(i))
-                {
-                    _groups.Add(i);
-                    return i;
-                }
-            }
-            return ushort.MaxValue;
-        }
-
-        void FindRuDuplicate()
-        {
-            var words = _translate.GetWordIds();
-            var list = words.Where(kv => kv.Value.Length > 1)
-                .Select(kv => kv.Key)
-                .Where(w => w[0] >= 'а' && w[0] <= 'я');
-
-            foreach (var word in list)
-            {
-                Console.WriteLine(word);
-            }
-        }
-
-        void Save()
-        {
-            foreach (var res in _changed)
-            {
-                Console.WriteLine($"Changed: {res}");
-                res.SavePatch();
-            }
-            _changed.Clear();
-            _wordsUsage = null;
-        }
-
         private void CBSkipButtonReplace(ushort scriptNum, char sym = 's')
         {
             var srcKey = (byte)sym;
@@ -1231,132 +1019,6 @@ namespace SCI_Tools
                 }
             }
             if (found)
-                Changed(res);
-        }
-
-        private void AddSynonym(ushort scriptNum, string w1, string w2)
-        {
-            var res = _translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-
-            SynonymSecion section;
-            var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
-                section = scr.CreateSection(SectionType.Synonym) as SynonymSecion;
-            else
-                section = sections[0];
-
-            var w1Ids = _translate.GetWordId(w1);
-            //if (w1Ids == null || w1Ids.Length > 1) throw new Exception();
-            var w2Ids = _translate.GetWordId(w2);
-            //if (w2Ids == null || w2Ids.Length > 1) throw new Exception();
-
-            var id1 = w1Ids[0];
-            var id2 = w2Ids[0];
-
-            if (section.Synonyms.Exists(s => (s.WordA == id1 && s.WordB == id2) || (s.WordA == id2 && s.WordB == id1)))
-                return;
-
-            section.Synonyms.Add(new Synonym
-            {
-                WordA = w1Ids[0],
-                WordB = w2Ids[0]
-            });
-
-            Changed(res);
-        }
-
-        private void RemoveSynonym(ushort scriptNum, string w1, string w2)
-        {
-            var w1Id = _translate.GetWordId(w1)[0];
-            var w2Id = _translate.GetWordId(w2)[0];
-
-            var res = _translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-
-            SynonymSecion section;
-            var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
-                return;
-            else
-                section = sections[0];
-
-            for (int i = 0; i < section.Synonyms.Count; i++)
-            {
-                var syn = section.Synonyms[i];
-                if ((syn.WordA == w1Id && syn.WordB == w2Id) || (syn.WordA == w2Id && syn.WordB == w1Id))
-                {
-                    section.Synonyms.RemoveAt(i);
-                    Changed(res);
-                    i--;
-                }
-            }
-        }
-
-        private void RemoveSynonyms(ushort scriptNum, string word)
-        {
-            var wid = _translate.GetWordId(word)[0];
-            var res = _translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-
-            SynonymSecion section;
-            var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
-                return;
-            else
-                section = sections[0];
-
-            for (int i = 0; i < section.Synonyms.Count; i++)
-            {
-                var syn = section.Synonyms[i];
-                if (syn.WordA == wid || syn.WordB == wid)
-                {
-                    section.Synonyms.RemoveAt(i);
-                    Changed(res);
-                    i--;
-                }
-            }
-        }
-
-        private void RemoveSynDubl()
-        {
-            foreach (var res in _translate.GetResources<ResScript>())
-            {
-                var scr = res.GetScript() as Script;
-                foreach (var synSec in scr.Get<SynonymSecion>())
-                {
-                    for (int i = 0; i < synSec.Synonyms.Count; i++)
-                    {
-                        var syn = synSec.Synonyms[i];
-                        if (syn.WordA == syn.WordB)
-                        {
-                            synSec.Synonyms.RemoveAt(i);
-                            i--;
-                            Changed(res);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void PrintSaids(ushort scriptNum)
-        {
-            var res = _translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
-            for (int i = 0; i < saidSection.Saids.Count; i++)
-            {
-                var said = saidSection.Saids[i];
-                Console.WriteLine($"{i} = {said}     {said.Hex}");
-            }
-        }
-
-        private void PatchSaid(ushort scriptNum, int ind, string str)
-        {
-            var res = _translate.GetResource<ResScript>(scriptNum);
-            var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
-            if (saidSection.Saids[ind].Set(str))
                 Changed(res);
         }
 
