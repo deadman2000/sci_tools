@@ -10,9 +10,9 @@ namespace SCI_Lib.Resources.Scripts.Builders
 {
     public class CompanionBuilder : IScriptBuilder
     {
-        readonly StringBuilder sb = new StringBuilder();
+        readonly StringBuilder sb = new();
         private Dictionary<ushort, string> _words;
-        private ushort[] _methods;
+        private HashSet<ushort> _methods = new();
 
         public string Decompile(Script script)
         {
@@ -21,19 +21,18 @@ namespace SCI_Lib.Resources.Scripts.Builders
             sb.AppendFormat("(script {0})", script.Resource.Number).AppendLine();
             sb.AppendLine();
 
-            _methods = script.Get<ClassSection>(SectionType.Class)
+            var methods = script.Get<ClassSection>(SectionType.Class)
                 .Union(script.Get<ObjectSection>())
                 .SelectMany(s => s.FuncCode)
                 .Select(f => f.TargetOffset)
-                .Distinct()
-                .OrderBy(s => s)
-                .ToArray();
+                .Distinct();
+            foreach (var m in methods) _methods.Add(m);
 
-            script.Get<CodeSection>().ForEach(c => WriteProc(c));
             script.Get<StringSection>().ForEach(s => WriteStrings(s));
             script.Get<SaidSection>().ForEach(s => WriteSaid(s));
             script.Get<SynonymSecion>().ForEach(s => WriteSynonym(s));
             script.Get<LocalVariablesSection>().ForEach(s => WriteLocals(s));
+            script.Get<CodeSection>().ForEach(c => WriteProc(c));
             script.Get<ClassSection>(SectionType.Class).ForEach(s => WriteClass(s));
             script.Get<ObjectSection>().ForEach(s => WriteClass(s));
 
@@ -42,6 +41,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         private void WriteProc(CodeSection cs)
         {
+            if (_methods.Contains((ushort)cs.Address)) return;
             sb.AppendFormat("(procedure (localproc_{0:x4})", cs.Address).AppendLine();
             
             var code = cs.Operators.FirstOrDefault();

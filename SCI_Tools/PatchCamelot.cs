@@ -1,4 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
+using SCI_Lib.Resources.Vocab;
 using System;
 
 namespace SCI_Tools
@@ -9,6 +10,14 @@ namespace SCI_Tools
     {
         protected override void Patch()
         {
+            CreateWord("попроси", WordClass.ImperativeVerb);
+            CreateWord("у", WordClass.Proposition);
+
+            Commit();
+
+            PatchSaid(2, 1, "попроси/*<мерлин"); // попроси у мерлина *
+
+            Save();
         }
     }
 }

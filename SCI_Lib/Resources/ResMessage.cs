@@ -24,6 +24,7 @@ namespace SCI_Lib.Resources
                 var ver = header / 1000;
                 records = ver switch
                 {
+                    2 => ReadV2(stream),
                     3 => ReadV3(stream),
                     4 => ReadV4(stream),
                     _ => throw new NotImplementedException(),
@@ -59,8 +60,10 @@ namespace SCI_Lib.Resources
             var messages = GetMessages();
 
             ByteBuilder bb = new ByteBuilder();
-            
-            if (messages[0] is MessageRecordV3)
+
+            if (messages[0] is MessageRecordV2)
+                SaveV2(messages, bb);
+            else if (messages[0] is MessageRecordV3)
                 SaveV3(messages, bb);
             else if (messages[0] is MessageRecordV4)
                 SaveV4(messages, bb);
@@ -70,12 +73,34 @@ namespace SCI_Lib.Resources
             return bb.GetArray();
         }
 
-        private List<MessageRecord> ReadV3(Stream stream)
+        private List<MessageRecord> ReadV2(MemoryStream stream)
+        {
+            ushort count = stream.ReadUShortBE();
+
+            List<MessageRecord> records = new List<MessageRecord>();
+            for (int i = 0; i < count; i++)
+                records.Add(new MessageRecordV2(stream));
+            return records;
+        }
+
+        private void SaveV2(List<MessageRecord> messages, ByteBuilder bb)
+        {
+            bb.AddIntBE(header);
+            bb.AddUShortBE((ushort)messages.Count);
+
+            foreach (var mes in messages)
+                mes.WriteHeader(bb);
+
+            foreach (var mes in messages)
+                mes.WriteText(bb, GameEncoding);
+        }
+
+        private static List<MessageRecord> ReadV3(Stream stream)
         {
             ushort end = stream.ReadUShortBE();
             ushort count = stream.ReadUShortBE();
 
-            List<MessageRecord> records = new List<MessageRecord>();
+            List<MessageRecord> records = new List<MessageRecord>(count);
             for (int i = 0; i < count; i++)
                 records.Add(new MessageRecordV3(stream));
             return records;
@@ -88,28 +113,22 @@ namespace SCI_Lib.Resources
             bb.AddShortBE(0);
             bb.AddUShortBE((ushort)messages.Count);
 
-            object[] extra = new object[messages.Count];
+            foreach (var mes in messages)
+                mes.WriteHeader(bb);
 
-            for (int i = 0; i < messages.Count; i++)
-            {
-                extra[i] = messages[i].WriteHeader(bb);
-            }
-
-            for (int i = 0; i < messages.Count; i++)
-            {
-                messages[i].WriteText(bb, extra[i], GameEncoding);
-            }
+            foreach (var mes in messages)
+                mes.WriteText(bb, GameEncoding);
 
             bb.SetShortBE(endOffset, (ushort)(bb.Position - endOffset));
         }
 
-        private List<MessageRecord> ReadV4(MemoryStream stream)
+        private static List<MessageRecord> ReadV4(MemoryStream stream)
         {
             ushort end = stream.ReadUShortBE();
             ushort unknown = stream.ReadUShortBE();
             ushort count = stream.ReadUShortBE();
 
-            List<MessageRecord> records = new List<MessageRecord>();
+            List<MessageRecord> records = new List<MessageRecord>(count);
             for (int i = 0; i < count; i++)
                 records.Add(new MessageRecordV4(stream));
             return records;
@@ -123,17 +142,11 @@ namespace SCI_Lib.Resources
             bb.AddUShortBE((ushort)messages.Count);
             bb.AddUShortBE((ushort)messages.Count);
 
-            object[] extra = new object[messages.Count];
+            foreach (var mes in messages)
+                mes.WriteHeader(bb);
 
-            for (int i = 0; i < messages.Count; i++)
-            {
-                extra[i] = messages[i].WriteHeader(bb);
-            }
-
-            for (int i = 0; i < messages.Count; i++)
-            {
-                messages[i].WriteText(bb, extra[i], GameEncoding);
-            }
+            foreach (var mes in messages)
+                mes.WriteText(bb, GameEncoding);
 
             bb.SetShortBE(endOffset, (ushort)(bb.Position - endOffset));
         }

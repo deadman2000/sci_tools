@@ -67,18 +67,21 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 }
             }
 
-            var nameRef = Selectors[3].Reference;
-            if (nameRef != null)
+            if (Selectors.Length > 3)
             {
-                if (nameRef is StringConst s)
+                var nameRef = Selectors[3].Reference;
+                if (nameRef != null)
                 {
-                    Name = s.Value;
-                    s.IsClassName = true;
-                }
-                else if (nameRef is StringPart p)
-                {
-                    Name = p.String;
-                    p.OrigString.IsClassName = true;
+                    if (nameRef is StringConst s)
+                    {
+                        Name = s.Value;
+                        s.IsClassName = true;
+                    }
+                    else if (nameRef is StringPart p)
+                    {
+                        Name = p.String;
+                        p.OrigString.IsClassName = true;
+                    }
                 }
             }
 

@@ -6,6 +6,8 @@ namespace SCI_Lib.Resources
     public abstract class MessageRecord
     {
         public int TextOffset { get; set; }
+        
+        protected int OffsetPos { get; set; }
 
         public string Text { get; set; }
 
@@ -31,9 +33,36 @@ namespace SCI_Lib.Resources
             }
         }
 
-        public abstract object WriteHeader(ByteBuilder bb);
+        public abstract void WriteHeader(ByteBuilder bb);
 
-        public abstract void WriteText(ByteBuilder bb, object data, GameEncoding encoding);
+        public virtual void WriteText(ByteBuilder bb, GameEncoding encoding)
+        {
+            ushort textOffset = (ushort)bb.Position;
+
+            var bytes = encoding.GetBytes(Text);
+            bb.AddBytes(bytes);
+            bb.AddByte(0);
+
+            bb.SetShortBE(OffsetPos, textOffset);
+        }
+    }
+
+    class MessageRecordV2 : MessageRecord
+    {
+        public MessageRecordV2(MemoryStream stream)
+        {
+            Noun = stream.ReadB();
+            Verb = stream.ReadB();
+            TextOffset = stream.ReadUShortBE();
+        }
+
+        public override void WriteHeader(ByteBuilder bb)
+        {
+            bb.AddByte(Noun);
+            bb.AddByte(Verb);
+            OffsetPos = bb.Position;
+            bb.AddShortBE(0); // Text offset
+        }
     }
 
     class MessageRecordV3 : MessageRecord
@@ -53,28 +82,16 @@ namespace SCI_Lib.Resources
             Unknown = stream.Read3ByteBE();
         }
 
-        public override object WriteHeader(ByteBuilder bb)
+        public override void WriteHeader(ByteBuilder bb)
         {
             bb.AddByte(Noun);
             bb.AddByte(Verb);
             bb.AddByte(Cond);
             bb.AddByte(Seq);
             bb.AddByte(Talker);
-            var offsetPos = bb.Position;
+            OffsetPos = bb.Position;
             bb.AddShortBE(0); // Text offset
             bb.AddThreeBytesBE(Unknown);
-            return offsetPos;
-        }
-
-        public override void WriteText(ByteBuilder bb, object data, GameEncoding encoding)
-        {
-            ushort textOffset = (ushort)bb.Position;
-
-            var bytes = encoding.GetBytes(Text);
-            bb.AddBytes(bytes);
-            bb.AddByte(0);
-
-            bb.SetShortBE((int)data, textOffset);
         }
     }
 
@@ -104,31 +121,19 @@ namespace SCI_Lib.Resources
             Unknown = stream.ReadB();
         }
 
-        public override object WriteHeader(ByteBuilder bb)
+        public override void WriteHeader(ByteBuilder bb)
         {
             bb.AddByte(Noun);
             bb.AddByte(Verb);
             bb.AddByte(Cond);
             bb.AddByte(Seq);
             bb.AddByte(Talker);
-            var offsetPos = bb.Position;
+            OffsetPos = bb.Position;
             bb.AddShortBE(0); // Text offset
             bb.AddByte(NounOfRef);
             bb.AddByte(VerbOfRef);
             bb.AddByte(CondOfRef);
             bb.AddByte(Unknown);
-            return offsetPos;
-        }
-
-        public override void WriteText(ByteBuilder bb, object data, GameEncoding encoding)
-        {
-            ushort textOffset = (ushort)bb.Position;
-
-            var bytes = encoding.GetBytes(Text);
-            bb.AddBytes(bytes);
-            bb.AddByte(0);
-
-            bb.SetShortBE((int)data, textOffset);
         }
     }
 }
