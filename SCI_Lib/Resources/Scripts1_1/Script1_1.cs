@@ -143,7 +143,7 @@ namespace SCI_Lib.Resources.Scripts1_1
             return null;
         }
 
-        public List<T> Get<T>() where T : Section
+        public IEnumerable<T> Get<T>() where T : Section
         {
             return null;
         }

@@ -4,6 +4,7 @@ using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace SCI_Translator
@@ -79,17 +80,17 @@ namespace SCI_Translator
             var script = res.GetScript();
             if (script == null) return;
 
-            var sections = script.Get<StringSection>();
+            var sections = script.Get<StringSection>().ToArray();
             if (sections == null) return;
 
-            List<StringSection> trSections = null;
+            StringSection[] trSections = null;
             if (_translate != null)
             {
                 var tr = _translate.Get(res).GetScript();
-                trSections = tr.Get<StringSection>();
+                trSections = tr.Get<StringSection>().ToArray();
             }
 
-            for (int i = 0; i < sections.Count; i++)
+            for (int i = 0; i < sections.Length; i++)
             {
                 var sec = sections[i];
                 for (int ind = 0; ind < sec.Strings.Count; ind++)

@@ -119,7 +119,7 @@ namespace SCI_Lib.Resources
             foreach (var mes in messages)
                 mes.WriteText(bb, GameEncoding);
 
-            bb.SetShortBE(endOffset, (ushort)(bb.Position - endOffset));
+            bb.SetUShortBE(endOffset, (ushort)(bb.Position - endOffset));
         }
 
         private static List<MessageRecord> ReadV4(MemoryStream stream)
@@ -148,7 +148,7 @@ namespace SCI_Lib.Resources
             foreach (var mes in messages)
                 mes.WriteText(bb, GameEncoding);
 
-            bb.SetShortBE(endOffset, (ushort)(bb.Position - endOffset));
+            bb.SetUShortBE(endOffset, (ushort)(bb.Position - endOffset));
         }
     }
 }

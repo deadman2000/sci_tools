@@ -127,7 +127,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             switch (Size)
             {
                 case 1: bb.SetByte(Address, (byte)val); break;
-                case 2: bb.SetShortBE(Address, (ushort)val); break;
+                case 2: bb.SetUShortBE(Address, (ushort)val); break;
                 default: throw new NotImplementedException();
             }
         }

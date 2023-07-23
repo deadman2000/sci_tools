@@ -13,6 +13,6 @@ namespace SCI_Lib.Resources.Scripts
         IClass GetClass(ushort id);
 
 
-        List<T> Get<T>() where T : Section;
+        IEnumerable<T> Get<T>() where T : Section;
     }
 }

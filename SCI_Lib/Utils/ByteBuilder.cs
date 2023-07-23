@@ -90,7 +90,7 @@ namespace SCI_Lib.Utils
             _bytes[offset] = val;
         }
 
-        public void SetShortBE(int offset, ushort val)
+        public void SetUShortBE(int offset, ushort val)
         {
             _bytes[offset] = (byte)(val & 0xFF);
             _bytes[offset + 1] = (byte)(val >> 8);

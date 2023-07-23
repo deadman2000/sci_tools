@@ -1,8 +1,10 @@
 using NUnit.Framework;
 using SCI_Lib;
+using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using System;
 using System.Linq;
 
 namespace Tests
@@ -94,6 +96,33 @@ namespace Tests
                     Assert.IsTrue(r.IsWrited, descr);
                     Assert.IsTrue(r.IsOffsetWrited, descr);
                 }
+            }
+        }
+
+        [Test]
+        public void StringsRefs()
+        {
+            // ѕровер€ем, тер€ютс€ ли имена классов при сдвиге адресов строк
+            SCIPackage package = Utils.LoadPackage();
+            var res = package.GetResource<ResScript>(0);
+            var scr = res.GetScript() as Script;
+
+            // «апоминаем имена классов
+            var names = scr.Get<ClassSection>().Select(c => c.Name).ToArray();
+
+            // ћен€ем размер первой строки. ¬се следующие строки сдвинутс€ на 1 байт
+            var str = scr.StringSection.Strings[0];
+            var oldValue = str.Value;
+            str.Value += "1";
+
+            var data = res.GetPatch();
+            var newScr = new Script(res, data);
+            var newNames = newScr.Get<ClassSection>().Select(c => c.Name).ToArray();
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (names[i] == oldValue) continue;
+                Assert.AreEqual(names[i], newNames[i]);
             }
         }
     }

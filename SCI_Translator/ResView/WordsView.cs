@@ -131,7 +131,7 @@ namespace SCI_Translator.ResView
         private void CheckUsage()
         {
             var package = _tres != null ? _tres.Package : _res.Package;
-            var resources = package.GetResources<ResScript>()
+            var resources = package.Scripts
                 .GroupBy(r => r.Number).Select(g => g.First());
 
             var scripts = resources.Select(r => r.GetScript() as Script)

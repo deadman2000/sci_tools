@@ -32,7 +32,7 @@ namespace SCI_Tools
                 Console.WriteLine(new CompanionBuilder().Decompile(script));
 
                 /*HashSet<string> words = new();
-                foreach (var res in translate.GetResources<ResScript>())
+                foreach (var res in translate.Scripts)
                 {
                     var scr = res.GetScript() as Script;
                     var strings = scr.AllStrings().ToList();
@@ -164,7 +164,7 @@ namespace SCI_Tools
 
         private void FindTextCall(int text, int index)
         {
-            var resources = package.GetResources<ResScript>().GroupBy(r => r.Number).Select(g => g.First());
+            var resources = package.Scripts.GroupBy(r => r.Number).Select(g => g.First());
 
             foreach (var res in resources)
             {
@@ -201,7 +201,7 @@ namespace SCI_Tools
 
         private void FindWordUsage(ushort word)
         {
-            var resources = package.GetResources<ResScript>();
+            var resources = package.Scripts;
             var scripts = resources
                 .GroupBy(r => r.Number).Select(g => g.First())
                 .Select(r => r.GetScript() as Script).ToList();
@@ -317,11 +317,11 @@ namespace SCI_Tools
             var scr = res.GetScript();
 
             // Патчим строку
-            var stringsSec = scr.Get<StringSection>()[0];
+            var stringsSec = scr.Get<StringSection>().First();
             stringsSec.Strings[8].Value = "Aye";
 
             // Фиксим оператор
-            var code = scr.Get<CodeSection>()[4];
+            var code = scr.Get<CodeSection>().ElementAt(4);
             var op = code.Operators.Find(o => o.Address == 0xb9f);
             op.Arguments[0] = (ushort)0x10ac;
 

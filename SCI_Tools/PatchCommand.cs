@@ -2,6 +2,7 @@
 using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
+using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Vocab;
 using System;
@@ -121,11 +122,64 @@ namespace SCI_Tools
             }
         }
 
+        protected void RemoveSaidDubl()
+        {
+            var resources = _translate.Scripts
+                .GroupBy(r => r.Number).Select(g => g.First());
+
+            List<SaidData> list = new();
+            HashSet<ushort> words = new();
+
+            foreach (var res in resources)
+            {
+                var scr = res.GetScript() as Script;
+                var ss = scr.SaidSection;
+                if (ss == null) continue;
+
+                foreach (var said in ss.Saids)
+                {
+                    string before = said.Label;
+                    foreach (var e in said.Expression)
+                    {
+                        if (e.IsOperator)
+                        {
+                            list.Add(e);
+                            if (e.Letter != ",")
+                            {
+                                words.Clear();
+                            }
+                        }
+                        else // is word
+                        {
+                            if (words.Contains(e.Data))
+                            {
+                                if (list.Any() && list[^1].Letter == ",")
+                                    list.RemoveAt(list.Count - 1);
+                            }
+                            else
+                            {
+                                list.Add(e);
+                                words.Add(e.Data);
+                            }
+                        }
+                    }
+                    said.Set(list);
+                    if (before != said.Label)
+                    {
+                        //Console.WriteLine($"{before} => {said.Label}");
+                        Changed(res);
+                    }
+                    words.Clear();
+                    list.Clear();
+                }
+            }
+        }
+
         protected void BuildWordUsageMap()
         {
             if (_wordsUsage != null) return;
 
-            var resources = _translate.GetResources<ResScript>()
+            var resources = _translate.Scripts
                 .GroupBy(r => r.Number).Select(g => g.First());
 
             var scripts = resources.Select(r => r.GetScript() as Script)
@@ -264,12 +318,10 @@ namespace SCI_Tools
             var res = _translate.GetResource<ResScript>(scriptNum);
             var scr = res.GetScript() as Script;
 
-            SynonymSecion section;
             var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
+            SynonymSecion section = sections.FirstOrDefault();
+            if (section == null)
                 section = scr.CreateSection(SectionType.Synonym) as SynonymSecion;
-            else
-                section = sections[0];
 
             var w1Ids = _translate.GetWordId(w1);
             //if (w1Ids == null || w1Ids.Length > 1) throw new Exception();
@@ -301,10 +353,10 @@ namespace SCI_Tools
 
             SynonymSecion section;
             var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
+            if (!sections.Any())
                 return;
-            else
-                section = sections[0];
+
+            section = sections.First();
 
             for (int i = 0; i < section.Synonyms.Count; i++)
             {
@@ -326,10 +378,10 @@ namespace SCI_Tools
 
             SynonymSecion section;
             var sections = scr.Get<SynonymSecion>();
-            if (sections.Count == 0)
+            if (!sections.Any())
                 return;
-            else
-                section = sections[0];
+
+            section = sections.First();
 
             for (int i = 0; i < section.Synonyms.Count; i++)
             {
@@ -345,7 +397,7 @@ namespace SCI_Tools
 
         protected void RemoveSynDubl()
         {
-            foreach (var res in _translate.GetResources<ResScript>())
+            foreach (var res in _translate.Scripts)
             {
                 var scr = res.GetScript() as Script;
                 foreach (var synSec in scr.Get<SynonymSecion>())
@@ -372,7 +424,7 @@ namespace SCI_Tools
         {
             var res = _translate.GetResource<ResScript>(scriptNum);
             var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
+            var saidSection = scr.SaidSection;
             for (int i = 0; i < saidSection.Saids.Count; i++)
             {
                 var said = saidSection.Saids[i];
@@ -384,8 +436,7 @@ namespace SCI_Tools
         {
             var res = _translate.GetResource<ResScript>(scriptNum);
             var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
-            if (saidSection.Saids[ind].Set(str))
+            if (scr.SaidSection.Saids[ind].Set(str))
                 Changed(res);
         }
 

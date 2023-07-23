@@ -1,24 +1,32 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts
 {
     public class Script : IScript
     {
-        private readonly Dictionary<ushort, BaseElement> _elements = new Dictionary<ushort, BaseElement>();
-        private readonly StringSection _strings;
+        private readonly Dictionary<ushort, BaseElement> _elements = new();
+        private StringSection _strings;
 
         public Script(Resource res)
         {
             Resource = res;
-            
             SourceData = res.GetContent();
+            Read();
+        }
 
+        public Script(Resource res, byte[] data)
+        {
+            Resource = res;
+            SourceData = data;
+            Read();
+        }
+
+        private void Read()
+        {
             ushort i = 0;
             while (i < SourceData.Length)
             {
@@ -40,7 +48,6 @@ namespace SCI_Lib.Resources.Scripts
                 sec.SetupByOffset();
         }
 
-
         public void Register(BaseElement el) => _elements[el.Address] = el;
 
         public SCIPackage Package { get { return Resource.Package; } }
@@ -50,6 +57,10 @@ namespace SCI_Lib.Resources.Scripts
         public byte[] SourceData { get; }
 
         public List<Section> Sections { get; } = new List<Section>();
+
+        public SaidSection SaidSection => Sections.OfType<SaidSection>().FirstOrDefault();
+
+        public StringSection StringSection => Sections.OfType<StringSection>().FirstOrDefault();
 
         public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings);
 
@@ -65,7 +76,7 @@ namespace SCI_Lib.Resources.Scripts
 
         public byte[] GetBytes()
         {
-            ByteBuilder bb = new ByteBuilder();
+            ByteBuilder bb = new();
 
             foreach (Section sec in Sections)
             {
@@ -74,7 +85,7 @@ namespace SCI_Lib.Resources.Scripts
                 bb.AddShortBE(0);
                 sec.Write(bb);
                 int endPos = bb.Position;
-                bb.SetShortBE(sizePos, (ushort)(endPos - sizePos + 2));
+                bb.SetUShortBE(sizePos, (ushort)(endPos - sizePos + 2));
             }
 
             foreach (Section sec in Sections)
@@ -94,35 +105,13 @@ namespace SCI_Lib.Resources.Scripts
             return null;
         }
 
-        public List<T> Get<T>() where T : Section
-        {
-            List<T> list = new List<T>();
+        public IEnumerable<T> Get<T>() where T : Section => Sections.OfType<T>();
 
-            foreach (Section sec in Sections)
-            {
-                if (sec is T t)
-                    list.Add(t);
-            }
-
-            return list;
-        }
-
-        internal List<T> Get<T>(SectionType type) where T : Section
-        {
-            List<T> list = new List<T>();
-
-            foreach (Section sec in Sections)
-            {
-                if (sec.Type == type && sec is T)
-                    list.Add((T)sec);
-            }
-
-            return list;
-        }
+        internal IEnumerable<T> Get<T>(SectionType type) where T : Section => Sections.OfType<T>().Where(s => s.Type == type);
 
         public IClass GetClass(ushort id)
         {
-            return Get<ClassSection>(SectionType.Class).Find(c => c.Id == id);
+            return Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
         }
 
         public string GetOpCodeName(byte type) => Package.GetOpCodeName(type);

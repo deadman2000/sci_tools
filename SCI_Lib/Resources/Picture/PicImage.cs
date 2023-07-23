@@ -53,7 +53,7 @@ namespace SCI_Lib.Resources.Picture
             if (size > 0xffff)
                 throw new FormatException("Too big image data");
 
-            bb.SetShortBE(sizePos, (ushort)size);
+            bb.SetUShortBE(sizePos, (ushort)size);
         }
 
         public byte[] GetBytes()

@@ -28,13 +28,13 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 .Distinct();
             foreach (var m in methods) _methods.Add(m);
 
-            script.Get<StringSection>().ForEach(s => WriteStrings(s));
-            script.Get<SaidSection>().ForEach(s => WriteSaid(s));
-            script.Get<SynonymSecion>().ForEach(s => WriteSynonym(s));
-            script.Get<LocalVariablesSection>().ForEach(s => WriteLocals(s));
-            script.Get<CodeSection>().ForEach(c => WriteProc(c));
-            script.Get<ClassSection>(SectionType.Class).ForEach(s => WriteClass(s));
-            script.Get<ObjectSection>().ForEach(s => WriteClass(s));
+            foreach (var s in script.Get<StringSection>()) WriteStrings(s);
+            foreach (var s in script.Get<SaidSection>()) WriteSaid(s);
+            foreach (var s in script.Get<SynonymSecion>()) WriteSynonym(s);
+            foreach (var s in script.Get<LocalVariablesSection>()) WriteLocals(s);
+            foreach (var s in script.Get<CodeSection>()) WriteProc(s);
+            foreach (var s in script.Get<ClassSection>(SectionType.Class)) WriteClass(s);
+            foreach (var s in script.Get<ObjectSection>()) WriteClass(s);
 
             return sb.ToString().TrimEnd();
         }

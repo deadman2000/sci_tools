@@ -187,7 +187,7 @@ namespace SCI_Lib.Resources.View
                 }
             }
 
-            bb.SetShortBE(offsetEndRef, (ushort)(bb.Position - offsetEndRef)); // Setup offset end
+            bb.SetUShortBE(offsetEndRef, (ushort)(bb.Position - offsetEndRef)); // Setup offset end
         }
     }
 }

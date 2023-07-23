@@ -12,6 +12,7 @@ namespace SCI_Tools
         {
             CreateWord("попроси", WordClass.ImperativeVerb);
             CreateWord("у", WordClass.Proposition);
+            RemoveSaidDubl();
 
             Commit();
 

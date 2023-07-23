@@ -3,6 +3,7 @@ using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Sections;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SCI_Lib.Utils
 {
@@ -35,7 +36,7 @@ namespace SCI_Lib.Utils
 
             var res = _package.GetResource<ResScript>(resNum);
             var scr = res.GetScript() as Script;
-            var vars = scr.Get<LocalVariablesSection>()[0];
+            var vars = scr.Get<LocalVariablesSection>().First();
 
             var txtBegin = 1;
             var txtCount = 0;

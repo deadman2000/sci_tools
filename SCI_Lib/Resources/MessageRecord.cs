@@ -43,7 +43,7 @@ namespace SCI_Lib.Resources
             bb.AddBytes(bytes);
             bb.AddByte(0);
 
-            bb.SetShortBE(OffsetPos, textOffset);
+            bb.SetUShortBE(OffsetPos, textOffset);
         }
     }
 

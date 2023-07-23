@@ -5,6 +5,7 @@ using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Vocab;
 using System;
+using System.Linq;
 
 namespace SCI_Tools
 {
@@ -972,7 +973,7 @@ namespace SCI_Tools
             // дай <предмет> <кому-то>
             var res = _translate.GetResource<ResScript>(413);
             var scr = res.GetScript() as Script;
-            var saidSection = scr.Get<SaidSection>()[0];
+            var saidSection = scr.Get<SaidSection>().First();
             for (int i = 57; i <= 80; i++)
             {
                 var said = saidSection.Saids[i].ToString();
@@ -989,13 +990,13 @@ namespace SCI_Tools
             // Смещаем капли крови
             var res = _translate.GetResource<ResScript>(777);
             var scr = res.GetScript();
-            var drip1 = scr.Get<ClassSection>().Find(c => c.Name == "Drip1");
+            var drip1 = scr.Get<ClassSection>().First(c => c.Name == "Drip1");
             if (drip1.Selectors[4].Value == 165) return;
 
             drip1.Selectors[4].Value = 165; // Y
             drip1.Selectors[5].Value = 41;  // X
 
-            var drip3 = scr.Get<ClassSection>().Find(c => c.Name == "Drip3");
+            var drip3 = scr.Get<ClassSection>().First(c => c.Name == "Drip3");
             drip3.Selectors[4].Value = 164; // Y
             drip3.Selectors[5].Value = 295; // X
 

@@ -43,6 +43,15 @@ namespace SCI_Lib.Resources.Scripts.Elements
             return true;
         }
 
+        public bool Set(IEnumerable<SaidData> saids)
+        {
+            var arr = saids.ToArray();
+            if (IsEqual(Expression, arr)) return false;
+            Expression = arr;
+            _label = null;
+            return true;
+        }
+
         private static bool IsEqual(SaidData[] e1, SaidData[] e2)
         {
             //return Array.Equals(e1, e2);

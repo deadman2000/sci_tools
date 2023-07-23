@@ -102,7 +102,7 @@ namespace SCI_Lib.Resources
                 byte h = (byte)frm.Height;
                 ushort offset = (ushort)bb.Position;
 
-                bb.SetShortBE(6 + i * 2, offset);
+                bb.SetUShortBE(6 + i * 2, offset);
 
                 bb.AddByte(w);
                 bb.AddByte(h);
