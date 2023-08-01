@@ -8,7 +8,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
         private readonly ClassSection _class;
 
         public ClassRef(ClassSection cl)
-            : base(cl.Script, cl.Selectors[0].Address)
+            : base(cl.Script, cl.Properties[0].Address)
         {
             _class = cl;
             IsAddressSet = true;

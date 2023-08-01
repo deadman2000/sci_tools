@@ -1,6 +1,5 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
-using SCI_Lib.Scripts.Elements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +73,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 if (code.IsReturn && code.Address >= lookTo)
                     break;
 
-                if (code.IsCall)
+                if (code.IsJump)
                     sb.AppendLine();
 
                 code = code.Next;
@@ -149,20 +148,20 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
             sb.AppendLine("    (properties");
             var pack = s.Package;
-            for (int i = 4; i < s.Selectors.Length; i++)
+            for (int i = 4; i < s.Properties.Length; i++)
             {
-                if (i < s.Varselectors.Length)
-                    sb.AppendFormat("        {0} {1:x}", pack.GetName(s.Varselectors[i]), s.Selectors[i]).AppendLine();
+                if (i < s.PropNamesInd.Length)
+                    sb.AppendFormat("        {0} {1:x}", pack.GetName(s.PropNamesInd[i]), s.Properties[i]).AppendLine();
                 else
-                    sb.AppendFormat("        !!out of range!! {0:x}", s.Selectors[i]).AppendLine();
+                    sb.AppendFormat("        !!out of range!! {0:x}", s.Properties[i]).AppendLine();
             }
             sb.AppendLine("    )");
 
-            for (int i = 0; i < s.FuncNames.Length; i++)
+            for (int i = 0; i < s.FuncNamesInd.Length; i++)
             {
                 var addr = s.FuncCode[i].TargetOffset;
 
-                sb.AppendLine($"    (method ({pack.GetName(s.FuncNames[i])}) // method_{addr:x4}");
+                sb.AppendLine($"    (method ({pack.GetName(s.FuncNamesInd[i])}) // method_{addr:x4}");
 
                 Code code = s.Script.GetElement(addr) as Code;
                 WriteCode(code);
@@ -190,9 +189,6 @@ namespace SCI_Lib.Resources.Scripts.Builders
                         break;
                     case RefToElement r:
                         sb.Append($"{r.Value:x4}");
-                        break;
-                    case LinkToExport l:
-                        sb.AppendFormat("{0:x4} {1:x4}", l.ScriptNumber, l.ExportNumber);
                         break;
                     default:
                         sb.Append(a.ToString());
@@ -222,9 +218,6 @@ namespace SCI_Lib.Resources.Scripts.Builders
                         else
                             sb.Append($"ref_{r.TargetOffset:x4}");
                         break;
-                    case LinkToExport l:
-                        sb.AppendFormat("{0:x} procedure_{1:x4}", l.ScriptNumber, l.ExportNumber);
-                        break;
                     default:
                         sb.Append(a.ToString());
                         break;
@@ -252,9 +245,6 @@ namespace SCI_Lib.Resources.Scripts.Builders
                             sb.Append(r.Reference.Label);
                         else
                             sb.Append($"ref_{r.TargetOffset:x4}");
-                        break;
-                    case LinkToExport l:
-                        sb.AppendFormat("{0:x} procedure_{1:x4}", l.ScriptNumber, l.ExportNumber);
                         break;
                     default:
                         sb.Append(a.ToString());

@@ -89,24 +89,24 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 .AppendLine($"\tname = {cs.Name}")
                 .AppendLine($"\tspecies = {cs.Id:x}");
 
-            for (int i = 0; i < cs.Selectors.Length; i++)
+            for (int i = 0; i < cs.Properties.Length; i++)
             {
-                var s = cs.Selectors[i];
+                var s = cs.Properties[i];
                 sb.AppendLine($"{s.Address:x4}: sel[{i}] = {s}");
             }
 
             if (cs.Type == SectionType.Class)
             {
                 sb.AppendLine();
-                for (int i = 0; i < cs.Varselectors.Length; i++)
-                    sb.AppendLine($"\tvarsel[{i}] = {cs.Varselectors[i]:x4}\t");
+                for (int i = 0; i < cs.PropNamesInd.Length; i++)
+                    sb.AppendLine($"\tvarsel[{i}] = {cs.PropNamesInd[i]:x4}\t");
             }
 
-            if (cs.FuncNames.Length > 0)
+            if (cs.FuncNamesInd.Length > 0)
             {
                 sb.AppendLine();
-                for (int i = 0; i < cs.FuncNames.Length; i++)
-                    sb.AppendLine($"\tfunc[{i}] = {cs.Package.GetName(cs.FuncNames[i])} {cs.FuncCode[i]:x4}");
+                for (int i = 0; i < cs.FuncNamesInd.Length; i++)
+                    sb.AppendLine($"\tfunc[{i}] = {cs.Package.GetName(cs.FuncNamesInd[i])} {cs.FuncCode[i]:x4}");
             }
         }
 

@@ -1,17 +1,9 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
-using SCI_Lib.Resources.Scripts.Builders;
-using SCI_Lib.Resources.Scripts.Elements;
+using SCI_Lib.Resources.Scripts.Analyzer;
 using SCI_Lib.Resources.Scripts.Sections;
-using SCI_Lib.Resources.Scripts1_1;
-using SCI_Lib.Resources.Vocab;
-using SCI_Lib.Utils;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,10 +18,8 @@ namespace SCI_Tools
         {
             try
             {
-                var res = package.GetResource<ResScript>(100);
-                var script = res.GetScript() as Script;
-                
-                Console.WriteLine(new CompanionBuilder().Decompile(script));
+                //DecompileAll();
+                Decompile(107);
 
                 /*HashSet<string> words = new();
                 foreach (var res in translate.Scripts)
@@ -160,6 +150,29 @@ namespace SCI_Tools
             }
 
             return Task.CompletedTask;
+        }
+
+        private void Decompile(ushort num)
+        {
+            var res = package.GetResource<ResScript>(num);
+            var script = res.GetScript() as Script;
+
+            var analyzer = script.Analyze();
+            File.WriteAllText(@$"c:\Projects\TranslateWeb\out\{res.Number}_cpp.graph", analyzer.GetGraph(ScriptAnalyzer.CodeType.CPP));
+            File.WriteAllText(@$"c:\Projects\TranslateWeb\out\{res.Number}_meta.graph", analyzer.GetGraph(ScriptAnalyzer.CodeType.Meta));
+            File.WriteAllText(@$"c:\Projects\TranslateWeb\out\{res.Number}_asm.graph", analyzer.GetGraph(ScriptAnalyzer.CodeType.ASM));
+
+        }
+
+        private void DecompileAll()
+        {
+            foreach (var res in package.GetResources<ResScript>())
+            {
+                Console.WriteLine(res);
+                var script = res.GetScript() as Script;
+                var analyzer = script.Analyze();
+                analyzer.GetGraph(ScriptAnalyzer.CodeType.CPP);
+            }
         }
 
         private void FindTextCall(int text, int index)

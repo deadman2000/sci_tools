@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Resources.Scripts.Elements;
+﻿using SCI_Lib.Resources.Scripts.Analyzer;
+using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;
 using System.Collections.Generic;
@@ -109,10 +110,7 @@ namespace SCI_Lib.Resources.Scripts
 
         internal IEnumerable<T> Get<T>(SectionType type) where T : Section => Sections.OfType<T>().Where(s => s.Type == type);
 
-        public IClass GetClass(ushort id)
-        {
-            return Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
-        }
+        public ClassSection GetClassSection(ushort id) => Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
 
         public string GetOpCodeName(byte type) => Package.GetOpCodeName(type);
 
@@ -129,5 +127,7 @@ namespace SCI_Lib.Resources.Scripts
                 return code;
             return null;
         }
+
+        public ScriptAnalyzer Analyze() => new(this);
     }
 }

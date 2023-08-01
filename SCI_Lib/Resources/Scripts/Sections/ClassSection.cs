@@ -1,12 +1,32 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Utils;
+using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
-    public class ClassSection : Section, IClass
+    public class ClassSection : Section
     {
-        ushort funcList;
-        ushort[] varselectors;
+        public ushort Id => Properties[0].Value;
+
+        private ushort funcList;
+        private ushort[] _propNamesInd;
+
+        public string Name { get; private set; }
+
+        public PropertyElement[] Properties { get; private set; }
+
+        public ushort[] PropNamesInd => _propNamesInd ?? SuperClass.PropNamesInd;
+
+        public ushort[] FuncNamesInd { get; private set; }
+        public string[] FuncNames { get; private set; }
+
+        public FuncRef[] FuncCode { get; private set; }
+
+        private ClassSection _superClass;
+        private bool _prepared;
+
+        public ClassSection SuperClass => _superClass ??= Package.GetClassSection(Properties[1].Value);
+
 
         public override void Read(byte[] data, ushort offset, int length)
         {
@@ -19,27 +39,36 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 throw new System.Exception("Wrong class var offset");
 
             funcList = ReadShortBE(data, ref offset);
-            int selectorsCount = ReadShortBE(data, ref offset);
+            int propsCount = ReadShortBE(data, ref offset);
 
-            Selectors = new PropertyElement[selectorsCount];
-            for (int i = 0; i < selectorsCount; i++)
+            Properties = new PropertyElement[propsCount];
+            for (int i = 0; i < propsCount; i++)
             {
                 var addr = offset;
                 var val = ReadShortBE(data, ref offset);
-                Selectors[i] = new PropertyElement(this, i, addr, val);
+                Properties[i] = new PropertyElement(this, i, addr, val);
             }
 
             if (Type == SectionType.Class)
             {
-                varselectors = new ushort[selectorsCount];
-                for (int i = 0; i < selectorsCount; i++)
-                    varselectors[i] = ReadShortBE(data, ref offset);
+                _propNamesInd = new ushort[propsCount];
+                for (int i = 0; i < propsCount; i++)
+                {
+                    var ind = ReadShortBE(data, ref offset);
+                    _propNamesInd[i] = ind;
+                    Properties[i].Name = Package.GetName(ind);
+                }
             }
 
             int fs = ReadShortBE(data, ref offset);
-            FuncNames = new ushort[fs];
+            FuncNamesInd = new ushort[fs];
+            FuncNames = new string[fs];
             for (int i = 0; i < fs; i++)
-                FuncNames[i] = ReadShortBE(data, ref offset);
+            {
+                var ind = ReadShortBE(data, ref offset);
+                FuncNamesInd[i] = ind;
+                FuncNames[i] = Package.GetName(ind);
+            }
 
             offset += 2;
 
@@ -53,11 +82,27 @@ namespace SCI_Lib.Resources.Scripts.Sections
             //_script.Register(Selectors[0]);
         }
 
+        public void Prepare()
+        {
+            if (_prepared) return;
+            _prepared = true;
+            if (Type == SectionType.Object)
+            {
+                for (int i = 0; i < Properties.Length; i++)
+                {
+                    if (SuperClass.Properties.Length <= i)
+                        Properties[i].Name = $"prop_{i}";
+                    else
+                        Properties[i].Name = SuperClass.Properties[i].Name;
+                }
+            }
+        }
+
         public override void SetupByOffset()
         {
-            for (int i = 0; i < Selectors.Length; i++)
+            for (int i = 0; i < Properties.Length; i++)
             {
-                var c = Selectors[i];
+                var c = Properties[i];
                 var val = c.Value;
 
                 var target = _script.GetElement(val);
@@ -67,9 +112,9 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 }
             }
 
-            if (Selectors.Length > 3)
+            if (Properties.Length > 3)
             {
-                var nameRef = Selectors[3].Reference;
+                var nameRef = Properties[3].Reference;
                 if (nameRef != null)
                 {
                     if (nameRef is StringConst s)
@@ -89,40 +134,24 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 r.SetupByOffset();
         }
 
-        public ushort Id => Selectors[0].Value;
-
-        public string Name { get; private set; }
-
-        public PropertyElement[] Selectors { get; private set; }
-
-        public ushort[] Varselectors => varselectors ?? SuperClass.Varselectors;
-
-        public ushort[] FuncNames { get; private set; }
-
-        public FuncRef[] FuncCode { get; private set; }
-
-        private ClassSection _superClass;
-
-        public ClassSection SuperClass => _superClass ??= Package.GetClass(Selectors[1].Value) as ClassSection;
-
         public override void Write(ByteBuilder bb)
         {
             bb.AddShortBE(0x1234);
             bb.AddShortBE(0);
             bb.AddUShortBE(funcList);
-            bb.AddUShortBE((ushort)Selectors.Length);
+            bb.AddUShortBE((ushort)Properties.Length);
 
-            for (int i = 0; i < Selectors.Length; i++)
-                Selectors[i].Write(bb);
+            for (int i = 0; i < Properties.Length; i++)
+                Properties[i].Write(bb);
 
             if (Type == SectionType.Class)
             {
-                foreach (ushort vs in varselectors)
+                foreach (ushort vs in _propNamesInd)
                     bb.AddUShortBE(vs);
             }
 
-            bb.AddUShortBE((ushort)FuncNames.Length);
-            foreach (ushort val in FuncNames)
+            bb.AddUShortBE((ushort)FuncNamesInd.Length);
+            foreach (ushort val in FuncNamesInd)
                 bb.AddUShortBE(val);
 
             bb.AddShortBE(0);
@@ -133,11 +162,13 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public override void WriteOffsets(ByteBuilder bb)
         {
-            for (int i = 0; i < Selectors.Length; i++)
-                Selectors[i].WriteOffset(bb);
+            for (int i = 0; i < Properties.Length; i++)
+                Properties[i].WriteOffset(bb);
 
             foreach (RefToElement r in FuncCode)
                 r.WriteOffset(bb);
         }
+
+        public bool IsProp(string name) => Properties.Any(p => p.Name == name);
     }
 }

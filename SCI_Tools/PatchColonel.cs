@@ -991,14 +991,14 @@ namespace SCI_Tools
             var res = _translate.GetResource<ResScript>(777);
             var scr = res.GetScript();
             var drip1 = scr.Get<ClassSection>().First(c => c.Name == "Drip1");
-            if (drip1.Selectors[4].Value == 165) return;
+            if (drip1.Properties[4].Value == 165) return;
 
-            drip1.Selectors[4].Value = 165; // Y
-            drip1.Selectors[5].Value = 41;  // X
+            drip1.Properties[4].Value = 165; // Y
+            drip1.Properties[5].Value = 41;  // X
 
             var drip3 = scr.Get<ClassSection>().First(c => c.Name == "Drip3");
-            drip3.Selectors[4].Value = 164; // Y
-            drip3.Selectors[5].Value = 295; // X
+            drip3.Properties[4].Value = 164; // Y
+            drip3.Properties[5].Value = 295; // X
 
             Changed(res);
         }

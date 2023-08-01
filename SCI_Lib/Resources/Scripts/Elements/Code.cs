@@ -1,5 +1,4 @@
 ﻿using SCI_Lib.Resources.Scripts.Sections;
-using SCI_Lib.Scripts.Elements;
 using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
@@ -42,7 +41,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public string ArgsToString()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             for (int i = 0; i < Arguments.Count; i++)
             {
@@ -84,7 +83,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 switch (a)
                 {
                     case byte b:
-                        sb.Append($"{a:x2}");
+                        sb.Append($"{b:x2}");
                         break;
                     case ushort s:
                         sb.Append($"{s:x4}");
@@ -105,10 +104,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
             return sb.ToString();
         }
 
-        public override string ToString()
-        {
-            return $"{Address:x4}: {Type:x2} {ArgsToHex(),-8} \t {Name} {ArgsToString(),-25}";
-        }
+        public override string ToString() => $"{Address:x4}: {Type:x2} {ArgsToHex(),-8} \t {Name} {ArgsToString(),-25}";
+        public string ASM => $"{Name} {ArgsToString()}";
 
         public void Read(byte[] data, ref ushort offset)
         {
@@ -118,19 +115,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
             if (Type > 0x7F)
             {
                 if ((Type & 0x01) == 0)
-                {
-                    Arguments.Add(data[offset++]);
-                    Arguments.Add(data[offset++]);
-                }
+                    Arguments.Add((ushort)(data[offset++] + (data[offset++] << 8)));
                 else
-                {
                     Arguments.Add(data[offset++]);
-                }
                 return;
             }
 
             ushort addr = offset;
-            ushort val;
 
             switch (Type)
             {
@@ -203,7 +194,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x7d:
                     break;
 
-                // 2 bytes
+                // B
                 case 0x2f:
                 case 0x31:
                 case 0x35:
@@ -229,12 +220,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     break;
 
                 case 0x33:
-                    val = data[offset++];
-                    Arguments.Add(new RefToElement(Script, addr, val, (ushort)(offset + 1 + val), 1) { Source = this });
+                    {
+                        var a1 = data[offset++];
+                        Arguments.Add(new RefToElement(Script, addr, a1, (ushort)(offset + 1 + a1), 1) { Source = this });
+                    }
                     break;
 
-                // 3 bytes
-                case 0x34:
+                // B B
                 case 0x3e:
                 case 0x43: // callk
                 case 0x45:
@@ -252,63 +244,79 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     Arguments.Add(data[offset++]);
                     break;
 
+                // W
+                case 0x34:
                 case 0x38:
                     Arguments.Add((ushort)(data[offset++] + (data[offset++] << 8)));
                     break;
 
                 // Relative offset
                 case 0x41: // call B
-                    val = data[offset++];
-                    Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 1));
-                    Arguments.Add(data[offset++]);
+                    {
+                        var a1 = data[offset++];
+                        Arguments.Add(new CodeRef(this, addr, a1, (ushort)(offset + a1), 1));
+                        Arguments.Add(data[offset++]);
+                    }
                     break;
 
                 case 0x2e: // bt
                 case 0x30: // bnt
                 case 0x32: // jmp
-                    val = (ushort)(data[offset++] + (data[offset++] << 8));
-                    Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 2));
+                    {
+                        var a1 = ReadUShort(data, ref offset);
+                        Arguments.Add(new CodeRef(this, addr, a1, (ushort)(offset + a1), 2));
+                    }
                     break;
 
                 case 0x72: // lofsa
-                    val = (ushort)(data[offset++] + (data[offset++] << 8));
-                    if (Script.Package.ViewFormat == ViewFormat.EGA)
-                        Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 2));
-                    else
-                        Arguments.Add(new RefToElement(Script, addr, val) { Source = this });
+                    {
+                        var a1 = ReadUShort(data, ref offset);
+                        if (Script.Package.ViewFormat == ViewFormat.EGA)
+                            //Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 2));
+                            Arguments.Add(new RefToElement(Script, addr, (ushort)(offset + a1)) { Source = this });
+                        else
+                            Arguments.Add(new RefToElement(Script, addr, a1) { Source = this });
+                    }
                     break;
 
-                // 4 bytes
+                // W B
                 case 0x42:
                 case 0x44:
-                case 0x47:
                 case 0x56: // ???  super W class, B stackframe (4 bytes)
+                    Arguments.Add(ReadUShort(data, ref offset));
+                    Arguments.Add(data[offset++]);
+                    break;
+
+                // B B B
+                case 0x47:
                     Arguments.Add(data[offset++]);
                     Arguments.Add(data[offset++]);
                     Arguments.Add(data[offset++]);
                     break;
 
-                case 0x40: // call W
-                    val = (ushort)(data[offset++] + (data[offset++] << 8));
-                    var arg = data[offset++];
-                    Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 2));
-                    Arguments.Add(arg);
+                case 0x40: // call W B
+                    {
+                        var a1 = ReadUShort(data, ref offset);
+                        var a2 = data[offset++];
+                        Arguments.Add(new CodeRef(this, addr, a1, (ushort)(offset + a1), 2));
+                        Arguments.Add(a2);
+                    }
                     break;
 
-                // 5 bytes
-                case 0x5a: // lea W W
-                    Arguments.Add((ushort)(data[offset++] + (data[offset++] << 8)));
-                    Arguments.Add((ushort)(data[offset++] + (data[offset++] << 8)));
+                // W W
+                case 0x5a: // lea
+                    Arguments.Add(ReadUShort(data, ref offset));
+                    Arguments.Add(ReadUShort(data, ref offset));
                     break;
 
-                // 6 bytes
-                case 0x46:
-                    ushort a1 = (ushort)(data[offset++] + data[offset++] * 256);
-                    ushort a2 = (ushort)(data[offset++] + data[offset++] * 256);
-                    Arguments.Add(new LinkToExport(a1, a2));
-                    Arguments.Add(data[offset++]);
+                // W W B
+                case 0x46: // calle
+                    {
+                        Arguments.Add(ReadUShort(data, ref offset));
+                        Arguments.Add(ReadUShort(data, ref offset));
+                        Arguments.Add(data[offset++]);
+                    }
                     break;
-
 
                 case 0x4c:
                 case 0x4d:
@@ -324,6 +332,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
                 default: throw new NotImplementedException($"OpCode {Type:X02} '{Name}' arg's unknown");
             }
+        }
+
+        static ushort ReadUShort(byte[] data, ref ushort offset)
+        {
+            var l = data[offset++];
+            var h = data[offset++];
+            return (ushort)(l | (h << 8));
         }
 
         public int Size
@@ -455,6 +470,12 @@ namespace SCI_Lib.Resources.Scripts.Elements
             _ => false,
         };
 
+        public bool IsJump => Name switch
+        {
+            "bt" or "bnt" or "jmp" => true,
+            _ => false,
+        };
+
         public override void SetupByOffset()
         {
             foreach (object a in Arguments)
@@ -479,9 +500,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     case RefToElement r:
                         r.Write(bb);
                         break;
-                    case LinkToExport l:
-                        l.Write(bb);
-                        break;
                     default:
                         throw new NotImplementedException();
                 }
@@ -496,7 +514,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 {
                     case byte _:
                     case ushort _:
-                    case LinkToExport _:
                         continue;
                     case RefToElement r:
                         r.WriteOffset(Address + Size, bb);

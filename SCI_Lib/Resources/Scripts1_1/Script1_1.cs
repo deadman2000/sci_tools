@@ -136,7 +136,7 @@ namespace SCI_Lib.Resources.Scripts1_1
             return Array.Empty<StringConst>();
         }
 
-        public IClass GetClass(ushort id)
+        public Object1_1 GetObject(ushort id)
         {
             foreach (var obj in Objects)
                 if (obj.ClassId == id) return obj;

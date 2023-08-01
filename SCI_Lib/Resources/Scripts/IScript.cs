@@ -10,9 +10,6 @@ namespace SCI_Lib.Resources.Scripts
 
         IEnumerable<StringConst> AllStrings();
 
-        IClass GetClass(ushort id);
-
-
         IEnumerable<T> Get<T>() where T : Section;
     }
 }

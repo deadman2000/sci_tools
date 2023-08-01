@@ -6,7 +6,7 @@ using System.IO;
 
 namespace SCI_Lib.Resources.Scripts1_1
 {
-    public class Object1_1 : IClass
+    public class Object1_1 
     {
         private readonly byte[] _heap;
        
@@ -88,7 +88,7 @@ namespace SCI_Lib.Resources.Scripts1_1
                 var porpSuper = this[GeneralProperty.Super];
                 if (porpSuper == 0xFFFF) return null;
 
-                return _super = Script.Package.GetClass(porpSuper) as Object1_1;
+                return _super = Script.Package.GetObject(porpSuper);
             }
         }
 

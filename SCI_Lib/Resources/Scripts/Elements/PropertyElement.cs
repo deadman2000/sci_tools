@@ -5,23 +5,23 @@ namespace SCI_Lib.Resources.Scripts.Elements
 {
     public class PropertyElement : BaseElement
     {
-        private readonly ClassSection _class;
-        private readonly int _index;
+        public ClassSection Class { get; }
+        public int Index { get; }
+
         private int _address;
 
+        public string Name { get; set; }
         public ushort Value { get; set; }
         public BaseElement Reference { get; set; }
-
         public string ValueStr => Reference != null ? Reference.ToString() : $"{Value:x}";
-
-        public override string Label => $"{_class.Name}[{_index}] = {ValueStr}";
+        public override string Label => $"{Class.Name}[{Index}] = {ValueStr}";
 
         public PropertyElement(ClassSection cl, int index, ushort address, ushort val)
             : base(cl.Script, address)
         {
             Value = val;
-            _class = cl;
-            _index = index;
+            Class = cl;
+            Index = index;
         }
 
         protected override void WriteData(ByteBuilder bb)
@@ -38,6 +38,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
             bb.SetUShortBE(_address, Value);
         }
 
-        public override string ToString() => $"${Value:x}";
+        public override string ToString() => $"{Name} = ${Value:x}";
     }
 }

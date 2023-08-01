@@ -1,6 +1,8 @@
 ﻿using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
+using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1_1;
 using SCI_Lib.Resources.View;
 using SCI_Lib.Resources.Vocab;
 using SCI_Lib.SCI0;
@@ -128,14 +130,25 @@ namespace SCI_Lib
 
         private IEnumerable<IScript> _scriptsCache;
 
-        public IClass GetClass(ushort id)
+        public ClassSection GetClassSection(ushort id)
         {
-            if (_scriptsCache == null)
-                _scriptsCache = Scripts.Select(r => r.GetScript());
+            _scriptsCache ??= Scripts.Select(r => r.GetScript());
 
-            foreach (var s in _scriptsCache)
+            foreach (var s in _scriptsCache.OfType<Script>())
             {
-                var cls = s.GetClass(id);
+                var cls = s.GetClassSection(id);
+                if (cls != null) return cls;
+            }
+            return null;
+        }
+
+        public Object1_1 GetObject(ushort id)
+        {
+            _scriptsCache ??= Scripts.Select(r => r.GetScript());
+
+            foreach (var s in _scriptsCache.OfType<Script1_1>())
+            {
+                var cls = s.GetObject(id);
                 if (cls != null) return cls;
             }
             return null;
@@ -262,11 +275,23 @@ namespace SCI_Lib
         {
             _names ??= LoadNames();
             if (_names == null) return null;
-            if (ind >= _names.Length) return "???";
+            if (ind >= _names.Length) return $"unknown{ind}";
             return _names[ind];
         }
 
         private string[] LoadNames() => GetResource<ResVocab997>(997)?.GetVocabNames();
+
+        public ClassSection GetClass(ushort id)
+        {
+            foreach (var res in Scripts)
+            {
+                var scr = res.GetScript() as Script;
+                foreach (var cl in scr.Get<ClassSection>())
+                    if (cl.Type == SectionType.Class && cl.Id == id)
+                        return cl;
+            }
+            return null;
+        }
 
         public IEnumerable<Resource> GetTextResources()
         {

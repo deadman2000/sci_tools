@@ -32,7 +32,7 @@ namespace SCI_Lib.Resources
             return ReadText(data);
         }
 
-        private string[] ReadIndicies(byte[] data)
+        private static string[] ReadIndicies(byte[] data)
         {
             var ms = new MemoryStream(data);
             int cnt = ms.ReadUShortBE();
@@ -56,7 +56,7 @@ namespace SCI_Lib.Resources
 
         private string[] ReadText(byte[] data)
         {
-            List<string> lines = new List<string>();
+            List<string> lines = new();
 
             int s = 0;
             int ind = 0;
