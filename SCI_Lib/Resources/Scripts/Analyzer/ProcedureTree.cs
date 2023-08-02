@@ -8,11 +8,12 @@ namespace SCI_Lib.Resources.Scripts.Analyzer;
 
 public class ProcedureTree
 {
-    private readonly Code _begin;
+    public Code Begin { get; }
+    public Code End { get; private set; }
 
     private readonly Dictionary<ushort, CodeBlock> _blocksByAddress = new();
     private readonly Dictionary<ushort, ParamExpr> _params = new();
-
+    private readonly List<LinkExpr> _links = new();
     private int _nextVarId = 0;
 
     public string Name { get; }
@@ -26,18 +27,19 @@ public class ProcedureTree
     {
         Decompiler = decompiler;
         Class = cl;
-        _begin = code;
+        Begin = code;
         Name = name;
     }
 
     public void BuildMethod()
     {
-        var code = _begin;
+        var code = Begin;
         ushort end = 0;
         List<Code> jupms = new();
         List<Code> instructions = new();
         while (true)
         {
+            End = code;
             instructions.Add(code);
             if (code.IsReturn)
             {
@@ -71,33 +73,74 @@ public class ProcedureTree
         if (jupms.Count > 0)
         {
             var address = jupms.Distinct()
-                .Where(c => c != _begin)
+                .Where(c => c != Begin)
                 .Select(c => c.Address)
                 .OrderBy(a => a)
                 .ToArray();
 
-            first = CreateBlock(instructions.Where(c => c.Address < address[0]));
+            first = CreateBlock(instructions.Where(c => c.Address < address[0]), true);
             for (int i = 0; i < address.Length - 1; i++)
                 CreateBlock(instructions.Where(c => c.Address >= address[i] && c.Address < address[i + 1]));
             CreateBlock(instructions.Where(c => c.Address >= address[^1]));
         }
         else
         {
-            first = CreateBlock(instructions);
+            first = CreateBlock(instructions, true);
         }
 
         foreach (var block in _blocksByAddress.Values)
             block.BuildTree();
 
-        first.IsBegin = true;
         first.BuildTree();
         first.Decompile();
-        first.CalcAcc();
+
+        CalcLinks();
     }
 
-    private CodeBlock CreateBlock(IEnumerable<Code> ops)
+    private void CalcLinks()
     {
-        var block = new CodeBlock(this, ops.ToList());
+        foreach (var link in _links)
+            CheckUsed(link);
+    }
+
+    private void CheckUsed(LinkExpr link)
+    {
+        if (!link.Used) return;
+
+        if (link.Checked) return;
+        link.Checked = true;
+
+        foreach (var (_, e) in link.Links)
+        {
+            e.Use();
+            if (e is LinkExpr l)
+                CheckUsed(l);
+        }
+
+        if (link.Links.Count > 1)
+        {
+            var v = CreateVar();
+            foreach (var (b, e) in link.Links)
+            {
+                var val = link.IsAcc ? b.Acc : b.Prev;
+                if (e.Var != null)
+                {
+                    b.Expressions.Add(new SetExpr(v, e.Var, false));
+                }
+                else
+                {
+                    b.Expressions.Add(new SetExpr(v, val, false));
+                    e.MakeVar(v);
+                }
+            }
+
+            link.SetVar(v);
+        }
+    }
+
+    private CodeBlock CreateBlock(IEnumerable<Code> ops, bool begin = false)
+    {
+        var block = new CodeBlock(this, ops.ToList(), begin);
         _blocksByAddress.Add(block.AddrBegin, block);
         return block;
     }
@@ -118,5 +161,10 @@ public class ProcedureTree
     {
         if (_blocksByAddress.TryGetValue(code.Address, out var block)) return block;
         throw new InvalidOperationException();
+    }
+
+    internal void RegisterLink(LinkExpr link)
+    {
+        _links.Add(link);
     }
 }

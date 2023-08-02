@@ -2,32 +2,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SCI_Lib.Resources.Scripts.Analyzer;
 
 public class CodeBlock
 {
-    private readonly ProcedureTree _proc;
     private readonly SCIPackage _package;
+
+    public ProcedureTree Procedure { get; }
+    public List<Code> Code { get; }
+    public bool IsBegin { get; }
 
     public List<Expr> Expressions { get; } = new();
     private readonly List<Expr> _stack = new();
 
     private bool _isBuild;
     private bool _isDecompiled;
-    private bool _isLinkCalc;
 
     // Ссылки для сбора значений аккумуляторов, которые могут прийти из других блоков
-    private readonly LinkExpr _linkAcc;
-    private readonly LinkExpr _linkPrev;
+    public LinkExpr LinkAcc { get; }
+    public LinkExpr LinkPrev { get; }
 
-    private Expr _prev;
-    private Expr _acc;
-    private Expr _condition;
+    public Expr Prev { get; private set; }
+    public Expr Acc { get; private set; }
+    public Expr Condition { get; private set; }
     private ushort _rest;
 
-    public List<Code> Code { get; }
     public List<CodeBlock> Parents { get; } = new();
 
     public Code NextA { get; set; }
@@ -36,55 +36,32 @@ public class CodeBlock
     public Code NextB { get; set; }
     public CodeBlock BlockB { get; set; }
 
-    public bool IsBegin { get; set; }
 
     public ushort AddrBegin => Code[0].Address;
     public ushort AddrEnd => Code[^1].Address;
     public bool ReturnA => NextA != null && NextA.IsReturn;
     public bool ReturnB => NextB != null && NextB.IsReturn;
 
-    public CodeBlock(ProcedureTree proc, List<Code> list)
+
+    public CodeBlock(ProcedureTree proc, List<Code> list, bool isBegin)
     {
-        _proc = proc;
-        _package = list[0].Script.Package;
-        _linkAcc = new LinkExpr();
-        _linkPrev = new LinkExpr();
-        _acc = _linkAcc;
-        _prev = _linkPrev;
+        Procedure = proc;
         Code = list;
+        IsBegin = isBegin;
+
+        _package = list[0].Script.Package;
+        //if (!isBegin)
+        {
+            LinkAcc = new LinkExpr(true, $"A {AddrBegin:x4}");
+            LinkPrev = new LinkExpr(false, $"P {AddrBegin:x4}");
+            Acc = LinkAcc;
+            Prev = LinkPrev;
+            proc.RegisterLink(LinkAcc);
+            proc.RegisterLink(LinkPrev);
+        }
     }
 
-    public string ASM => $"{AddrBegin:x04}:{AddrEnd:x04}\\n" + string.Join("\\l", Code.Select(c => Escape(c.ASM.Trim()))) + "\\l";
-
-    public string GetCppGraph()
-    {
-        StringBuilder code = new();
-        foreach (var exp in Expressions)
-            code.Append(exp.Label).Append("\\l");
-
-        if (_condition != null)
-            code.Append($"if ({_condition.VarLabel})\\l");
-
-        return Escape(code.ToString());
-    }
-
-    public string GetMetaGraph()
-    {
-        StringBuilder code = new($"{AddrBegin:x04}:{AddrEnd:x04}\\n");
-        foreach (var exp in Expressions)
-            code.Append(exp).Append($" ->{exp.LinksCount}").Append("\\l");
-
-        if (_condition != null)
-            code.Append($"if ({_condition})\\l");
-
-        return Escape(code.ToString());
-    }
-
-    private static string Escape(string str) => str.Replace("\"", "'");
-
-    public string Label => $"Code{AddrBegin:x4}";
     public override string ToString() => $"{AddrBegin:x4} -> ({NextA?.Address:x4}, {NextB?.Address:x4})";
-
 
 
     public void BuildTree()
@@ -96,13 +73,13 @@ public class CodeBlock
 
         if (NextA != null && !NextA.IsReturn)
         {
-            BlockA = _proc.GetBlock(NextA);
+            BlockA = Procedure.GetBlock(NextA);
             BlockA.Parents.Add(this);
             BlockA.BuildTree();
         }
         if (NextB != null && !NextB.IsReturn)
         {
-            BlockB = _proc.GetBlock(NextB);
+            BlockB = Procedure.GetBlock(NextB);
             BlockB.Parents.Add(this);
             BlockB.BuildTree();
         }
@@ -153,16 +130,15 @@ public class CodeBlock
     public void Decompile()
     {
         if (_isDecompiled) return;
+        _isDecompiled = true;
 
         foreach (var c in Code)
             ExecuteCode(c);
 
-        if (_condition != null)
-            Expressions.Remove(_condition);
+        if (Condition != null && Condition.Var == null)
+            Expressions.Remove(Condition);
 
-        Expressions.RemoveAll(e => e.LinksCount == 1);
-
-        _isDecompiled = true;
+        //Expressions.RemoveAll(e => e.UseCount == 1);
 
         if (BlockA != null)
         {
@@ -172,10 +148,7 @@ public class CodeBlock
                 BlockA.Decompile();
             }
 
-            if (_condition != null)
-                BlockB.LinkTo(this, true);
-            else
-                BlockA.LinkTo(this);
+            BlockA.LinkTo(this);
         }
 
         if (BlockB != null)
@@ -186,56 +159,14 @@ public class CodeBlock
                 BlockB.Decompile();
             }
 
-            if (_condition != null)
-                BlockB.LinkTo(this, false);
-            else
-                BlockB.LinkTo(this);
+            BlockB.LinkTo(this);
         }
-    }
-
-    private void LinkTo(CodeBlock block, bool trueBranch)
-    {
-        _linkAcc.LinkTo(block, new UShortConst(trueBranch ? 1 : 0));
-        _linkPrev.LinkTo(block, block._prev);
     }
 
     private void LinkTo(CodeBlock block)
     {
-        _linkAcc.LinkTo(block, block._acc);
-        _linkPrev.LinkTo(block, block._prev);
-    }
-
-    public void CalcAcc()
-    {
-        if (_isLinkCalc) return;
-        _isLinkCalc = true;
-
-        if (_linkAcc.Used && _linkAcc.Links.Count > 1)
-        {
-            var v = _proc.CreateVar();
-            _linkAcc.SetVar(v);
-            foreach (var (Block, Expression) in _linkAcc.Links)
-            {
-                Expression.MakeVar(v.Name);
-                Block.Expressions.Remove(Block._acc);
-                Block.Set(v, Block._acc);
-            }
-        }
-
-        if (_linkPrev.Used && _linkPrev.Links.Count > 1)
-        {
-            var v = _proc.CreateVar();
-            _linkPrev.SetVar(v);
-            foreach (var (Block, Expression) in _linkPrev.Links)
-            {
-                Expression.MakeVar(v.Name);
-                Block.Expressions.Remove(Block._prev);
-                Block.Set(v, Block._prev);
-            }
-        }
-
-        BlockA?.CalcAcc();
-        BlockB?.CalcAcc();
+        if (block.Acc != null) LinkAcc.LinkTo(block, block.Acc);
+        if (block.Prev != null) LinkPrev.LinkTo(block, block.Prev);
     }
 
     private void ExecuteCode(Code code)
@@ -243,30 +174,33 @@ public class CodeBlock
         if (code.Type >= 0x80)
         {
             ushort val = GetVal(code.Arguments[0]);
-            var type = code.Type >> 1 & 0x3;
-            bool isStack = (code.Type & 1 << 3) != 0;
-            bool isAccIndex = (code.Type & 1 << 4) != 0;
+            var type = (code.Type >> 1) & 0x3;
+            bool isStack = (code.Type & (1 << 3)) != 0;
+            bool isAccIndex = (code.Type & (1 << 4)) != 0;
 
-            Expr varialbe = OpGetExpression(type, val);
+            Expr variable = OpGetExpression(type, val);
             if (isAccIndex)
-                varialbe = new ArrayExpr((ParamExpr)varialbe, GetAcc());
+                variable = new ArrayExpr((ParamExpr)variable, GetAcc());
 
             var exec = code.Type >> 5 & 0x3;
-
-            if (exec == 2) // Increment
-                varialbe = new Math1Expr(varialbe, "++");
-            else if (exec == 3) // Decrement
-                varialbe = new Math1Expr(varialbe, "--");
 
             switch (exec)
             {
                 case 0: // Load
+                    break;
                 case 2: // Increment
+                    {
+                        var exp = new Math2Expr(variable, "+", new ConstExpr(1));
+                        Set(variable, exp, true);
+                        variable = exp;
+                    }
+                    break;
                 case 3: // Decrement
-                    if (isStack)
-                        _stack.Add(varialbe);
-                    else
-                        SetAcc(varialbe);
+                    {
+                        var exp = new Math2Expr(variable, "-", new ConstExpr(1));
+                        Set(variable, exp, true);
+                        variable = exp;
+                    }
                     break;
                 case 1: // Store
                     {
@@ -274,11 +208,21 @@ public class CodeBlock
                         if (isStack)
                             op = Pop();
                         else
-                            op = GetAcc();
-                        Set(varialbe, op);
+                        {
+                            if (isAccIndex)
+                                op = Pop();
+                            else
+                                op = GetAcc();
+                        }
+                        Set(variable, op, true);
                     }
-                    break;
+                    return;
             }
+
+            if (isStack)
+                _stack.Add(variable);
+            else
+                SetAcc(variable);
             return;
         }
 
@@ -338,32 +282,32 @@ public class CodeBlock
                 break;
             case 0x1a: // eq?
             case 0x1b:
-                _prev = GetAcc();
+                Prev = GetAcc();
                 SetAcc(new Math2Expr(Pop(), "==", GetAcc()));
                 break;
             case 0x1c: // ne?
             case 0x1d:
-                _prev = GetAcc();
+                Prev = GetAcc();
                 SetAcc(new Math2Expr(Pop(), "!=", GetAcc()));
                 break;
             case 0x1e: // gt?
             case 0x1f:
-                _prev = GetAcc();
+                Prev = GetAcc();
                 SetAcc(new Math2Expr(Pop(), ">", GetAcc()));
                 break;
             case 0x20: // ge?
             case 0x21:
-                _prev = GetAcc();
+                Prev = GetAcc();
                 SetAcc(new Math2Expr(Pop(), ">=", GetAcc()));
                 break;
             case 0x22: // lt?
             case 0x23:
-                _prev = GetAcc();
+                Prev = GetAcc();
                 SetAcc(new Math2Expr(Pop(), "<", GetAcc()));
                 break;
             case 0x24: // le?
             case 0x25:
-                _prev = GetAcc();
+                Prev = GetAcc();
                 SetAcc(new Math2Expr(Pop(), "<=", GetAcc()));
                 break;
             case 0x26: // ugt?
@@ -386,8 +330,8 @@ public class CodeBlock
             case 0x2f:
             case 0x30: // bnt
             case 0x31:
-                _condition = GetAcc();
-                _condition.Use();
+                Condition = GetAcc();
+                Condition.Use();
                 break;
             case 0x32: //jmp
             case 0x33:
@@ -417,7 +361,7 @@ public class CodeBlock
                 {
                     ushort cnt = GetVal(code.Arguments[0]);
                     for (ushort i = 0; i < cnt; i++)
-                        Push(_proc.GetParam(i));
+                        Push(Procedure.GetParam(i));
                 }
                 break;
             case 0x40: // call
@@ -447,7 +391,7 @@ public class CodeBlock
                     ushort ind = GetVal(code.Arguments[0]);
                     var cnt = (byte)code.Arguments[1] / 2;
                     var args = PopArgs(cnt);
-                    SetAcc(new CallExpr($"proc_{ind}", args));
+                    SetAcc(new CallExpr($"proc_{ind}", args)); // индекс - номер процедуры из экспорта скрипта 0
                 }
                 break;
             case 0x46: // calle
@@ -468,14 +412,11 @@ public class CodeBlock
                 {
                     var cnt = (byte)code.Arguments[0] / 2;
                     var target = GetAcc();
-                    if (target is CallExpr)
-                    {
-                        var varExp = _proc.CreateVar();
-                        Expressions.Remove(target);
-                        Set(varExp, target);
-                        target = varExp;
-                    }
-
+                    if (target.Var != null)
+                        target = target.Var;
+                    else if (target is CallExpr)
+                        target.MakeVar(Procedure.CreateVar());
+                    
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
                     {
@@ -489,9 +430,9 @@ public class CodeBlock
                         for (int j = 0; j < argsCnt; j++)
                             args.Add(frame[++i]);
 
-                        if (selector is UShortConst)
+                        if (selector is ConstExpr c)
                         {
-                            method = _package.GetName(selector.GetValue());
+                            method = _package.GetName(c.Value);
                             SetAcc(new CallExpr(target, method, args));
                         }
                         else
@@ -524,7 +465,7 @@ public class CodeBlock
                         var name = _package.GetName(selector.GetValue());
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
-                        var isProp = _proc.Class.IsProp(name);
+                        var isProp = Procedure.Class.IsProp(name);
 
                         if (argsCnt > 0 || _rest > 0)
                         {
@@ -533,12 +474,12 @@ public class CodeBlock
                                 args.Add(frame[++i]);
 
                             if (_rest > 0) // TODO Calc params count
-                                args.Add(_proc.GetParam(1));
+                                args.Add(Procedure.GetParam(1));
 
                             if (isProp)
                             {
                                 if (args.Count != 1) throw new InvalidOperationException();
-                                Set(new ParamExpr(name), args[0]);
+                                Set(new ParamExpr(name), args[0], true);
                             }
                             else
                                 AddExpr(new CallExpr(name, args));
@@ -576,9 +517,9 @@ public class CodeBlock
                                 args.Add(frame[++i]);
 
                             if (_rest > 0) // TODO Calc params count
-                                args.Add(_proc.GetParam(1));
+                                args.Add(Procedure.GetParam(1));
 
-                            AddExpr(new CallExpr(name, args));
+                            SetAcc(new CallExpr(name, args));
                         }
                         else
                         {
@@ -620,7 +561,7 @@ public class CodeBlock
                 break;
             case 0x64: // aTop
             case 0x65:
-                Set(GetPropExpr(code.Arguments[0]), GetAcc());
+                Set(GetPropExpr(code.Arguments[0]), GetAcc(), true);
                 break;
             case 0x66: // pTos
             case 0x67:
@@ -628,23 +569,39 @@ public class CodeBlock
                 break;
             case 0x68: // sTop
             case 0x69:
-                Set(GetPropExpr(code.Arguments[0]), Pop());
+                Set(GetPropExpr(code.Arguments[0]), Pop(), true);
                 break;
             case 0x6a: // ipToa
             case 0x6b:
-                SetAcc(new Math1Expr(GetPropExpr(code.Arguments[0]), "++"));
+                {
+                    var prop = GetPropExpr(code.Arguments[0]);
+                    Set(prop, new Math2Expr(prop, "+", new ConstExpr(1)), true);
+                    SetAcc(prop);
+                }
                 break;
             case 0x6c: // dpToa
             case 0x6d:
-                SetAcc(new Math1Expr(GetPropExpr(code.Arguments[0]), "--"));
+                {
+                    var prop = GetPropExpr(code.Arguments[0]);
+                    Set(prop, new Math2Expr(prop, "-", new ConstExpr(1)), true);
+                    SetAcc(prop);
+                }
                 break;
             case 0x6e: // ipTos
             case 0x6f:
-                Push(new Math1Expr(GetPropExpr(code.Arguments[0]), "++"));
+                {
+                    var prop = GetPropExpr(code.Arguments[0]);
+                    Set(prop, new Math2Expr(prop, "+", new ConstExpr(1)), true);
+                    Push(prop);
+                }
                 break;
             case 0x70: // dpTos
             case 0x71:
-                Push(new Math1Expr(GetPropExpr(code.Arguments[0]), "--"));
+                {
+                    var prop = GetPropExpr(code.Arguments[0]);
+                    Set(prop, new Math2Expr(prop, "-", new ConstExpr(1)), true);
+                    Push(prop);
+                }
                 break;
             case 0x72: // lofsa
             case 0x73:
@@ -689,25 +646,16 @@ public class CodeBlock
             case 2: // Temp
                 return new ParamExpr($"tmp{ind}");
             case 3: // Parameter
-                return _proc.GetParam(ind);
+                return Procedure.GetParam(ind);
             default:
                 Console.WriteLine($"// Op type {type} not implemented");
                 return null;
         }
     }
 
-    private void MakeVar(Expr expr)
-    {
-        if (expr.IsSimple) return; // для UShort и Param не нужны переменные, используем их как есть. для Link мы и так создаём переменную
-        var v = _proc.CreateVar();
-        expr.MakeVar(v.Name);
-        Set(v, expr);
-        Expressions.Remove(expr);
-    }
-
     private ParamExpr GetPropExpr(object val)
     {
-        var cl = _proc.Class;
+        var cl = Procedure.Class;
         return new ParamExpr(cl.Properties[GetVal(val) / 2].Name);
     }
 
@@ -728,11 +676,10 @@ public class CodeBlock
         throw new NotImplementedException();
     }
 
-    private void Push(ushort val) => Push(new UShortConst(val));
+    private void Push(ushort val) => Push(new ConstExpr(val));
 
     private void Push(Expr exp)
     {
-        AddExpr(exp);
         _stack.Add(exp);
     }
 
@@ -773,29 +720,33 @@ public class CodeBlock
 
     private void AddExpr(Expr exp)
     {
-        if (exp.IsSimple) return;
         Expressions.Add(exp);
+        exp.Block = this;
     }
-    private void Set(Expr param, Expr value) => AddExpr(new SetExpr(param, value));
+    private void Set(Expr param, Expr value, bool ext) => AddExpr(new SetExpr(param, value, ext));
 
 
-    private void SetAcc(ushort val) => SetAcc(new UShortConst(val));
+    private void SetAcc(ushort val) => SetAcc(new ConstExpr(val));
     private void SetAcc(RefToElement r) => SetAcc(GetExpr(r));
-    private void SetAcc(Expr expr)
+    private void SetAcc(CallExpr expr)
     {
         AddExpr(expr);
-        _acc = expr;
+        Acc = expr;
+    }
+    private void SetAcc(Expr expr)
+    {
+        Acc = expr;
     }
     private Expr GetAcc()
     {
-        if (_acc == null) throw new Exception();
-        return _acc;
+        if (Acc == null) throw new Exception();
+        return Acc;
     }
 
 
     private Expr GetPrev()
     {
-        if (_prev == null) throw new Exception();
-        return _prev;
+        if (Prev == null) throw new Exception();
+        return Prev;
     }
 }

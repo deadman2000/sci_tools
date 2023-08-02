@@ -4,6 +4,7 @@ using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Analyzer;
 using SCI_Lib.Resources.Scripts.Sections;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace SCI_Tools
             try
             {
                 //DecompileAll();
-                Decompile(107);
+                Decompile(245, "CBPath");
 
                 /*HashSet<string> words = new();
                 foreach (var res in translate.Scripts)
@@ -152,16 +153,34 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
-        private void Decompile(ushort num)
+        private void Decompile(ushort num, string cl = null, string method = null)
         {
             var res = package.GetResource<ResScript>(num);
             var script = res.GetScript() as Script;
 
-            var analyzer = script.Analyze();
-            File.WriteAllText(@$"c:\Projects\TranslateWeb\out\{res.Number}_cpp.graph", analyzer.GetGraph(ScriptAnalyzer.CodeType.CPP));
-            File.WriteAllText(@$"c:\Projects\TranslateWeb\out\{res.Number}_meta.graph", analyzer.GetGraph(ScriptAnalyzer.CodeType.Meta));
-            File.WriteAllText(@$"c:\Projects\TranslateWeb\out\{res.Number}_asm.graph", analyzer.GetGraph(ScriptAnalyzer.CodeType.ASM));
+            var analyzer = script.Analyze(cl, method);
+            var graph = new GraphBuilder(analyzer);
 
+            CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP);
+            CreateGraph(res.Number, graph, GraphBuilder.CodeType.Meta);
+            CreateGraph(res.Number, graph, GraphBuilder.CodeType.ASM);
+        }
+
+        private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)
+        {
+            var dot_path = @$"c:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.graph";
+            var svg_path = @$"c:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.svg";
+            File.WriteAllText(dot_path, graph.GetGraph(type));
+            var proc = Process.Start("dot", $"-Tsvg {dot_path} -o {svg_path}");
+            proc.OutputDataReceived += Proc_OutputDataReceived;
+            proc.WaitForExit();
+            if (proc.ExitCode == 0)
+                File.Delete(dot_path);
+        }
+
+        private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Console.WriteLine(e.Data);
         }
 
         private void DecompileAll()
@@ -171,7 +190,8 @@ namespace SCI_Tools
                 Console.WriteLine(res);
                 var script = res.GetScript() as Script;
                 var analyzer = script.Analyze();
-                analyzer.GetGraph(ScriptAnalyzer.CodeType.CPP);
+                var graph = new GraphBuilder(analyzer);
+                graph.GetGraph(GraphBuilder.CodeType.CPP);
             }
         }
 

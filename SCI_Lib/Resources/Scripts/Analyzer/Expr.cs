@@ -8,27 +8,38 @@ namespace SCI_Lib.Resources.Scripts.Analyzer;
 
 public abstract class Expr
 {
-    public int LinksCount { get; set; }
+    public CodeBlock Block { get; set; }
+    public int UseCount { get; set; }
     public virtual bool Used { get; private set; }
-    public string VarName { get; private set; }
+    public ParamExpr Var { get; private set; }
     public virtual ushort GetValue() => throw new NotImplementedException();
     public abstract string Label { get; }
-    public string VarLabel => VarName ?? Label;
+
+    public static bool MetaOut = true;
     public override string ToString()
     {
-        if (VarName != null)
-            return $"{GetType().Name}({VarName}:={Label})";
-        return $"{GetType().Name}({Label})";
+        if (MetaOut)
+        {
+            if (Var != null)
+                return $"{GetType().Name}({Var.Name}:={Label})";
+            return $"{GetType().Name}({Label})";
+        }
+        if (Var != null) return Var.Name;
+        return Label;
+    }
+    public string Define => Var != null ? $"{Var.Name} = {Label}" : Label;
+
+    public void MakeVar(ParamExpr var)
+    {
+        if (Var != null) throw new InvalidOperationException();
+        Var = var;
     }
 
-    public void MakeVar(string name) => VarName = name;
     public virtual void Use()
     {
-        LinksCount++;
+        UseCount++;
         Used = true;
     }
-
-    public virtual bool IsSimple => false; // true, если выражению не нужна отдельная строка
 }
 
 public class ParamExpr : Expr
@@ -36,40 +47,33 @@ public class ParamExpr : Expr
     public string Name { get; }
     public ParamExpr(string name) => Name = name;
     public override string Label => Name;
-    public override bool IsSimple => true;
 }
 
-public class UShortConst : Expr
+public class ConstExpr : Expr
 {
     public ushort Value { get; }
-    public UShortConst(ushort val) => Value = val;
-    public UShortConst(int val) : this((ushort)val) { }
+    public ConstExpr(ushort val) => Value = val;
+    public ConstExpr(int val) : this((ushort)val) { }
     public override ushort GetValue() => Value;
     public override string Label => Value.ToString();
-    public override bool IsSimple => true;
-}
-
-public class CodeExpr : Expr
-{
-    public string Code { get; }
-    public CodeExpr(string code) => Code = code;
-    public override string Label => Code;
 }
 
 public class Math1Expr : Expr
 {
     public Expr Expression { get; }
     public string Op { get; }
-
     public Math1Expr(Expr exp, string op)
     {
-        exp.Use();
         Expression = exp;
         Op = op;
     }
-
-    public override string Label => $"{Op}({Expression.VarLabel})";
-    public override bool IsSimple => true;
+    public override string Label => $"{Op}({Expression})";
+    public override void Use()
+    {
+        if (!Used)
+            Expression.Use();
+        base.Use();
+    }
 }
 
 public class Math2Expr : Expr
@@ -79,32 +83,44 @@ public class Math2Expr : Expr
     public string Op { get; }
     public Math2Expr(Expr a, string op, Expr b)
     {
-        a.Use();
-        b.Use();
         A = a;
         B = b;
         Op = op;
     }
-    public override string Label => $"{A.VarLabel} {Op} {B.VarLabel}";
-    public override bool IsSimple => true;
+    public override string Label => $"{A} {Op} {B}";
+    public override void Use()
+    {
+        if (!Used)
+        {
+            A.Use();
+            B.Use();
+        }
+        base.Use();
+    }
 }
 
 public class SetExpr : Expr
 {
     public Expr A { get; }
     public Expr B { get; }
-    public SetExpr(ParamExpr a, Expr b)
-        : this((Expr)a, b)
-    {
-    }
-    public SetExpr(Expr a, Expr b)
+    public SetExpr(Expr a, Expr b, bool external) // если external, помечаем все операции как использованные
     {
         if (a is ClassExpr) throw new InvalidOperationException();
-        b.Use();
+        if (external) b.Use();
         A = a;
         B = b;
     }
-    public override string Label => $"{A.VarLabel} = {B.Label}";
+    public override string Label
+    {
+        get
+        {
+            if (MetaOut)
+                return $"{A} = {B}";
+            if (B.Var != A)
+                return $"{A} = {B}";
+            return $"{A} = {B.Label}";
+        }
+    }
 }
 
 public class RefExpr : Expr
@@ -139,8 +155,13 @@ public class CallExpr : Expr
         else
             return $"{Target.Label}.{Method}";
     }
-    public string ArgsStr => Args != null && Args.Count > 0 ? string.Join(", ", Args.Select(e => e.VarLabel)) : string.Empty;
+    public string ArgsStr => Args != null && Args.Count > 0 ? string.Join(", ", Args.Select(e => e.ToString())) : string.Empty;
     public override string Label => $"{GetCall()}({ArgsStr})";
+    public override void Use()
+    {
+        if (Var != null) return;
+        MakeVar(Block.Procedure.CreateVar());
+    }
 }
 
 public class ClassExpr : Expr
@@ -154,44 +175,34 @@ public class ClassExpr : Expr
     }
     public ClassExpr(string name) => Name = name;
     public override string Label => Name;
-    public override bool IsSimple => true;
 }
 
 public class LinkExpr : Expr
 {
-    private static int NextLinkVar = 0; // TODO REMOVE!!!
-
+    static int NextId = 0;
+    private int _id = NextId++;
+    public bool IsAcc { get; }
+    public string Description { get; }
     public List<(CodeBlock Block, Expr Expression)> Links { get; } = new();
     public ParamExpr Variable { get; private set; }
-    public void SetVar(ParamExpr v) => Variable = v;
+    public bool Checked { get; internal set; }
     public override string Label
     {
         get
         {
-            if (Links.Count == 0)
-                return "empty";
-            if (Links.Count == 1)
-                return Links[0].Expression.Label;
-
-            if (Variable == null)
-            {
-                Console.WriteLine("LINK VAR SET");
-                Variable = new ParamExpr($"vl{NextLinkVar++}");
-            }
+            if (Links.Count == 0) return "empty";
+            if (Links.Count == 1) return Links[0].Expression.ToString();
+            Variable ??= new ParamExpr($"_{_id}[{Links.Count}]");
             return Variable.Name;
         }
     }
-    public override bool IsSimple => true;
-    public void LinkTo(CodeBlock block, Expr ex) => Links.Add((block, ex));
-    public override bool Used
+    public LinkExpr(bool isAcc, string descr)
     {
-        get
-        {
-            if (Links.Count == 1)
-                return Links[0].Expression.Used;
-            return base.Used;
-        }
+        IsAcc = isAcc;
+        Description = descr;
     }
+    public void SetVar(ParamExpr v) => Variable = v;
+    public void LinkTo(CodeBlock block, Expr ex) => Links.Add((block, ex));
 }
 
 public class ArrayExpr : Expr
@@ -202,7 +213,15 @@ public class ArrayExpr : Expr
     {
         Array = array;
         Index = index;
-        index.Use();
     }
-    public override string Label => $"{Array.VarLabel}[{Index.VarLabel}]";
+    public override void Use()
+    {
+        if (!Used)
+        {
+            Array.Use();
+            Index.Use();
+        }
+        base.Use();
+    }
+    public override string Label => $"{Array}[{Index}]";
 }

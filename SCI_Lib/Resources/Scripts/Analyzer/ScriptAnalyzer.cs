@@ -1,25 +1,64 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SCI_Lib.Resources.Scripts.Analyzer;
 
 public class ScriptAnalyzer
 {
+    private int _procId = 0;
+    private readonly string _classFilter;
+    private readonly string _methodFilter;
+    private readonly HashSet<ushort> _usedCode = new();
     public List<ProcedureTree> Procedures { get; } = new();
 
-    public ScriptAnalyzer(Script script)
+    public ScriptAnalyzer(Script script, string classFilter, string methodFilter)
     {
-        foreach (var s in script.Get<ClassSection>(SectionType.Class)) AnalyzeClass(s);
-        foreach (var s in script.Get<ObjectSection>()) AnalyzeClass(s);
+        _classFilter = classFilter;
+        _methodFilter = methodFilter;
+        foreach (var s in script.Get<ClassSection>()) AnalyzeClass(s);
+        foreach (var s in script.Get<ExportSection>()) AnalyzeExport(s);
+        foreach (var s in script.Get<CodeSection>()) AnalyzeLocal(s);
+    }
+
+    private void AnalyzeExport(ExportSection s)
+    {
+        if (_classFilter != null) return;
+
+        foreach (var e in s.Exports)
+        {
+            if (e == null) continue;
+            if (e.Reference is Code code)
+            {
+                var name = $"proc_{s.Script.Resource.Number}_{_procId++}";
+                if (_methodFilter == null || _methodFilter == name)
+                    BuildProc(null, code, name);
+            }
+        }
+    }
+
+    private void AnalyzeLocal(CodeSection s)
+    {
+        if (_classFilter != null) return;
+
+        var code = s.Operators[0];
+        while (code != null)
+        {
+            if (_usedCode.Contains(code.Address)) return;
+            var name = $"localproc_{code.Address:x4}";
+
+            if (_methodFilter == null || _methodFilter == name)
+            {
+                var proc = BuildProc(null, code, name);
+                if (proc == null) return;
+                code = proc.End.Next;
+            }
+        }
     }
 
     private void AnalyzeClass(ClassSection s)
     {
-        if (s.Name != "Gaza") { Console.WriteLine("COMMENT ME!"); return; }
+        if (_classFilter != null && s.Name != _classFilter) return;
         s.Prepare();
 
         var pack = s.Package;
@@ -27,83 +66,19 @@ public class ScriptAnalyzer
         {
             var addr = s.FuncCode[i].TargetOffset;
             var method = pack.GetName(s.FuncNamesInd[i]);
-
-            if (method != "doit") { Console.WriteLine("COMMENT ME!"); continue; }
-
+            if (_methodFilter != null && method != _methodFilter) continue;
             Code code = s.Script.GetElement(addr) as Code;
-            var proc = new ProcedureTree(this, s, code, method);
-            Procedures.Add(proc);
-            proc.BuildMethod();
+            BuildProc(s, code, method);
         }
     }
 
-    public enum CodeType
+    private ProcedureTree BuildProc(ClassSection s, Code code, string method)
     {
-        ASM, CPP, Meta
-    }
-    public string GetGraph(CodeType type)
-    {
-        StringBuilder graphSB = new();
-
-        graphSB.AppendLine("digraph G {")
-            .AppendLine("\tgraph [splines=ortho, nodesep=0.8]")
-            .AppendLine("\tnode[shape=box fontname=Courier fontsize=20 margin=0.3]");
-
-        foreach (var gr in Procedures.GroupBy(p => p.Class))
-        {
-            graphSB.AppendLine($"\tsubgraph cluster_{gr.Key.Id:x2} {{");
-            graphSB.AppendLine($"\t\tlabel = \"{gr.Key.Name}\"");
-            foreach (var proc in gr)
-            {
-                graphSB.AppendLine($"\t\tsubgraph method_{proc.Name} {{");
-                foreach (var bl in proc.Blocks)
-                {
-                    if (!bl.IsBegin && bl.Parents.Count == 0) continue;
-
-                    bool ret = false;
-                    if (bl.BlockA != null)
-                        graphSB.AppendLine($"\t\t\t{bl.Label} -> {bl.BlockA.Label} [color=blue]");
-                    else if (bl.ReturnA && bl.BlockB != null)
-                    {
-                        graphSB.AppendLine($"\t\t\t{bl.Label} -> return_{bl.AddrBegin:x4} [color=blue]");
-                        ret = true;
-                    }
-
-                    if (bl.BlockB != null)
-                        graphSB.AppendLine($"\t\t\t{bl.Label} -> {bl.BlockB.Label} [color=red]");
-                    else if (bl.ReturnB)
-                    {
-                        graphSB.AppendLine($"\t\t\t{bl.Label} -> return_{bl.AddrBegin:x4} [color=red]");
-                        ret = true;
-                    }
-
-                    if (ret)
-                        graphSB.AppendLine($"\t\t\treturn_{bl.AddrBegin:x4} [shape=circle label=\"\"]");
-
-                    switch (type)
-                    {
-                        case CodeType.ASM:
-                            graphSB.AppendLine($"\t\t\t{bl.Label} [label=\"{bl.ASM}\"]");
-                            break;
-                        case CodeType.CPP:
-                            graphSB.AppendLine($"\t\t\t{bl.Label} [label=\"{bl.GetCppGraph()}\"]");
-                            break;
-                        case CodeType.Meta:
-                            graphSB.AppendLine($"\t\t\t{bl.Label} [label=\"{bl.GetMetaGraph()}\"]");
-                            break;
-                    }
-
-                    if (bl.IsBegin)
-                        graphSB.AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} -> {bl.Label}")
-                            .AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} [style=rounded margin=0.1 label=\"{proc.Name}\"]");
-                }
-                graphSB.AppendLine("\t\t}");
-            }
-            graphSB.AppendLine("\t}");
-        }
-
-        graphSB.AppendLine("}");
-
-        return graphSB.ToString();
+        if (code.Type == 0) return null;
+        var proc = new ProcedureTree(this, s, code, method);
+        Procedures.Add(proc);
+        proc.BuildMethod();
+        _usedCode.Add(code.Address);
+        return proc;
     }
 }
