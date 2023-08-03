@@ -129,24 +129,22 @@ namespace SCI_Lib
         }
 
         private IEnumerable<IScript> _scriptsCache;
+        private IEnumerable<IScript> ScriptsCache => _scriptsCache ??= Scripts.Select(r => r.GetScript());
 
         public ClassSection GetClassSection(ushort id)
         {
-            _scriptsCache ??= Scripts.Select(r => r.GetScript());
+            var classes = ScriptsCache.OfType<Script>().SelectMany(s => s.Get<ClassSection>(SectionType.Class).Where(c => c.Id == id)).ToArray();
 
-            foreach (var s in _scriptsCache.OfType<Script>())
-            {
-                var cls = s.GetClassSection(id);
-                if (cls != null) return cls;
-            }
-            return null;
+            if (classes.Length == 0)
+                return null;
+            if (classes.Length == 1)
+                return classes[0];
+            return classes[0];
         }
 
         public Object1_1 GetObject(ushort id)
         {
-            _scriptsCache ??= Scripts.Select(r => r.GetScript());
-
-            foreach (var s in _scriptsCache.OfType<Script1_1>())
+            foreach (var s in ScriptsCache.OfType<Script1_1>())
             {
                 var cls = s.GetObject(id);
                 if (cls != null) return cls;

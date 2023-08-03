@@ -98,8 +98,8 @@ namespace SCI_Lib.Resources.Scripts.Builders
             if (cs.Type == SectionType.Class)
             {
                 sb.AppendLine();
-                for (int i = 0; i < cs.PropNamesInd.Length; i++)
-                    sb.AppendLine($"\tvarsel[{i}] = {cs.PropNamesInd[i]:x4}\t");
+                for (int i = 0; i < cs.Properties.Length; i++)
+                    sb.AppendLine($"\tvarsel[{i}] = {cs.Properties[i].NameSel:x4}\t");
             }
 
             if (cs.FuncNamesInd.Length > 0)

@@ -41,7 +41,7 @@ public class GraphBuilder
             {
                 string id;
                 if (cl.Name != null)
-                    id = cl.Name.Replace(" ", "_");
+                    id = Expr.ToCppName(cl.Name);
                 else
                     id = $"{cl.Id:x4}";
 
@@ -57,31 +57,37 @@ public class GraphBuilder
                     if (!bl.IsBegin && bl.Parents.Count == 0) continue;
                     var label = GetLabel(bl);
 
-                    bool ret = false;
-                    if (bl.BlockA != null)
+                    // Links
+                    if (bl.Condition == null)
                     {
-                        if (bl.BlockB == null)
+                        if (bl.BlockA != null)
                             sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockA)}");
+                    }
+                    else
+                    {
+                        bool ret = false;
+                        if (bl.BlockA == null)
+                        {
+                            sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=blue]");
+                            ret = true;
+                        }
                         else
                             sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockA)} [color=blue]");
-                    }
-                    else if (bl.ReturnA && bl.BlockB != null)
-                    {
-                        sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=blue]");
-                        ret = true;
+
+                        if (bl.BlockB == null)
+                        {
+                            sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=red]");
+                            ret = true;
+                        }
+                        else
+                            sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockB)} [color=red]");
+
+                        // Return block
+                        if (ret)
+                            sb.AppendLine($"\t\t\treturn_{bl.AddrBegin:x4} [shape=circle label=\"\"]");
                     }
 
-                    if (bl.BlockB != null)
-                        sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockB)} [color=red]");
-                    else if (bl.ReturnB)
-                    {
-                        sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=red]");
-                        ret = true;
-                    }
-
-                    if (ret)
-                        sb.AppendLine($"\t\t\treturn_{bl.AddrBegin:x4} [shape=circle label=\"\"]");
-
+                    // Block text
                     sbl.Clear();
                     switch (type)
                     {
@@ -97,9 +103,14 @@ public class GraphBuilder
                     }
                     sb.AppendLine($"\t\t\t{label} [label={sbl}]");
 
+                    // Begin block
                     if (bl.IsBegin)
+                    {
+                        var method = proc.Define;
+                        if (method.Length > 50) method = method.Substring(0, 50) + "...)";
                         sb.AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} -> {label}")
-                            .AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} [style=rounded margin=0.1 label=\"{proc.Name}\"]");
+                            .AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} [style=rounded margin=0.1 label=\"{method}\"]");
+                    }
                 }
                 sb.AppendLine("\t\t}");
             }
@@ -133,6 +144,7 @@ public class GraphBuilder
         LAppendLine($"{bl.AddrBegin:x04}:{bl.AddrEnd:x04}");
         foreach (var c in bl.Code)
             LAppendLine(c.ASM.Trim());
+        LAppendLine($"Stack: {bl.Stack.Count()}");
         sbl.Append('"');
     }
 
@@ -163,6 +175,7 @@ public class GraphBuilder
         {
             LAppendLine($"A0: {bl.LinkAcc}", bl.LinkAcc.Used);
             LAppendLine($"P0: {bl.LinkPrev}", bl.LinkPrev.Used);
+            LAppendLine("");
         }
 
         foreach (var exp in bl.Expressions)
@@ -177,6 +190,7 @@ public class GraphBuilder
             LAppendLine($"A1: {bl.Acc}", bl.Acc.Used);
         if (bl.Prev != null)
             LAppendLine($"P1: {bl.Prev}", bl.Prev.Used);
+        LAppendLine($"Stack: {bl.Stack.Count()}");
 
         sbl.AppendLine("</table>>");
     }

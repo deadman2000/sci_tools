@@ -62,10 +62,10 @@ public class ScriptAnalyzer
         s.Prepare();
 
         var pack = s.Package;
-        for (int i = 0; i < s.FuncNamesInd.Length; i++)
+        for (int i = 0; i < s.FuncNames.Length; i++)
         {
             var addr = s.FuncCode[i].TargetOffset;
-            var method = pack.GetName(s.FuncNamesInd[i]);
+            var method = s.FuncNames[i];
             if (_methodFilter != null && method != _methodFilter) continue;
             Code code = s.Script.GetElement(addr) as Code;
             BuildProc(s, code, method);

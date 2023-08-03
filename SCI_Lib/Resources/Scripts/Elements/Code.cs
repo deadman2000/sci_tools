@@ -75,7 +75,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public string ArgsToHex()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             for (int i = 0; i < Arguments.Count; i++)
             {

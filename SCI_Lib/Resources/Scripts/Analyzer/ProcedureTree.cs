@@ -11,87 +11,135 @@ public class ProcedureTree
     public Code Begin { get; }
     public Code End { get; private set; }
 
+    private readonly HashSet<ushort> _usedScripts = new();
     private readonly Dictionary<ushort, CodeBlock> _blocksByAddress = new();
     private readonly Dictionary<ushort, ParamExpr> _params = new();
     private readonly List<LinkExpr> _links = new();
     private int _nextVarId = 0;
 
     public string Name { get; }
+
+    private SCIPackage _package;
+
     public ScriptAnalyzer Decompiler { get; }
     public ClassSection Class { get; }
 
     public IEnumerable<CodeBlock> Blocks => _blocksByAddress.Values;
+    public IEnumerable<ParamExpr> Params => _params.Values;
 
+    public string Define
+    {
+        get
+        {
+            if (_params.Count == 0)
+                return $"{Name}()";
+
+            var args = string.Join(", ", _params.OrderBy(kv => kv.Key)
+                .Select(kv => kv.Value)
+                .Select(p => $"{p.Type} {p.Name}")
+                .ToArray()
+            );
+            return $"{Name}({args})";
+        }
+    }
 
     public ProcedureTree(ScriptAnalyzer decompiler, ClassSection cl, Code code, string name)
     {
+        _package = code.Script.Package;
         Decompiler = decompiler;
         Class = cl;
         Begin = code;
-        Name = name;
+        Name = Expr.ToCppName(name);
     }
 
     public void BuildMethod()
     {
         var code = Begin;
-        ushort end = 0;
-        List<Code> jupms = new();
-        List<Code> instructions = new();
+        CodeBlock first = null;
+        HashSet<Code> additionalBlocks = new();
+
         while (true)
         {
-            End = code;
-            instructions.Add(code);
-            if (code.IsReturn)
+            ushort lastJump = 0;
+            List<Code> jupms = new();
+            List<Code> instructions = new();
+            var sectorBegin = code;
+
+            while (true)
             {
-                if (end == 0 || code.Address >= end)
-                    break;
-            }
-            else
-            {
+                End = code;
+                instructions.Add(code);
+                if (code.IsReturn)
+                {
+                    if (lastJump == 0 || code.Address >= lastJump)
+                        break;
+                }
+
                 switch (code.Type)
                 {
-                    case 0x32: // jmp
                     case 0x2e: // bt
                     case 0x2f:
                     case 0x30: // bnt
                     case 0x31:
+                    case 0x32: // jmp
+                    case 0x33:
+                        jupms.Add(code.Next);
                         var r = code.Arguments[0] as CodeRef;
                         var rc = (Code)r.Reference;
                         var addr = rc.Address;
-                        end = Math.Max(end, addr);
-                        jupms.Add(code.Next);
-                        jupms.Add(rc);
+                        if (addr < Begin.Address)
+                            additionalBlocks.Add(rc);
+                        else
+                        {
+                            lastJump = Math.Max(lastJump, addr);
+                            jupms.Add(rc);
+                        }
+                        break;
+                    case 0x48: // ret
+                    case 0x49:
+                        if (code.Next != null)
+                            jupms.Add(code.Next);
                         break;
                 }
+
+                code = code.Next;
+                if (code == null) break;
             }
 
-            code = code.Next;
-            if (code == null) break;
+            if (jupms.Count > 0)
+            {
+                var outCode = jupms.Where(c => c.Address > End.Address); // Код из другой секции
+                foreach (var c in outCode) additionalBlocks.Add(c);
+
+                var address = jupms.Where(c => c.Address <= End.Address)
+                    .Distinct()
+                    .Where(c => c != Begin)
+                    .Select(c => c.Address)
+                    .OrderBy(a => a)
+                    .ToArray();
+
+                var bl = CreateBlock(instructions.Where(c => c.Address < address[0]), first == null);
+                first ??= bl;
+                for (int i = 0; i < address.Length - 1; i++)
+                    CreateBlock(instructions.Where(c => c.Address >= address[i] && c.Address < address[i + 1]));
+                CreateBlock(instructions.Where(c => c.Address >= address[^1]));
+            }
+            else
+            {
+                var bl = CreateBlock(instructions, first == null);
+                first ??= bl;
+            }
+
+            additionalBlocks.RemoveWhere(c => c.Address >= sectorBegin.Address && c.Address <= End.Address);
+            if (!additionalBlocks.Any())
+                break;
+            code = additionalBlocks.OrderBy(c => c.Address).First();
         }
 
-        CodeBlock first;
-        if (jupms.Count > 0)
-        {
-            var address = jupms.Distinct()
-                .Where(c => c != Begin)
-                .Select(c => c.Address)
-                .OrderBy(a => a)
-                .ToArray();
-
-            first = CreateBlock(instructions.Where(c => c.Address < address[0]), true);
-            for (int i = 0; i < address.Length - 1; i++)
-                CreateBlock(instructions.Where(c => c.Address >= address[i] && c.Address < address[i + 1]));
-            CreateBlock(instructions.Where(c => c.Address >= address[^1]));
-        }
-        else
-        {
-            first = CreateBlock(instructions, true);
-        }
 
         foreach (var block in _blocksByAddress.Values)
             block.BuildTree();
 
-        first.BuildTree();
         first.Decompile();
 
         CalcLinks();
@@ -140,6 +188,8 @@ public class ProcedureTree
 
     private CodeBlock CreateBlock(IEnumerable<Code> ops, bool begin = false)
     {
+        if (!ops.Any()) throw new ArgumentException("Empty collection", nameof(ops));
+
         var block = new CodeBlock(this, ops.ToList(), begin);
         _blocksByAddress.Add(block.AddrBegin, block);
         return block;
@@ -167,4 +217,14 @@ public class ProcedureTree
     {
         _links.Add(link);
     }
+
+    internal ClassSection GetClass(ushort id)
+    {
+        var cl = _package.GetClass(id);
+        if (cl != null) Using(cl.Script.Resource);
+        return cl;
+    }
+
+    internal void Using(Resource resource) => _usedScripts.Add(resource.Number);
+    internal void Using(ushort scr) => _usedScripts.Add(scr);
 }

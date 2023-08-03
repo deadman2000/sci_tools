@@ -14,7 +14,8 @@ public class CodeBlock
     public bool IsBegin { get; }
 
     public List<Expr> Expressions { get; } = new();
-    private readonly List<Expr> _stack = new();
+    private readonly Stack<Expr> _stack = new();
+    private Stack<Expr> _prevStack;
 
     private bool _isBuild;
     private bool _isDecompiled;
@@ -27,6 +28,8 @@ public class CodeBlock
     public Expr Acc { get; private set; }
     public Expr Condition { get; private set; }
     private ushort _rest;
+    private bool _mainUsed;
+    private Code _ip;
 
     public List<CodeBlock> Parents { get; } = new();
 
@@ -42,9 +45,13 @@ public class CodeBlock
     public bool ReturnA => NextA != null && NextA.IsReturn;
     public bool ReturnB => NextB != null && NextB.IsReturn;
 
+    public IEnumerable<Expr> Stack => _stack;
+
 
     public CodeBlock(ProcedureTree proc, List<Code> list, bool isBegin)
     {
+        if (!list.Any()) throw new ArgumentException("Empty collection", nameof(list));
+
         Procedure = proc;
         Code = list;
         IsBegin = isBegin;
@@ -95,7 +102,7 @@ public class CodeBlock
             return;
         }
 
-        if (last.Type == 0x32) // jmp
+        if (last.Name == "jmp")
         {
             var r = last.Arguments[0] as CodeRef;
             NextA = (Code)r.Reference;
@@ -126,6 +133,14 @@ public class CodeBlock
         }
     }
 
+    int StackSize
+    {
+        get
+        {
+            if (_prevStack != null) return _prevStack.Count + _stack.Count;
+            return _stack.Count;
+        }
+    }
 
     public void Decompile()
     {
@@ -134,17 +149,17 @@ public class CodeBlock
 
         foreach (var c in Code)
             ExecuteCode(c);
+        
+        if (_mainUsed) Procedure.Using(0);
 
         if (Condition != null && Condition.Var == null)
             Expressions.Remove(Condition);
-
-        //Expressions.RemoveAll(e => e.UseCount == 1);
 
         if (BlockA != null)
         {
             if (!BlockA._isDecompiled)
             {
-                BlockA._stack.AddRange(_stack);
+                BlockA._prevStack = GetStackTail();
                 BlockA.Decompile();
             }
 
@@ -155,7 +170,7 @@ public class CodeBlock
         {
             if (!BlockB._isDecompiled)
             {
-                BlockB._stack.AddRange(_stack);
+                BlockB._prevStack = GetStackTail();
                 BlockB.Decompile();
             }
 
@@ -163,14 +178,22 @@ public class CodeBlock
         }
     }
 
-    private void LinkTo(CodeBlock block)
+    private Stack<Expr> GetStackTail()
     {
-        if (block.Acc != null) LinkAcc.LinkTo(block, block.Acc);
-        if (block.Prev != null) LinkPrev.LinkTo(block, block.Prev);
+        if (_prevStack == null)
+            return new(_stack.Reverse());
+        return new(_prevStack.Reverse().Concat(_stack.Reverse()));
+    }
+
+    private void LinkTo(CodeBlock parent)
+    {
+        if (parent.Acc != null) LinkAcc.LinkTo(parent, parent.Acc);
+        if (parent.Prev != null) LinkPrev.LinkTo(parent, parent.Prev);
     }
 
     private void ExecuteCode(Code code)
     {
+        _ip = code;
         if (code.Type >= 0x80)
         {
             ushort val = GetVal(code.Arguments[0]);
@@ -220,7 +243,7 @@ public class CodeBlock
             }
 
             if (isStack)
-                _stack.Add(variable);
+                Push(variable);
             else
                 SetAcc(variable);
             return;
@@ -332,9 +355,11 @@ public class CodeBlock
             case 0x31:
                 Condition = GetAcc();
                 Condition.Use();
+                if (code != Code[^1]) throw new Exception();
                 break;
             case 0x32: //jmp
             case 0x33:
+                if (code != Code[^1]) throw new Exception();
                 break;
             case 0x34: // ldi W
             case 0x35: // ldi B
@@ -362,6 +387,7 @@ public class CodeBlock
                     ushort cnt = GetVal(code.Arguments[0]);
                     for (ushort i = 0; i < cnt; i++)
                         Push(Procedure.GetParam(i));
+                    Push(cnt);
                 }
                 break;
             case 0x40: // call
@@ -388,6 +414,7 @@ public class CodeBlock
             case 0x44: // callb
             case 0x45:
                 {
+                    _mainUsed = true;
                     ushort ind = GetVal(code.Arguments[0]);
                     var cnt = (byte)code.Arguments[1] / 2;
                     var args = PopArgs(cnt);
@@ -398,6 +425,7 @@ public class CodeBlock
             case 0x47:
                 {
                     ushort scr = GetVal(code.Arguments[0]);
+                    Procedure.Using(scr);
                     var ind = GetVal(code.Arguments[1]);
                     var cnt = (byte)code.Arguments[2] / 2;
                     var args = PopArgs(cnt);
@@ -406,23 +434,21 @@ public class CodeBlock
                 break;
             case 0x48: // ret
             case 0x49:
+                if (code != Code[^1]) throw new Exception();
                 break;
             case 0x4a: // send
             case 0x4b:
                 {
                     var cnt = (byte)code.Arguments[0] / 2;
                     var target = GetAcc();
+                    target.Use();
                     if (target.Var != null)
                         target = target.Var;
-                    else if (target is CallExpr)
-                        target.MakeVar(Procedure.CreateVar());
-                    
+
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
                     {
                         var selector = frame[i];
-                        string method;
-
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
 
@@ -432,11 +458,11 @@ public class CodeBlock
 
                         if (selector is ConstExpr c)
                         {
-                            method = _package.GetName(c.Value);
-                            SetAcc(new CallExpr(target, method, args));
+                            SetAcc(new CallExpr(target, GetName(c.Value), args));
                         }
                         else
                         {
+                            // TODO переделать
                             SetAcc(new CallExpr(target, selector.Label, args));
                         }
                     }
@@ -447,7 +473,7 @@ public class CodeBlock
             case 0x051:
                 {
                     var id = GetVal(code.Arguments[0]);
-                    var cl = _package.GetClass(id);
+                    var cl = Procedure.GetClass(id);
                     if (cl != null)
                         SetAcc(new ClassExpr(cl));
                     else
@@ -461,11 +487,11 @@ public class CodeBlock
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
                     {
-                        var selector = frame[i];
-                        var name = _package.GetName(selector.GetValue());
+                        var sel = frame[i].GetValue();
+                        var name = GetName(sel);
+                        var isProp = Procedure.Class.IsProp(sel);
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
-                        var isProp = Procedure.Class.IsProp(name);
 
                         if (argsCnt > 0 || _rest > 0)
                         {
@@ -498,15 +524,16 @@ public class CodeBlock
             case 0x56: // super
             case 0x57:
                 {
-                    var super = _package.GetClassSection(GetVal(code.Arguments[0]));
-                    var className = super.Name;
+                    var sel = GetVal(code.Arguments[0]);
+                    var super = _package.GetClassSection(sel);
+                    var className = Expr.ToCppName(super);
                     var cnt = (byte)code.Arguments[1] / 2;
 
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
                     {
                         var selector = frame[i];
-                        var name = className + "::" + _package.GetName(selector.GetValue());
+                        var name = className + "::" + GetName(selector.GetValue());
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
 
@@ -635,11 +662,14 @@ public class CodeBlock
         }
     }
 
+    private string GetName(ushort sel) => Expr.ToCppName(_package.GetName(sel));
+
     private ParamExpr OpGetExpression(int type, ushort ind)
     {
         switch (type)
         {
             case 0: // Global
+                _mainUsed = true;
                 return new ParamExpr($"global{ind}");
             case 1: // Local
                 return new ParamExpr($"local{ind}");
@@ -655,8 +685,14 @@ public class CodeBlock
 
     private ParamExpr GetPropExpr(object val)
     {
+        var ind = GetVal(val) / 2;
         var cl = Procedure.Class;
-        return new ParamExpr(cl.Properties[GetVal(val) / 2].Name);
+        if (cl == null)
+        {
+            Console.WriteLine("No class method");
+            return new ParamExpr($"prop{ind}");
+        }
+        return new ParamExpr(cl.Properties[ind]);
     }
 
     private static Expr GetExpr(RefToElement r)
@@ -664,7 +700,7 @@ public class CodeBlock
         if (r.Reference is PropertyElement prop)
         {
             if (prop.Index == 0)
-                return new ParamExpr(prop.Class.Name);
+                return new ParamExpr(prop.Class);
         }
         return new RefExpr(r);
     }
@@ -680,18 +716,31 @@ public class CodeBlock
 
     private void Push(Expr exp)
     {
-        _stack.Add(exp);
+        _stack.Push(exp);
     }
 
-    private Expr TOS() => _stack[^1];
+    private Expr TOS()
+    {
+        if (_stack.Any())
+            return _stack.Peek();
+
+        if (_prevStack.Any())
+            return _prevStack.Peek();
+
+        throw new InvalidOperationException($"{this} PEEK EMPTY STACK!!!");
+    }
 
     private Expr Pop()
     {
-        if (_stack.Count == 0) throw new Exception("Stack empty");
-        var val = _stack.Last();
-        _stack.RemoveAt(_stack.Count - 1);
-        return val;
+        if (_stack.Any())
+            return _stack.Pop();
+
+        if (_prevStack.Any())
+            return _prevStack.Pop();
+
+        throw new InvalidOperationException($"{this} POP EMPTY STACK!!!");
     }
+
 
     private List<Expr> PopArgs(int cnt)
     {
@@ -708,12 +757,11 @@ public class CodeBlock
         return args;
     }
 
-    private List<Expr> PopFrame(int cnt)
+    private Expr[] PopFrame(int cnt)
     {
-        List<Expr> frame = new();
+        Expr[] frame = new Expr[cnt];
         for (int i = 0; i < cnt; i++)
-            frame.Add(Pop());
-        frame.Reverse();
+            frame[cnt - i - 1] = Pop();
         return frame;
     }
 

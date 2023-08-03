@@ -2,6 +2,7 @@
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Analyzer;
+using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
 using System;
 using System.Diagnostics;
@@ -19,8 +20,10 @@ namespace SCI_Tools
         {
             try
             {
-                //DecompileAll();
-                Decompile(245, "CBPath");
+                DecompileAll();
+                //Decompile(25);
+                //Decompile(255, "DText");
+                //Decompile(25, "rm25", "init");
 
                 /*HashSet<string> words = new();
                 foreach (var res in translate.Scripts)
@@ -164,6 +167,8 @@ namespace SCI_Tools
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP);
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.Meta);
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.ASM);
+
+            Console.WriteLine(new CppBuilder(cl, method).Decompile(script));
         }
 
         private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)
@@ -171,9 +176,13 @@ namespace SCI_Tools
             var dot_path = @$"c:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.graph";
             var svg_path = @$"c:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.svg";
             File.WriteAllText(dot_path, graph.GetGraph(type));
-            var proc = Process.Start("dot", $"-Tsvg {dot_path} -o {svg_path}");
+            Debug.WriteLine("Start dot");
+            var proc = new Process();
+            proc.StartInfo = new ProcessStartInfo("dot", $"-Tsvg {dot_path} -o {svg_path}");
             proc.OutputDataReceived += Proc_OutputDataReceived;
+            proc.Start();
             proc.WaitForExit();
+            Debug.WriteLine($"dot result: {proc.ExitCode}");
             if (proc.ExitCode == 0)
                 File.Delete(dot_path);
         }

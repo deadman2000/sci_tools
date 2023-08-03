@@ -27,6 +27,7 @@ public abstract class Expr
         if (Var != null) return Var.Name;
         return Label;
     }
+    public virtual string Braces => ToString();
     public string Define => Var != null ? $"{Var.Name} = {Label}" : Label;
 
     public void MakeVar(ParamExpr var)
@@ -40,12 +41,27 @@ public abstract class Expr
         UseCount++;
         Used = true;
     }
+
+    public static string ToCppName(string name) => name
+        .Replace('-', '_')
+        .Replace('\'', '_')
+        .Replace(' ', '_')
+        .Replace('.', '_');
+
+    public static string ToCppName(ClassSection cl)
+    {
+        if (cl.Name != null) return ToCppName(cl.Name);
+        return $"Class{cl.Id:x2}";
+    }
 }
 
 public class ParamExpr : Expr
 {
+    public string Type { get; set; } = "short";
     public string Name { get; }
-    public ParamExpr(string name) => Name = name;
+    public ParamExpr(string name) => Name = ToCppName(name);
+    public ParamExpr(PropertyElement prop) => Name = ToCppName(prop.Name);
+    public ParamExpr(ClassSection cl) => Name = ToCppName(cl);
     public override string Label => Name;
 }
 
@@ -54,8 +70,8 @@ public class ConstExpr : Expr
     public ushort Value { get; }
     public ConstExpr(ushort val) => Value = val;
     public ConstExpr(int val) : this((ushort)val) { }
-    public override ushort GetValue() => Value;
     public override string Label => Value.ToString();
+    public override ushort GetValue() => Value;
 }
 
 public class Math1Expr : Expr
@@ -67,7 +83,8 @@ public class Math1Expr : Expr
         Expression = exp;
         Op = op;
     }
-    public override string Label => $"{Op}({Expression})";
+    public override string Label => $"{Op}{Expression.Braces}";
+    public override string Braces => $"({this})";
     public override void Use()
     {
         if (!Used)
@@ -87,7 +104,8 @@ public class Math2Expr : Expr
         B = b;
         Op = op;
     }
-    public override string Label => $"{A} {Op} {B}";
+    public override string Label => $"{A.Braces} {Op} {B.Braces}";
+    public override string Braces => $"({this})";
     public override void Use()
     {
         if (!Used)
@@ -121,13 +139,19 @@ public class SetExpr : Expr
             return $"{A} = {B.Label}";
         }
     }
+    public override string Braces => $"({this})";
 }
 
 public class RefExpr : Expr
 {
-    public RefToElement Ref { get; }
-    public RefExpr(RefToElement r) => Ref = r;
-    public override string Label => Ref.Reference is SaidExpression s ? $"\"{s}\"" : $"{Ref}";
+    public BaseElement Ref { get; }
+    public RefExpr(RefToElement r) => Ref = r.Reference;
+    public override string Label => Ref switch
+    {
+        SaidExpression s => $"\"{s.Label}\"",
+        StringConst str => $"\"{str.Value}\"",
+        _ => $"{Ref}"
+    };
 }
 
 public class CallExpr : Expr
@@ -137,7 +161,7 @@ public class CallExpr : Expr
     public List<Expr> Args { get; }
     public CallExpr(string method, List<Expr> args = null)
     {
-        Method = method;
+        Method = ToCppName(method);
         Args = args;
         if (args != null) foreach (var ex in args) ex.Use();
     }
@@ -159,6 +183,7 @@ public class CallExpr : Expr
     public override string Label => $"{GetCall()}({ArgsStr})";
     public override void Use()
     {
+        base.Use();
         if (Var != null) return;
         MakeVar(Block.Procedure.CreateVar());
     }
@@ -171,7 +196,7 @@ public class ClassExpr : Expr
     public ClassExpr(ClassSection cl)
     {
         Class = cl;
-        Name = cl.Name.Replace(' ', '_');
+        Name = ToCppName(cl.Name);
     }
     public ClassExpr(string name) => Name = name;
     public override string Label => Name;

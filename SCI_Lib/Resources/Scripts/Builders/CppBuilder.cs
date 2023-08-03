@@ -1,5 +1,7 @@
 ﻿using SCI_Lib.Resources.Scripts.Analyzer;
+using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using System;
 using System.Linq;
 using System.Text;
 
@@ -8,12 +10,20 @@ namespace SCI_Lib.Resources.Scripts.Builders;
 public class CppBuilder : IScriptBuilder
 {
     private readonly StringBuilder sb = new();
+    private readonly string _cl;
+    private readonly string _method;
     private int _level = 0;
     private ScriptAnalyzer _analyzer;
 
+    public CppBuilder(string cl = null, string method = null)
+    {
+        _cl = cl;
+        _method = method;
+    }
+
     public string Decompile(Script script)
     {
-        _analyzer = script.Analyze();
+        _analyzer = script.Analyze(_cl, _method);
 
         sb.AppendLine("#pragma once")
             .AppendLine()
@@ -29,14 +39,24 @@ public class CppBuilder : IScriptBuilder
     private void WriteClass(ClassSection s)
     {
         s.Prepare();
-        var name = s.Name;
-        if (s.Type == SectionType.Object) name += "Class";
+        var name = Expr.ToCppName(s);
+        if (string.IsNullOrWhiteSpace(name))
+            throw new Exception();
 
         var super = s.SuperClass;
 
-        sb.Append($"class {name}");
+        if (s.Type == SectionType.Class)
+            sb.Append($"class {name}");
+        else
+            sb.Append($"class");
+
         if (super != null)
-            sb.Append($" : {super.Name}");
+        {
+            var sname = Expr.ToCppName(super);
+            if (string.IsNullOrWhiteSpace(sname))
+                throw new Exception();
+            sb.Append($" : {sname}");
+        }
         sb.AppendLine()
             .AppendLine("{");
         _level++;
@@ -45,8 +65,19 @@ public class CppBuilder : IScriptBuilder
         for (int i = 4; i < s.Properties.Length; i++)
         {
             var prop = s.Properties[i];
-            Space().Append($"short {prop.Name} = {prop.Value};");
-            if (prop.Value > 9) sb.Append($" // 0x{prop.Value:x4}");
+            var pname = Expr.ToCppName(prop.Name);
+            if (prop.Reference is SaidExpression said)
+            {
+                Space().Append($"said_t {pname} = \"{said.Label}\";");
+            }
+            else
+            {
+                if (prop.Reference != null)
+                    Console.WriteLine($"PROP REF {prop.Reference.GetType().FullName}");
+
+                Space().Append($"short {pname} = {prop.Value};");
+                if (prop.Value > 9) sb.Append($" // 0x{prop.Value:x4}");
+            }
             sb.AppendLine();
         }
         sb.AppendLine();
@@ -54,11 +85,12 @@ public class CppBuilder : IScriptBuilder
         for (int i = 0; i < s.FuncNamesInd.Length; i++)
         {
             var addr = s.FuncCode[i].TargetOffset;
-            var method = pack.GetName(s.FuncNamesInd[i]);
+            var method = Expr.ToCppName(pack.GetName(s.FuncNamesInd[i]));
 
             var proc = _analyzer.Procedures.FirstOrDefault(p => p.Class == s && p.Name == method);
+            if (proc == null) continue;
 
-            AppendLine($"void {method}()");
+            AppendLine($"void {proc.Define}");
             AppendLine("{");
             _level++;
 
@@ -70,8 +102,9 @@ public class CppBuilder : IScriptBuilder
         _level--;
         sb.Append('}');
         if (s.Type == SectionType.Object)
-            sb.Append($" {s.Name}");
+            sb.Append($" {name}");
         sb.AppendLine(";");
+        sb.AppendLine();
     }
 
     private StringBuilder Space()

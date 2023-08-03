@@ -59,9 +59,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
             switch (Reference)
             {
-                case Code c:
+                case Code:
                     type = "code";
-                    comment = ";  " + c.Name;
                     break;
                 case StringConst s:
                     type = "string";

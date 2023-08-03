@@ -128,6 +128,6 @@ namespace SCI_Lib.Resources.Scripts
             return null;
         }
 
-        public ScriptAnalyzer Analyze(string cl = null, string meth = null) => new(this, cl, meth);
+        public ScriptAnalyzer Analyze(string cl = null, string method = null) => new(this, cl, method);
     }
 }

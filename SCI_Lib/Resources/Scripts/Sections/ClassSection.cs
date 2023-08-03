@@ -1,6 +1,8 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Utils;
+using System;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
@@ -32,11 +34,11 @@ namespace SCI_Lib.Resources.Scripts.Sections
         {
             var magic = ReadShortBE(data, ref offset);
             if (magic != 0x1234)
-                throw new System.Exception("Wrong class magic");
+                throw new Exception("Wrong class magic");
 
             var varOffset = ReadShortBE(data, ref offset);
             if (varOffset != 0)
-                throw new System.Exception("Wrong class var offset");
+                throw new Exception("Wrong class var offset");
 
             funcList = ReadShortBE(data, ref offset);
             int propsCount = ReadShortBE(data, ref offset);
@@ -54,9 +56,10 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 _propNamesInd = new ushort[propsCount];
                 for (int i = 0; i < propsCount; i++)
                 {
-                    var ind = ReadShortBE(data, ref offset);
-                    _propNamesInd[i] = ind;
-                    Properties[i].Name = Package.GetName(ind);
+                    var selector = ReadShortBE(data, ref offset);
+                    _propNamesInd[i] = selector;
+                    Properties[i].Name = Package.GetName(selector);
+                    Properties[i].NameSel = selector;
                 }
             }
 
@@ -93,7 +96,10 @@ namespace SCI_Lib.Resources.Scripts.Sections
                     if (SuperClass.Properties.Length <= i)
                         Properties[i].Name = $"prop_{i}";
                     else
+                    {
                         Properties[i].Name = SuperClass.Properties[i].Name;
+                        Properties[i].NameSel = SuperClass.Properties[i].NameSel;
+                    }
                 }
             }
         }
@@ -170,5 +176,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
         }
 
         public bool IsProp(string name) => Properties.Any(p => p.Name == name);
+
+        public bool IsProp(ushort sel) => Properties.Any(p => p.NameSel == sel);
     }
 }

@@ -16,6 +16,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
         public string ValueStr => Reference != null ? Reference.ToString() : $"{Value:x}";
         public override string Label => $"{Class.Name}[{Index}] = {ValueStr}";
 
+        public ushort NameSel { get; internal set; }
+
         public PropertyElement(ClassSection cl, int index, ushort address, ushort val)
             : base(cl.Script, address)
         {
