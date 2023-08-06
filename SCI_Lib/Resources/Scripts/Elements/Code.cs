@@ -272,8 +272,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     {
                         var a1 = ReadUShort(data, ref offset);
                         if (Script.Package.ViewFormat == ViewFormat.EGA)
-                            //Arguments.Add(new CodeRef(this, addr, val, (ushort)(offset + val), 2));
-                            Arguments.Add(new RefToElement(Script, addr, (ushort)(offset + a1)) { Source = this });
+                            Arguments.Add(new RefToElement(Script, addr, a1, (ushort)(offset + a1), 2) { Source = this });
                         else
                             Arguments.Add(new RefToElement(Script, addr, a1) { Source = this });
                     }
