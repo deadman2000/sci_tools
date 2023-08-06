@@ -196,7 +196,7 @@ public class ClassExpr : Expr
     public ClassExpr(ClassSection cl)
     {
         Class = cl;
-        Name = ToCppName(cl.Name);
+        Name = ToCppName(cl);
     }
     public ClassExpr(string name) => Name = name;
     public override string Label => Name;

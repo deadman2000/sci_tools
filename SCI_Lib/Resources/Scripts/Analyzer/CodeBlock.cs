@@ -148,7 +148,7 @@ public class CodeBlock
 
         foreach (var c in Code)
             ExecuteCode(c);
-        
+
         if (_mainUsed) Procedure.Using(0);
 
         if (Condition != null && Condition.Var == null)
@@ -487,7 +487,11 @@ public class CodeBlock
                     {
                         var sel = frame[i].GetValue();
                         var name = GetName(sel);
-                        var isProp = Procedure.Class.IsProp(sel);
+                        bool isProp = false;
+                        if (Procedure.Class == null)
+                            name = "this." + name;
+                        else
+                            isProp = Procedure.Class.IsProp(sel);
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
 
@@ -551,6 +555,7 @@ public class CodeBlock
                             SetAcc(new CallExpr(name));
                         }
                     }
+                    _rest = 0;
                 }
                 break;
             case 0x58: // &rest
@@ -690,6 +695,8 @@ public class CodeBlock
             Console.WriteLine("No class method");
             return new ParamExpr($"prop{ind}");
         }
+        if (ind >= cl.Properties.Length)
+            return new ParamExpr($"prop{ind}");
         return new ParamExpr(cl.Properties[ind]);
     }
 

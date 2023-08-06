@@ -1,5 +1,4 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,7 +34,8 @@ public class TextUsageSearch
         }
         else
         {
-            foreach (var res in _package.GetResources<ResScript>())
+            var resources = _package.GetResources<ResScript>().ToArray();
+            foreach (var res in resources)
             {
                 //if (res.Number != 0) continue;
                 //Console.WriteLine(res.FileName);
@@ -69,7 +69,6 @@ public class TextUsageSearch
             if (proc.Name == "handleEvent")
                 FindUsage(proc);
         }
-
     }
 
     private void FindUsage(ProcedureTree proc)

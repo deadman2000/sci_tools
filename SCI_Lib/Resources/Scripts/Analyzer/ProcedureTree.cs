@@ -111,14 +111,16 @@ public class ProcedureTree
                     case 0x33:
                         jupms.Add(code.Next);
                         var r = code.Arguments[0] as CodeRef;
-                        var rc = (Code)r.Reference;
-                        var addr = rc.Address;
-                        if (addr < Begin.Address)
-                            additionalBlocks.Add(rc);
-                        else
+                        if (r.Reference is Code rc)
                         {
-                            lastJump = Math.Max(lastJump, addr);
-                            jupms.Add(rc);
+                            var addr = rc.Address;
+                            if (addr < Begin.Address)
+                                additionalBlocks.Add(rc);
+                            else
+                            {
+                                lastJump = Math.Max(lastJump, addr);
+                                jupms.Add(rc);
+                            }
                         }
                         break;
                     case 0x48: // ret
