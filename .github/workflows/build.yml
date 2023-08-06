@@ -26,10 +26,6 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
-      uses: brandedoutcast/publish-nuget@v2
-      with:
-        PROJECT_FILE_PATH: SCI_Lib/SCI_Lib.csproj
-        VERSION_FILE_PATH: Directory.Build.props
-        VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
-        TAG_FORMAT: '*'
-        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+      run: |
+          dotnet pack SCI_Lib -o out
+          dotnet nuget push "out\*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
