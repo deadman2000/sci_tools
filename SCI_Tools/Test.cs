@@ -20,10 +20,12 @@ namespace SCI_Tools
         {
             try
             {
-                DecompileAll();
+                FindTextSaids();
+                //DecompileAll();
                 //Decompile(25);
                 //Decompile(255, "DText");
-                //Decompile(25, "rm25", "init");
+                //Decompile(24, "Room24", "handleEvent");
+                //Decompile(0, null, "handleEvent");
 
                 /*HashSet<string> words = new();
                 foreach (var res in translate.Scripts)
@@ -156,6 +158,19 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
+        private void FindTextSaids(ushort? scr = null)
+        {
+            var search = new TextUsageSearch(package, scr);
+            var result = search.FindUsage();
+
+            foreach (var p in result.OrderBy(p => p.Script).ThenBy(p => p.Index))
+            {
+                Console.WriteLine($"{p.Script}.{p.Index}");
+                foreach (var s in p.Saids)
+                    Console.WriteLine($"\t{s}");
+            }
+        }
+
         private void Decompile(ushort num, string cl = null, string method = null)
         {
             var res = package.GetResource<ResScript>(num);
@@ -166,9 +181,13 @@ namespace SCI_Tools
 
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP);
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.Meta);
-            CreateGraph(res.Number, graph, GraphBuilder.CodeType.ASM);
+            //CreateGraph(res.Number, graph, GraphBuilder.CodeType.ASM);
 
-            Console.WriteLine(new CppBuilder(cl, method).Decompile(script));
+            analyzer.Optimize();
+            CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP_OPT);
+
+            var h_path = @$"c:\Projects\TranslateWeb\out\scr{num}.h";
+            File.WriteAllText(h_path, new CppBuilder(cl, method).Decompile(script));
         }
 
         private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)

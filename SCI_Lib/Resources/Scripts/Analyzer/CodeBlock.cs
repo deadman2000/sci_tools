@@ -29,7 +29,6 @@ public class CodeBlock
     public Expr Condition { get; private set; }
     private ushort _rest;
     private bool _mainUsed;
-    private Code _ip;
 
     public List<CodeBlock> Parents { get; } = new();
 
@@ -59,8 +58,8 @@ public class CodeBlock
         _package = list[0].Script.Package;
         //if (!isBegin)
         {
-            LinkAcc = new LinkExpr(true, $"A {AddrBegin:x4}");
-            LinkPrev = new LinkExpr(false, $"P {AddrBegin:x4}");
+            LinkAcc = new LinkExpr(true, $"A {AddrBegin:x4}", this);
+            LinkPrev = new LinkExpr(false, $"P {AddrBegin:x4}", this);
             Acc = LinkAcc;
             Prev = LinkPrev;
             proc.RegisterLink(LinkAcc);
@@ -193,7 +192,6 @@ public class CodeBlock
 
     private void ExecuteCode(Code code)
     {
-        _ip = code;
         if (code.Type >= 0x80)
         {
             ushort val = GetVal(code.Arguments[0]);

@@ -96,10 +96,44 @@ namespace SCI_Lib.Resources.Scripts.Elements
         {
             var word = new string(buff.ToArray());
             buff.Clear();
-            var ids = Script.Package.GetWordId(word);
-            if (ids == null) throw new Exception($"Word not found {word}");
+            var ids = Script.Package.GetWordId(word) ?? throw new Exception($"Word not found {word}");
             if (ids.Length > 1) Console.WriteLine($"WARN: Multiple ids for word '{word}'");
             return ids[0];
+        }
+
+        public bool Normalize()
+        {
+            bool changed = false;
+            HashSet<ushort> words = new();
+            List<SaidData> list = new();
+            foreach (var e in Expression)
+            {
+                if (e.IsOperator)
+                {
+                    list.Add(e);
+                    if (e.Letter != ",")
+                    {
+                        words.Clear();
+                    }
+                }
+                else // is word
+                {
+                    if (words.Contains(e.Data)) // Dubl found
+                    {
+                        changed = true;
+                        if (list.Any() && list[^1].Letter == ",") // Remove comma
+                            list.RemoveAt(list.Count - 1);
+                    }
+                    else
+                    {
+                        list.Add(e);
+                        words.Add(e.Data);
+                    }
+                }
+            }
+            if (changed)
+                Set(list);
+            return changed;
         }
 
         public override string Label => _label ??= string.Join("", Expression.Select(s => s.ToString(Script.Package.GetWords())).ToArray());

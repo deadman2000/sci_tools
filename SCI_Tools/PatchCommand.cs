@@ -2,7 +2,6 @@
 using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
-using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Vocab;
 using System;
@@ -125,10 +124,8 @@ namespace SCI_Tools
         protected void RemoveSaidDubl()
         {
             var resources = _translate.Scripts
-                .GroupBy(r => r.Number).Select(g => g.First());
-
-            List<SaidData> list = new();
-            HashSet<ushort> words = new();
+                .GroupBy(r => r.Number)
+                .Select(g => g.First());
 
             foreach (var res in resources)
             {
@@ -138,39 +135,11 @@ namespace SCI_Tools
 
                 foreach (var said in ss.Saids)
                 {
-                    string before = said.Label;
-                    foreach (var e in said.Expression)
-                    {
-                        if (e.IsOperator)
-                        {
-                            list.Add(e);
-                            if (e.Letter != ",")
-                            {
-                                words.Clear();
-                            }
-                        }
-                        else // is word
-                        {
-                            if (words.Contains(e.Data))
-                            {
-                                if (list.Any() && list[^1].Letter == ",")
-                                    list.RemoveAt(list.Count - 1);
-                            }
-                            else
-                            {
-                                list.Add(e);
-                                words.Add(e.Data);
-                            }
-                        }
-                    }
-                    said.Set(list);
-                    if (before != said.Label)
+                    if (said.Normalize())
                     {
                         //Console.WriteLine($"{before} => {said.Label}");
                         Changed(res);
                     }
-                    words.Clear();
-                    list.Clear();
                 }
             }
         }

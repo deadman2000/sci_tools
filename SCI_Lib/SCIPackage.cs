@@ -343,7 +343,7 @@ namespace SCI_Lib
             IEnumerable<Word> words = voc.GetWords();
 
             if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
-                words = words.Union(vocTr.GetWords());
+                words = words.Concat(vocTr.GetWords());
 
             return words.GroupBy(w => w.Group).ToDictionary(g => g.Key, g => GetTranslated(g));
         }
@@ -373,8 +373,9 @@ namespace SCI_Lib
 
         private static string GetTranslated(IEnumerable<Word> words)
         {
-            var word = words.FirstOrDefault(w => w.Text[0] > 'z');
-            word ??= words.First();
+            var word = words.Where(w => w.Text[0] > 'z').OrderBy(w => w.Text.Length).FirstOrDefault();
+            if (words.Any(w => w.Text == "examine")) return "examine";
+            word ??= words.OrderBy(w => w.Text.Length).First();
             return word.Text;
         }
     }

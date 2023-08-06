@@ -9,9 +9,10 @@ namespace SCI_Lib.Resources.Scripts.Analyzer;
 public abstract class Expr
 {
     public CodeBlock Block { get; set; }
+    public List<Expr> Args { get; set; }
     public int UseCount { get; set; }
     public virtual bool Used { get; private set; }
-    public ParamExpr Var { get; private set; }
+    public ParamExpr Var { get; set; }
     public virtual ushort GetValue() => throw new NotImplementedException();
     public abstract string Label { get; }
 
@@ -76,11 +77,11 @@ public class ConstExpr : Expr
 
 public class Math1Expr : Expr
 {
-    public Expr Expression { get; }
+    public Expr Expression => Args[0];
     public string Op { get; }
     public Math1Expr(Expr exp, string op)
     {
-        Expression = exp;
+        Args = new() { exp };
         Op = op;
     }
     public override string Label => $"{Op}{Expression.Braces}";
@@ -95,13 +96,12 @@ public class Math1Expr : Expr
 
 public class Math2Expr : Expr
 {
-    public Expr A { get; }
-    public Expr B { get; }
-    public string Op { get; }
+    public Expr A => Args[0];
+    public Expr B => Args[1];
+    public string Op { get; set; }
     public Math2Expr(Expr a, string op, Expr b)
     {
-        A = a;
-        B = b;
+        Args = new() { a, b };
         Op = op;
     }
     public override string Label => $"{A.Braces} {Op} {B.Braces}";
@@ -120,13 +120,13 @@ public class Math2Expr : Expr
 public class SetExpr : Expr
 {
     public Expr A { get; }
-    public Expr B { get; }
+    public Expr B => Args[0];
     public SetExpr(Expr a, Expr b, bool external) // если external, помечаем все операции как использованные
     {
         if (a is ClassExpr) throw new InvalidOperationException();
-        if (external) b.Use();
         A = a;
-        B = b;
+        Args = new() { b };
+        if (external) b.Use();
     }
     public override string Label
     {
@@ -150,7 +150,7 @@ public class RefExpr : Expr
     {
         SaidExpression s => $"\"{s.Label}\"",
         StringConst str => $"\"{str.Value}\"",
-        _ => $"{Ref}"
+        _ => throw new NotImplementedException()
     };
 }
 
@@ -158,15 +158,15 @@ public class CallExpr : Expr
 {
     public Expr Target { get; }
     public string Method { get; }
-    public List<Expr> Args { get; }
     public CallExpr(string method, List<Expr> args = null)
     {
         Method = ToCppName(method);
         Args = args;
-        if (args != null) foreach (var ex in args) ex.Use();
+        if (args != null)
+            foreach (var ex in args) ex.Use();
     }
     public CallExpr(Expr target, string method, List<Expr> args = null)
-        : this(method, args)
+    : this(method, args)
     {
         Target = target;
         target.Use();
@@ -205,26 +205,32 @@ public class ClassExpr : Expr
 public class LinkExpr : Expr
 {
     static int NextId = 0;
-    private int _id = NextId++;
+    public int Id { get; } = NextId++;
     public bool IsAcc { get; }
     public string Description { get; }
     public List<(CodeBlock Block, Expr Expression)> Links { get; } = new();
-    public ParamExpr Variable { get; private set; }
+    public ParamExpr Variable { get; private set; } // TODO Заменить на Var
     public bool Checked { get; internal set; }
     public override string Label
     {
         get
         {
-            if (Links.Count == 0) return "empty";
-            if (Links.Count == 1) return Links[0].Expression.ToString();
-            Variable ??= new ParamExpr($"_{_id}[{Links.Count}]");
-            return Variable.Name;
+            if (!MetaOut)
+            {
+                if (Variable != null) return Variable.ToString();
+            }
+
+            if (Links.Count == 0) return $"_{Id}[0]";
+            if (Links.Count == 1) return $"_{Id}({Links[0].Expression})";
+            //Variable ??= new ParamExpr($"link{Id}");
+            return $"_{Id}[{Links.Count}]";
         }
     }
-    public LinkExpr(bool isAcc, string descr)
+    public LinkExpr(bool isAcc, string descr, CodeBlock owner)
     {
         IsAcc = isAcc;
         Description = descr;
+        Block = owner;
     }
     public void SetVar(ParamExpr v) => Variable = v;
     public void LinkTo(CodeBlock block, Expr ex) => Links.Add((block, ex));
@@ -232,13 +238,9 @@ public class LinkExpr : Expr
 
 public class ArrayExpr : Expr
 {
-    public ParamExpr Array { get; }
-    public Expr Index { get; }
-    public ArrayExpr(ParamExpr array, Expr index)
-    {
-        Array = array;
-        Index = index;
-    }
+    public ParamExpr Array => (ParamExpr)Args[0];
+    public Expr Index => Args[1];
+    public ArrayExpr(ParamExpr array, Expr index) => Args = new() { array, index };
     public override void Use()
     {
         if (!Used)

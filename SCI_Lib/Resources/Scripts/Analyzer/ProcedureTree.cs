@@ -8,18 +8,19 @@ namespace SCI_Lib.Resources.Scripts.Analyzer;
 
 public class ProcedureTree
 {
-    public Code Begin { get; }
-    public Code End { get; private set; }
+    private readonly SCIPackage _package;
 
     private readonly HashSet<ushort> _usedScripts = new();
     private readonly Dictionary<ushort, CodeBlock> _blocksByAddress = new();
     private readonly Dictionary<ushort, ParamExpr> _params = new();
     private readonly List<LinkExpr> _links = new();
     private int _nextVarId = 0;
+    private CodeBlock _first;
+    private OptimizedTree _opt;
 
+    public Code Begin { get; }
+    public Code End { get; private set; }
     public string Name { get; }
-
-    private SCIPackage _package;
 
     public ScriptAnalyzer Decompiler { get; }
     public ClassSection Class { get; }
@@ -52,11 +53,36 @@ public class ProcedureTree
         Name = Expr.ToCppName(name);
     }
 
+    public override string ToString()
+    {
+        string str = "";
+        if (Class != null)
+        {
+            if (Class.Name != null)
+                str = Expr.ToCppName(Class.Name);
+            else
+                str = $"{Class.Id:x4}";
+            str += "::";
+        }
+        str += Define;
+        return str;
+    }
+
+    private void Clear()
+    {
+        _first = null;
+        _blocksByAddress.Clear();
+        _links.Clear();
+        _nextVarId = 0;
+    }
+
     public void BuildMethod()
     {
+        if (_first != null) Clear();
+
         var code = Begin;
-        CodeBlock first = null;
         HashSet<Code> additionalBlocks = new();
+        _params.Clear();
 
         while (true)
         {
@@ -118,16 +144,16 @@ public class ProcedureTree
                     .OrderBy(a => a)
                     .ToArray();
 
-                var bl = CreateBlock(instructions.Where(c => c.Address < address[0]), first == null);
-                first ??= bl;
+                var bl = CreateBlock(instructions.Where(c => c.Address < address[0]), _first == null);
+                _first ??= bl;
                 for (int i = 0; i < address.Length - 1; i++)
                     CreateBlock(instructions.Where(c => c.Address >= address[i] && c.Address < address[i + 1]));
                 CreateBlock(instructions.Where(c => c.Address >= address[^1]));
             }
             else
             {
-                var bl = CreateBlock(instructions, first == null);
-                first ??= bl;
+                var bl = CreateBlock(instructions, _first == null);
+                _first ??= bl;
             }
 
             additionalBlocks.RemoveWhere(c => c.Address >= sectorBegin.Address && c.Address <= End.Address);
@@ -140,15 +166,20 @@ public class ProcedureTree
         foreach (var block in _blocksByAddress.Values)
             block.BuildTree();
 
-        first.Decompile();
+        _first.Decompile();
 
         CalcLinks();
     }
 
     private void CalcLinks()
     {
-        foreach (var link in _links)
-            CheckUsed(link);
+        while (true)
+        {
+            foreach (var link in _links)
+                CheckUsed(link);
+            if (!_links.Any(l => l.Used && !l.Checked))
+                break;
+        }
     }
 
     private void CheckUsed(LinkExpr link)
@@ -181,7 +212,6 @@ public class ProcedureTree
                     e.MakeVar(v);
                 }
             }
-
             link.SetVar(v);
         }
     }
@@ -227,4 +257,13 @@ public class ProcedureTree
 
     internal void Using(Resource resource) => _usedScripts.Add(resource.Number);
     internal void Using(ushort scr) => _usedScripts.Add(scr);
+
+    public OptimizedTree Optimize()
+    {
+        if (_opt != null) return _opt;
+        _opt = new OptimizedTree(_first);
+        _opt.Optimize();
+        Clear();
+        return _opt;
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace SCI_Lib.Resources.Scripts.Analyzer;
@@ -17,10 +18,12 @@ public class GraphBuilder
 
     public enum CodeType
     {
-        ASM, CPP, Meta
+        ASM, CPP, Meta, CPP_OPT
     }
 
-    string GetLabel(CodeBlock b) => $"Code{b.AddrBegin:x4}";
+    private static string GetLabel(CodeBlock b) => $"Code{b.AddrBegin:x4}";
+    private static string GetLabel(CodeNode node) => $"Node{node.Address:x4}";
+
 
     public string GetGraph(CodeType type)
     {
@@ -48,72 +51,19 @@ public class GraphBuilder
                 sb.AppendLine($"\tsubgraph cluster_{id} {{");
                 sb.AppendLine($"\t\tlabel = \"{cl.Name}\"");
             }
+
             foreach (var proc in gr)
             {
                 sb.AppendLine($"\t\tsubgraph cluster_{proc.Name} {{");
                 sb.AppendLine($"\t\t\tlabel = \"\"");
-                foreach (var bl in proc.Blocks)
-                {
-                    if (!bl.IsBegin && bl.Parents.Count == 0) continue;
-                    var label = GetLabel(bl);
 
-                    // Links
-                    if (bl.Condition == null)
-                    {
-                        if (bl.BlockA != null)
-                            sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockA)}");
-                    }
-                    else
-                    {
-                        bool ret = false;
-                        if (bl.BlockA == null)
-                        {
-                            sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=blue]");
-                            ret = true;
-                        }
-                        else
-                            sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockA)} [color=blue]");
-
-                        if (bl.BlockB == null)
-                        {
-                            sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=red]");
-                            ret = true;
-                        }
-                        else
-                            sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockB)} [color=red]");
-
-                        // Return block
-                        if (ret)
-                            sb.AppendLine($"\t\t\treturn_{bl.AddrBegin:x4} [shape=circle label=\"\"]");
-                    }
-
-                    // Block text
-                    sbl.Clear();
-                    switch (type)
-                    {
-                        case CodeType.ASM:
-                            BuildLabelASM(bl);
-                            break;
-                        case CodeType.CPP:
-                            BuildLabelCpp(bl);
-                            break;
-                        case CodeType.Meta:
-                            BuildLabelMeta(bl);
-                            break;
-                    }
-                    sb.AppendLine($"\t\t\t{label} [label={sbl}]");
-
-                    // Begin block
-                    if (bl.IsBegin)
-                    {
-                        var method = proc.Define;
-                        if (method.Length > 50) method = method.Substring(0, 50) + "...)";
-                        sb.AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} -> {label}")
-                            .AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} [style=rounded margin=0.1 label=\"{method}\"]");
-                    }
-                }
+                if (type == CodeType.CPP_OPT)
+                    WriteOpt(proc);
+                else
+                    WriteProc(proc, type);
                 sb.AppendLine("\t\t}");
             }
+
             if (cl != null)
                 sb.AppendLine("\t}");
         }
@@ -121,6 +71,124 @@ public class GraphBuilder
         sb.AppendLine("}");
 
         return sb.ToString();
+    }
+
+    private void WriteProc(ProcedureTree proc, CodeType type)
+    {
+        foreach (var bl in proc.Blocks)
+        {
+            if (!bl.IsBegin && bl.Parents.Count == 0) continue;
+            var label = GraphBuilder.GetLabel(bl);
+
+            // Links
+            if (bl.Condition == null)
+            {
+                if (bl.BlockA != null)
+                    sb.AppendLine($"\t\t\t{label} -> {GraphBuilder.GetLabel(bl.BlockA)}");
+            }
+            else
+            {
+                bool ret = false;
+                if (bl.BlockA == null)
+                {
+                    sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=blue]");
+                    ret = true;
+                }
+                else
+                    sb.AppendLine($"\t\t\t{label} -> {GraphBuilder.GetLabel(bl.BlockA)} [color=blue]");
+
+                if (bl.BlockB == null)
+                {
+                    sb.AppendLine($"\t\t\t{label} -> return_{bl.AddrBegin:x4} [color=red]");
+                    ret = true;
+                }
+                else
+                    sb.AppendLine($"\t\t\t{label} -> {GraphBuilder.GetLabel(bl.BlockB)} [color=red]");
+
+                // Return block
+                if (ret)
+                    sb.AppendLine($"\t\t\treturn_{bl.AddrBegin:x4} [shape=circle label=\"\"]");
+            }
+
+            // Block text
+            sbl.Clear();
+            switch (type)
+            {
+                case CodeType.ASM:
+                    BuildLabelASM(bl);
+                    break;
+                case CodeType.CPP:
+                    BuildLabelCpp(bl);
+                    break;
+                case CodeType.Meta:
+                    BuildLabelMeta(bl);
+                    break;
+            }
+            sb.AppendLine($"\t\t\t{label} [label={sbl}]");
+
+            // Begin block
+            if (bl.IsBegin)
+            {
+                var method = proc.Define;
+                if (method.Length > 50) method = method.Substring(0, 50) + "...)";
+                sb.AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} -> {label}")
+                    .AppendLine($"\t\t\tbegin_{bl.AddrBegin:x4} [style=rounded margin=0.1 label=\"{method}\"]");
+            }
+        }
+    }
+
+    private void WriteOpt(ProcedureTree proc)
+    {
+        var opt = proc.Optimize();
+
+        foreach (var node in opt.Nodes)
+        {
+            var label = GetLabel(node);
+
+            // Links
+            if (node.Condition == null)
+            {
+                if (node.NextA != null)
+                    sb.AppendLine($"\t\t\t{label} -> {GetLabel(node.NextA)}");
+            }
+            else
+            {
+                bool ret = false;
+                if (node.NextA == null)
+                {
+                    sb.AppendLine($"\t\t\t{label} -> return_{node.Address:x4} [color=blue]");
+                    ret = true;
+                }
+                else
+                    sb.AppendLine($"\t\t\t{label} -> {GetLabel(node.NextA)} [color=blue]");
+
+                if (node.NextB == null)
+                {
+                    sb.AppendLine($"\t\t\t{label} -> return_{node.Address:x4} [color=red]");
+                    ret = true;
+                }
+                else
+                    sb.AppendLine($"\t\t\t{label} -> {GetLabel(node.NextB)} [color=red]");
+
+                // Return block
+                if (ret)
+                    sb.AppendLine($"\t\t\treturn_{node.Address:x4} [shape=circle label=\"\"]");
+            }
+
+            // Block text
+            sbl.Clear();
+            BuildLabel(node);
+            sb.AppendLine($"\t\t\t{label} [label={sbl}]");
+
+            // Begin block
+            if (node == opt.Node)
+            {
+                var method = proc.Define;
+                if (method.Length > 50) method = method.Substring(0, 50) + "...)";
+                sb.AppendLine($"\t\t\tbegin_{node.Address:x4} -> {label}")
+                    .AppendLine($"\t\t\tbegin_{node.Address:x4} [style=rounded margin=0.1 label=\"{method}\"]");
+            }
+        }
     }
 
     private void LAppendLine(string line, bool red = false)
@@ -160,6 +228,22 @@ public class GraphBuilder
 
         if (bl.Condition != null)
             LAppendLine($"if ({bl.Condition})");
+
+        sbl.Append('"');
+    }
+
+    private void BuildLabel(CodeNode node)
+    {
+        _labelHTML = false;
+        sbl.Append('"');
+
+        LAppendLine($"// {node.Address:x04}");
+
+        foreach (var exp in node.Expressions)
+            LAppendLine(exp.Define);
+
+        if (node.Condition != null)
+            LAppendLine($"if ({node.Condition})");
 
         sbl.Append('"');
     }

@@ -53,6 +53,8 @@ public class ScriptAnalyzer
                 if (proc == null) return;
                 code = proc.End.Next;
             }
+            else
+                return;
         }
     }
 
@@ -61,7 +63,6 @@ public class ScriptAnalyzer
         if (_classFilter != null && s.Name != _classFilter) return;
         s.Prepare();
 
-        var pack = s.Package;
         for (int i = 0; i < s.FuncNames.Length; i++)
         {
             var addr = s.FuncCode[i].TargetOffset;
@@ -80,5 +81,11 @@ public class ScriptAnalyzer
         proc.BuildMethod();
         _usedCode.Add(code.Address);
         return proc;
+    }
+
+    public void Optimize()
+    {
+        foreach (var proc in Procedures)
+            proc.Optimize();
     }
 }

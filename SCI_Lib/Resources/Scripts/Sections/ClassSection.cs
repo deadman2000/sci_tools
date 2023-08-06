@@ -2,7 +2,6 @@
 using SCI_Lib.Utils;
 using System;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {

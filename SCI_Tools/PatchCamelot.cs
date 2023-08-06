@@ -1,6 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources.Vocab;
-using System;
 
 namespace SCI_Tools
 {
