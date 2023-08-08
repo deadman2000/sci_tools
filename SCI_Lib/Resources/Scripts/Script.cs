@@ -1,4 +1,4 @@
-﻿using SCI_Lib.Resources.Scripts.Analyzer;
+﻿using SCI_Lib.Analyzer;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;

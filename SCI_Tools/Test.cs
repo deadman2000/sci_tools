@@ -1,4 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
+using SCI_Lib.Analyzer;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Analyzer;
@@ -20,12 +21,12 @@ namespace SCI_Tools
         {
             try
             {
-                FindTextSaids();
+                //FindTextSaids();
                 //DecompileAll();
                 //Decompile(25);
                 //Decompile(255, "DText");
                 //Decompile(24, "Room24", "handleEvent");
-                //Decompile(0, null, "handleEvent");
+                Decompile(2, null, "handleEvent");
 
                 /*HashSet<string> words = new();
                 foreach (var res in translate.Scripts)

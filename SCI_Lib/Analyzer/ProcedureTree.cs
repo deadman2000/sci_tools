@@ -1,10 +1,11 @@
-﻿using SCI_Lib.Resources.Scripts.Elements;
+﻿using SCI_Lib.Resources;
+using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SCI_Lib.Resources.Scripts.Analyzer;
+namespace SCI_Lib.Analyzer;
 
 public class ProcedureTree
 {

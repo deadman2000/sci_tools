@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace SCI_Lib.Resources.Scripts.Analyzer;
+namespace SCI_Lib.Analyzer;
 
 public class GraphBuilder
 {
@@ -78,13 +78,13 @@ public class GraphBuilder
         foreach (var bl in proc.Blocks)
         {
             if (!bl.IsBegin && bl.Parents.Count == 0) continue;
-            var label = GraphBuilder.GetLabel(bl);
+            var label = GetLabel(bl);
 
             // Links
             if (bl.Condition == null)
             {
                 if (bl.BlockA != null)
-                    sb.AppendLine($"\t\t\t{label} -> {GraphBuilder.GetLabel(bl.BlockA)}");
+                    sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockA)}");
             }
             else
             {
@@ -95,7 +95,7 @@ public class GraphBuilder
                     ret = true;
                 }
                 else
-                    sb.AppendLine($"\t\t\t{label} -> {GraphBuilder.GetLabel(bl.BlockA)} [color=blue]");
+                    sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockA)} [color=blue]");
 
                 if (bl.BlockB == null)
                 {
@@ -103,7 +103,7 @@ public class GraphBuilder
                     ret = true;
                 }
                 else
-                    sb.AppendLine($"\t\t\t{label} -> {GraphBuilder.GetLabel(bl.BlockB)} [color=red]");
+                    sb.AppendLine($"\t\t\t{label} -> {GetLabel(bl.BlockB)} [color=red]");
 
                 // Return block
                 if (ret)

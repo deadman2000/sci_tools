@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SCI_Lib.Resources.Scripts.Analyzer;
+namespace SCI_Lib.Analyzer;
 
 public class CodeBlock
 {
@@ -195,9 +195,9 @@ public class CodeBlock
         if (code.Type >= 0x80)
         {
             ushort val = GetVal(code.Arguments[0]);
-            var type = (code.Type >> 1) & 0x3;
-            bool isStack = (code.Type & (1 << 3)) != 0;
-            bool isAccIndex = (code.Type & (1 << 4)) != 0;
+            var type = code.Type >> 1 & 0x3;
+            bool isStack = (code.Type & 1 << 3) != 0;
+            bool isAccIndex = (code.Type & 1 << 4) != 0;
 
             Expr variable = OpGetExpression(type, val);
             if (isAccIndex)

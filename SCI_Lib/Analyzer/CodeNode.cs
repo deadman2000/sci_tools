@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SCI_Lib.Resources.Scripts.Analyzer;
+namespace SCI_Lib.Analyzer;
 
 public class CodeNode
 {

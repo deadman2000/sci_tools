@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SCI_Lib.Resources.Scripts.Analyzer;
+namespace SCI_Lib.Analyzer;
 
 public abstract class Expr
 {

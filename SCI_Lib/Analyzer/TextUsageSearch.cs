@@ -1,8 +1,10 @@
-﻿using SCI_Lib.Resources.Scripts.Elements;
+﻿using SCI_Lib.Resources;
+using SCI_Lib.Resources.Scripts;
+using SCI_Lib.Resources.Scripts.Elements;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SCI_Lib.Resources.Scripts.Analyzer;
+namespace SCI_Lib.Analyzer;
 
 public class TextUsageSearch
 {
@@ -45,7 +47,7 @@ public class TextUsageSearch
 
         return _prints.Select(kv => new PrintCall
         {
-            Script = (kv.Key >> 16) & 0xffff,
+            Script = kv.Key >> 16 & 0xffff,
             Index = kv.Key & 0xffff,
             Saids = kv.Value.Distinct().ToArray()
         });
@@ -143,7 +145,7 @@ public class TextUsageSearch
             && call.Args[0] is ConstExpr c0
             && call.Args[1] is ConstExpr c1)
         {
-            AddPrint((c0.Value << 16) | c1.Value, saids);
+            AddPrint(c0.Value << 16 | c1.Value, saids);
         }
     }
 
