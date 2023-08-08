@@ -373,9 +373,11 @@ namespace SCI_Lib
 
         private static string GetTranslated(IEnumerable<Word> words)
         {
+            if (words.Any(w => w.Text == "посмотри")) return "посмотри";
             var word = words.Where(w => w.Text[0] > 'z').OrderBy(w => w.Text.Length).FirstOrDefault();
+            if (word != null) return word.Text;
             if (words.Any(w => w.Text == "examine")) return "examine";
-            word ??= words.OrderBy(w => w.Text.Length).First();
+            word = words.OrderBy(w => w.Text.Length).First();
             return word.Text;
         }
     }

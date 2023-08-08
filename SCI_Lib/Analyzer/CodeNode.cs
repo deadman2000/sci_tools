@@ -103,4 +103,68 @@ public class CodeNode
                 ReplaceArg(e.Links[i].Expression, a, b);
         }
     }
+
+    public override string ToString()
+    {
+        return $"{Address:x4}";
+    }
+
+    /// <summary>
+    /// Проверяем что переменная используется в этом блоке или в следующих
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public bool UsedVar(string name)
+    {
+        HashSet<CodeNode> chckd = new(); // Защита от зацикливания
+        return UsedVar(name, chckd);
+    }
+
+
+    private bool UsedVar(string name, HashSet<CodeNode> chckd)
+    {
+        chckd.Add(this);
+
+        foreach (var exp in Expressions)
+        {
+            if (exp is SetExpr s)
+            {
+                if (s.A is ParamExpr pa)
+                    if (pa.Name == name)
+                        return false;
+            }
+
+            if (UsedVar(exp, name)) return true;
+        }
+        if (Condition != null)
+        {
+            if (UsedVar(Condition, name)) return true;
+        }
+
+        if (NextA != null && !chckd.Contains(NextA))
+            if (NextA.UsedVar(name, chckd)) return true;
+
+        if (NextB != null && !chckd.Contains(NextB))
+            if (NextB.UsedVar(name, chckd)) return true;
+
+        return false;
+    }
+
+    private bool UsedVar(Expr exp, string name)
+    {
+        if (exp is ParamExpr pe)
+        {
+            if (pe.Name == name) return true;
+        }
+
+        if (exp.Args != null)
+        {
+            foreach (var a in exp.Args)
+            {
+                if (UsedVar(a, name)) return true;
+            }
+        }
+        return false;
+    }
 }

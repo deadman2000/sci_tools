@@ -9,6 +9,7 @@ public class OptimizedTree
     private readonly CodeBlock _first;
     private readonly Dictionary<ushort, CodeNode> _nodesByAddr = new();
     private readonly Dictionary<string, VarInfo> _varInfo = new();
+    private bool _optimized;
 
     public OptimizedTree(CodeBlock first)
     {
@@ -24,14 +25,26 @@ public class OptimizedTree
         if (Node != null) return;
         Nodes = new();
         Node = CreateNode(_first);
+        _nodesByAddr.Clear();
 
         NormalizeExpressions();
 
-        CalcVars();
-        RemoveUnusedVars();
-        RemoveOnceUsedVars();
-        CalcVars();
-        OrPattern();
+        while (true)
+        {
+            _optimized = false;
+            InvertNotCondition();
+            CalcVars();
+            RemoveUnusedVars();
+            RemoveOnceUsedVars();
+            ReplaceOnceUsedVars();
+            CalcVars();
+
+            OptimizeBranch();
+            UnionSimpleBlocks();
+            UnionOr();
+            UnionAnd();
+            if (!_optimized) break;
+        }
 
         //CalcVars();
         //foreach (var (name, info) in _varInfo) Console.WriteLine($"{name} \t{info.Sets} \t{info.Gets}");
@@ -121,6 +134,65 @@ public class OptimizedTree
         }
     }
 
+    private void InvertNotCondition()
+    {
+        // Иневертированные проверки с not
+        foreach (var node in Nodes)
+        {
+            if (node.Condition != null && node.Condition is Math1Expr m && m.Op == "!")
+            {
+                node.Condition = m.Expression;
+                (node.NextB, node.NextA) = (node.NextA, node.NextB);
+                _optimized = true;
+            }
+        }
+    }
+
+    private void ReplaceOnceUsedVars()
+    {
+        // Если переменная один раз присваивается, сравнивается и больше не используется, подставляем сразу в условие
+        foreach (var node in Nodes)
+        {
+            if (node.Condition != null && node.Condition is ParamExpr p && IsVar(p)
+                && node.Expressions.Count > 0 && node.Expressions[^1] is SetExpr set && set.A == p)
+            {
+                if (node.NextA != null && node.NextA.UsedVar(p.Name))
+                    continue;
+                if (node.NextB != null && node.NextB.UsedVar(p.Name))
+                    continue;
+
+                node.Expressions.RemoveAt(node.Expressions.Count - 1);
+                node.Condition = set.B;
+                _optimized = true;
+            }
+        }
+    }
+
+    private void UnionSimpleBlocks()
+    {
+        // Объединяем блок с безусловным переходом со следующим блоком, если у него только один родитель
+        foreach (var node in Nodes.ToList())
+        {
+            if (node.Condition == null && node.NextA != null && node.NextA.Parents.Count == 1)
+            {
+                if (node.NextB != null) throw new Exception();
+
+                var next = node.NextA;
+                next.Address = node.Address;
+                next.Expressions.InsertRange(0, node.Expressions);
+                node.NextA = null;
+                foreach (var p in node.Parents.ToList())
+                {
+                    if (p.NextA == node) p.NextA = next;
+                    if (p.NextB == node) p.NextB = next;
+                }
+                if (node.Parents.Count > 0) throw new Exception();
+                RemoveNode(node);
+                _optimized = true;
+            }
+        }
+    }
+
     private void RemoveUnusedVars()
     {
         foreach (var (_, info) in _varInfo)
@@ -130,12 +202,14 @@ public class OptimizedTree
                 // Удаляем неиспользуемую переменную
                 RemoveVar(info.Param);
                 Replace(info.Param, info.Value);
+                _optimized = true;
             }
         }
     }
 
     private void RemoveOnceUsedVars()
     {
+        // Удаляем переменные которые один раз присвоились и прочитались
         foreach (var (_, info) in _varInfo)
         {
             if (info.Gets == 1 && info.Sets == 1)
@@ -144,84 +218,121 @@ public class OptimizedTree
                 {
                     RemoveVar(info.Param);
                     Replace(info.Param, info.Value);
+                    _optimized = true;
                 }
             }
         }
     }
 
-    private void OrPattern()
+    private void OptimizeBranch()
     {
-        /*
-         * a = e1            node1
-         * if (!a) { _______/
-         *  a = e2   --------- node2
-         * }
-         * if (a) e3 else e4 - node3
-         * 
-         * меняем на:
-         * if (e1 || e2) e3 else e4
-         */
-        // a  sets=1 gets=2
+        // Удаляем лишние переходы и повторные проверки значений переменных
+        foreach (var node in Nodes.ToList())
+        {
+            if (node.Condition != null && node.Condition is ParamExpr p
+                && node.Expressions.Count > 0 && node.Expressions[^1] is SetExpr set && set.A == p)
+            {
+                if (node.NextA != null && node.NextA.Expressions.Count == 0 && node.NextA.Condition is ParamExpr pa && pa.Name == p.Name)
+                {
+                    node.NextA = node.NextA.NextA;
+                    _optimized = true;
+                }
+                else if (node.NextB != null && node.NextB.Expressions.Count == 0 && node.NextB.Condition is ParamExpr pb && pb.Name == p.Name)
+                {
+                    node.NextB = node.NextB.NextB;
+                    _optimized = true;
+                }
+            }
+        }
+    }
 
+    private void UnionOr()
+    {
+        // Последовательные проверки, true которых ведут к единому блоку, объединяем в ||
+        List<CodeNode> orBlocks = new();
         foreach (var node1 in Nodes.ToList())
         {
-            if (!(node1.Expressions.Count > 0 && node1.Condition != null && node1.Condition is ParamExpr p)) continue;
-            if (!IsVar(p)) continue;
-
-            var info = _varInfo[p.Name];
-            if (!(info.Gets == 2 && info.Sets == 2)) continue;
-
-            var node2 = node1.NextB;
-            var node3 = node1.NextA;
-            if (!(node2.Condition == null && node2.Expressions.Count == 1
-                && node3.Condition != null && node3.Expressions.Count == 0)) continue;
-
-            if (node1.Expressions[^1] is not SetExpr set1) continue;
-            if (node2.Expressions[0] is not SetExpr set2) continue;
-            if (node3.Condition != p) continue;
-
-            var e1 = set1.B;
-            var e2 = set2.B;
-
-            RemoveVar(p);
-            node1.Condition = new Math2Expr(e1, "||", e2);
-            node1.NextA = node3.NextA;
-            node1.NextB = node3.NextB;
-
-            node2.Unlink();
-            node3.Unlink();
-            RemoveNode(node2);
-            RemoveNode(node3);
+            if (node1.Condition != null && node1.NextB != null)
+            {
+                var n = node1.NextB;
+                while (true)
+                {
+                    if (n.Condition != null && n.Expressions.Count == 0 && n.NextA == node1.NextA)
+                    {
+                        orBlocks.Add(n);
+                        if (n.NextB == null) break;
+                        n = n.NextB;
+                    }
+                    else
+                        break;
+                }
+                if (orBlocks.Count > 0)
+                {
+                    var falseBranch = orBlocks[^1].NextB;
+                    Expr ex = node1.Condition;
+                    foreach (var node in orBlocks)
+                    {
+                        ex = new Math2Expr(ex, "||", node.Condition);
+                        RemoveNode(node);
+                    }
+                    node1.Condition = ex;
+                    node1.NextB = falseBranch;
+                    orBlocks.Clear();
+                    _optimized = true;
+                }
+            }
         }
+    }
 
-        /*foreach (var (_, infoA) in _varInfo)
+    private void UnionAnd()
+    {
+        // Последовательные проверки, false которых ведут к единому блоку, объединяем в &&
+        List<CodeNode> orBlocks = new();
+        foreach (var node1 in Nodes.ToList())
         {
-            if (!(infoA.Sets == 2 && infoA.Gets == 2)) continue;
-
-            var node1 = infoA.SetNode;
-            var node2 = node1.NextB;
-            var node3 = node1.NextA;
-
-            if (!(node2.Condition == null && node2.Expressions.Count == 1)) continue;
-            if (!(node3.Condition != null && node3.Expressions.Count == 0)) continue;
-            if (node2.Expressions[0] is not SetExpr set) continue;
-
-            var e1 = infoA.Value;
-            var e2 = set.B;
-
-            RemoveVar(infoA.Param);
-            RemoveVar(infoB.Param);
-            node1.Condition = new Math2Expr(e1, "||", e2);
-            node1.NextA = node3.NextA;
-            node1.NextB = node3.NextB;
-            RemoveNode(node2);
-            RemoveNode(node3);
-        }*/
+            if (node1.Condition != null && node1.NextA != null)
+            {
+                var n = node1.NextA;
+                while (true)
+                {
+                    if (n.Condition != null && n.Expressions.Count == 0 && n.NextB == node1.NextB)
+                    {
+                        orBlocks.Add(n);
+                        if (n.NextA == null) break;
+                        n = n.NextA;
+                    }
+                    else
+                        break;
+                }
+                if (orBlocks.Count > 0)
+                {
+                    var trueBranch = orBlocks[^1].NextA;
+                    Expr ex = node1.Condition;
+                    foreach (var node in orBlocks)
+                    {
+                        ex = new Math2Expr(ex, "&&", node.Condition);
+                        RemoveNode(node);
+                    }
+                    node1.Condition = ex;
+                    node1.NextA = trueBranch;
+                    orBlocks.Clear();
+                    _optimized = true;
+                }
+            }
+        }
     }
 
     private void RemoveNode(CodeNode node)
     {
-        _nodesByAddr.Remove(node.Address);
+        node.Unlink();
+        if (node.Parents.Count > 0)
+        {
+            foreach (var p in node.Parents.ToList())
+            {
+                if (p.NextA == node) p.NextA = null;
+                if (p.NextB == node) p.NextB = null;
+            }
+        }
         Nodes.Remove(node);
     }
 
@@ -244,13 +355,9 @@ public class OptimizedTree
         Nodes.Add(node);
 
         if (bl.BlockA != null)
-        {
             node.NextA = CreateNode(bl.BlockA);
-        }
         if (bl.BlockB != null)
-        {
             node.NextB = CreateNode(bl.BlockB);
-        }
         return node;
     }
 
@@ -285,9 +392,7 @@ public class OptimizedTree
         foreach (var node in Nodes)
         {
             for (int i = 0; i < node.Expressions.Count; i++)
-            {
                 CalcVars(node.Expressions[i], node, i);
-            }
             if (node.Condition != null)
                 CalcVars(node.Condition, node, node.Expressions.Count);
         }

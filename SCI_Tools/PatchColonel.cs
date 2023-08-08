@@ -68,6 +68,7 @@ namespace SCI_Tools
             CreateWord("запряги", WordClass.ImperativeVerb);
             CreateWord("спустись,слезь", WordClass.ImperativeVerb);
             CreateWord("вылей", WordClass.ImperativeVerb);
+            CreateWord("попроси", WordClass.ImperativeVerb);
 
             Commit();
 
@@ -706,8 +707,8 @@ namespace SCI_Tools
             PatchSaid(385, 8, "пофлиртуй/руди");
 
             PatchSaid(407, 3, "высморкай[/нос]");
-            PatchSaid(407, 26, "спроси/*<о");
-            PatchSaid(407, 27, "спроси//*<о");
+            PatchSaid(407, 26, "попроси/*");
+            PatchSaid(407, 27, "попроси//*");
             PatchSaid(407, 38, "программировал<кто/игра"); // кто программировал игру
 
             PatchSaid(410, 0, "вылей<из/масло/масленка");
@@ -721,8 +722,8 @@ namespace SCI_Tools
             PatchSaid(410, 9, "<в/монокль[<!*]"); // чтобы срабатывало "осмотри * в монокль", но срабатывало "посмотри в монокль"
             PatchSaid(410, 13, "вытащи,разряди/пуля[/пистолет<из]");
             PatchSaid(410, 19, "кури/окурок");
-            PatchSaid(410, 21, "спроси/*<о");
-            PatchSaid(410, 22, "спроси//*<о");
+            PatchSaid(410, 21, "попроси/*");
+            PatchSaid(410, 22, "попроси//*");
             PatchSaid(410, 38, "зажги,включи");
             PatchSaid(410, 39, "погаси,выключи");
             PatchSaid(410, 41, "вращай/*<страница");
@@ -1012,7 +1013,7 @@ namespace SCI_Tools
             bool found = false;
             foreach (var codeSec in scr.Get<CodeSection>())
             {
-                var op = codeSec.Operators.Find(o => o.Name == "ldi" && (byte)o.Arguments[0] == srcKey);
+                var op = codeSec.Operators.Find(o => o.Name == "ldi" && o.Arguments[0] is byte v && v == srcKey);
                 if (op != null)
                 {
                     op.Arguments[0] = (byte)32;

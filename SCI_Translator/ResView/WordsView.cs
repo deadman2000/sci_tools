@@ -71,7 +71,6 @@ namespace SCI_Translator.ResView
             CheckUsage();
 
             dgvWords.DataSource = _dataSet;
-            dgvWords.AutoResizeColumns();
         }
 
         private void LoadTranslate(ResVocab001 voc)
@@ -160,114 +159,111 @@ namespace SCI_Translator.ResView
 
         private void InitializeComponent()
         {
-            this.dgvWords = new System.Windows.Forms.DataGridView();
-            this.colClass = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colGroup = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colWordsSrc = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTranslate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colUsed = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.tbSearch = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvWords)).BeginInit();
-            this.panel1.SuspendLayout();
-            this.SuspendLayout();
+            dgvWords = new DataGridView();
+            panel1 = new Panel();
+            tbSearch = new TextBox();
+            colClass = new DataGridViewTextBoxColumn();
+            colGroup = new DataGridViewTextBoxColumn();
+            colWordsSrc = new DataGridViewTextBoxColumn();
+            colTranslate = new DataGridViewTextBoxColumn();
+            colUsed = new DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)dgvWords).BeginInit();
+            panel1.SuspendLayout();
+            SuspendLayout();
             // 
             // dgvWords
             // 
-            this.dgvWords.AllowUserToAddRows = false;
-            this.dgvWords.AllowUserToDeleteRows = false;
-            this.dgvWords.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-            this.dgvWords.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvWords.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colClass,
-            this.colGroup,
-            this.colWordsSrc,
-            this.colTranslate,
-            this.colUsed});
-            this.dgvWords.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvWords.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
-            this.dgvWords.Location = new System.Drawing.Point(0, 42);
-            this.dgvWords.Margin = new System.Windows.Forms.Padding(4);
-            this.dgvWords.Name = "dgvWords";
-            this.dgvWords.RowHeadersVisible = false;
-            this.dgvWords.RowHeadersWidth = 51;
-            this.dgvWords.RowTemplate.Height = 29;
-            this.dgvWords.Size = new System.Drawing.Size(1511, 1163);
-            this.dgvWords.TabIndex = 0;
-            // 
-            // colClass
-            // 
-            this.colClass.DataPropertyName = "ClStr";
-            this.colClass.HeaderText = "Class";
-            this.colClass.MinimumWidth = 6;
-            this.colClass.Name = "colClass";
-            this.colClass.ReadOnly = true;
-            this.colClass.Width = 125;
-            // 
-            // colGroup
-            // 
-            this.colGroup.DataPropertyName = "GroupHex";
-            this.colGroup.HeaderText = "Group";
-            this.colGroup.MinimumWidth = 6;
-            this.colGroup.Name = "colGroup";
-            this.colGroup.ReadOnly = true;
-            this.colGroup.Width = 125;
-            // 
-            // colWordsSrc
-            // 
-            this.colWordsSrc.DataPropertyName = "Src";
-            this.colWordsSrc.HeaderText = "Words";
-            this.colWordsSrc.MinimumWidth = 6;
-            this.colWordsSrc.Name = "colWordsSrc";
-            this.colWordsSrc.ReadOnly = true;
-            this.colWordsSrc.Width = 125;
-            // 
-            // colTranslate
-            // 
-            this.colTranslate.DataPropertyName = "Translate";
-            this.colTranslate.HeaderText = "Translate";
-            this.colTranslate.MinimumWidth = 6;
-            this.colTranslate.Name = "colTranslate";
-            this.colTranslate.Width = 125;
-            // 
-            // colUsed
-            // 
-            this.colUsed.DataPropertyName = "UsedIn";
-            this.colUsed.HeaderText = "Used";
-            this.colUsed.MinimumWidth = 6;
-            this.colUsed.Name = "colUsed";
-            this.colUsed.ReadOnly = true;
-            this.colUsed.Width = 125;
+            dgvWords.AllowUserToAddRows = false;
+            dgvWords.AllowUserToDeleteRows = false;
+            dgvWords.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgvWords.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvWords.Columns.AddRange(new DataGridViewColumn[] { colClass, colGroup, colWordsSrc, colTranslate, colUsed });
+            dgvWords.Dock = DockStyle.Fill;
+            dgvWords.EditMode = DataGridViewEditMode.EditOnEnter;
+            dgvWords.Location = new System.Drawing.Point(0, 42);
+            dgvWords.Margin = new Padding(4);
+            dgvWords.Name = "dgvWords";
+            dgvWords.RowHeadersVisible = false;
+            dgvWords.RowHeadersWidth = 51;
+            dgvWords.RowTemplate.Height = 29;
+            dgvWords.Size = new System.Drawing.Size(1868, 1126);
+            dgvWords.TabIndex = 0;
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.tbSearch);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1511, 42);
-            this.panel1.TabIndex = 1;
+            panel1.Controls.Add(tbSearch);
+            panel1.Dock = DockStyle.Top;
+            panel1.Location = new System.Drawing.Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(1868, 42);
+            panel1.TabIndex = 1;
             // 
             // tbSearch
             // 
-            this.tbSearch.Location = new System.Drawing.Point(8, 4);
-            this.tbSearch.Name = "tbSearch";
-            this.tbSearch.Size = new System.Drawing.Size(406, 27);
-            this.tbSearch.TabIndex = 0;
-            this.tbSearch.TextChanged += new System.EventHandler(this.tbSearch_TextChanged);
+            tbSearch.Location = new System.Drawing.Point(8, 4);
+            tbSearch.Name = "tbSearch";
+            tbSearch.Size = new System.Drawing.Size(406, 27);
+            tbSearch.TabIndex = 0;
+            tbSearch.TextChanged += tbSearch_TextChanged;
+            // 
+            // colClass
+            // 
+            colClass.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            colClass.DataPropertyName = "ClStr";
+            colClass.HeaderText = "Class";
+            colClass.MinimumWidth = 6;
+            colClass.Name = "colClass";
+            colClass.ReadOnly = true;
+            colClass.Width = 71;
+            // 
+            // colGroup
+            // 
+            colGroup.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            colGroup.DataPropertyName = "GroupHex";
+            colGroup.HeaderText = "Group";
+            colGroup.MinimumWidth = 6;
+            colGroup.Name = "colGroup";
+            colGroup.ReadOnly = true;
+            colGroup.Width = 79;
+            // 
+            // colWordsSrc
+            // 
+            colWordsSrc.DataPropertyName = "Src";
+            colWordsSrc.HeaderText = "Words";
+            colWordsSrc.MinimumWidth = 6;
+            colWordsSrc.Name = "colWordsSrc";
+            colWordsSrc.ReadOnly = true;
+            colWordsSrc.Width = 125;
+            // 
+            // colTranslate
+            // 
+            colTranslate.DataPropertyName = "Translate";
+            colTranslate.HeaderText = "Translate";
+            colTranslate.MinimumWidth = 6;
+            colTranslate.Name = "colTranslate";
+            colTranslate.Width = 125;
+            // 
+            // colUsed
+            // 
+            colUsed.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            colUsed.DataPropertyName = "UsedIn";
+            colUsed.HeaderText = "Used";
+            colUsed.MinimumWidth = 6;
+            colUsed.Name = "colUsed";
+            colUsed.ReadOnly = true;
+            colUsed.Width = 71;
             // 
             // WordsView
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.Controls.Add(this.dgvWords);
-            this.Controls.Add(this.panel1);
-            this.Name = "WordsView";
-            this.Size = new System.Drawing.Size(1511, 1205);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvWords)).EndInit();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            Controls.Add(dgvWords);
+            Controls.Add(panel1);
+            Name = "WordsView";
+            Size = new System.Drawing.Size(1868, 1168);
+            ((System.ComponentModel.ISupportInitialize)dgvWords).EndInit();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            ResumeLayout(false);
         }
 
         private void tbSearch_TextChanged(object sender, EventArgs e)
