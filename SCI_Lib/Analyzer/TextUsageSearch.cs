@@ -115,10 +115,15 @@ public class TextUsageSearch
                 }
             }
         }
+        else
+        {
+            if (node.NextA != null) LookupNode(node.NextA, claimed, saids);
+        }
     }
 
-    private void AddPrint(int print, IEnumerable<SaidExpression> saids)
+    private void AddPrint(ushort scr, ushort ind, IEnumerable<SaidExpression> saids)
     {
+        var print = scr << 16 | ind;
         if (!_prints.TryGetValue(print, out var s))
             _prints.Add(print, saids);
         else
@@ -145,7 +150,7 @@ public class TextUsageSearch
             && call.Args[0] is ConstExpr c0
             && call.Args[1] is ConstExpr c1)
         {
-            AddPrint(c0.Value << 16 | c1.Value, saids);
+            AddPrint(c0.Value, c1.Value, saids);
         }
     }
 

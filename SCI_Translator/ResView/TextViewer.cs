@@ -1,5 +1,4 @@
-﻿using SCI_Lib.Resources;
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace SCI_Translator.ResView

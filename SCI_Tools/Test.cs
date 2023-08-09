@@ -20,9 +20,9 @@ namespace SCI_Tools
         {
             try
             {
-                FindTextSaids();
+                FindTextSaids(58);
                 //DecompileAll();
-                //Decompile(25);
+                //Decompile(58);
                 //Decompile(255, "DText");
                 //Decompile(24, "Room24", "handleEvent");
                 //Decompile(2, null, "handleEvent");
