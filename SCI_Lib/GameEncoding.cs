@@ -1,7 +1,6 @@
 ﻿using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace SCI_Lib
@@ -48,10 +47,10 @@ namespace SCI_Lib
         public string ByteToHexTable(byte[] data)
         {
             int i = 0;
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             while (i < data.Length)
             {
-                sb.Append(String.Format("{0:X8}: {1,-24} {2,-24}  {3}\r\n", i, Helpers.ByteToHex(data, i, 8), Helpers.ByteToHex(data, i + 8, 8), PrintableString(data, i, 16)));
+                sb.Append(string.Format("{0:X8}: {1,-24} {2,-24}  {3}\r\n", i, Helpers.ByteToHex(data, i, 8), Helpers.ByteToHex(data, i + 8, 8), PrintableString(data, i, 16)));
                 i += 16;
             }
             return sb.ToString().TrimEnd();
@@ -59,7 +58,7 @@ namespace SCI_Lib
 
         static char CharToPrint(char c, char def)
         {
-            if (!Char.IsControl(c))
+            if (!char.IsControl(c))
                 return c;
             else
                 return def;
@@ -67,7 +66,7 @@ namespace SCI_Lib
 
         public string PrintableString(byte[] data, int offset, int len)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             char[] str866;
             if (data.Length > offset + len)
                 str866 = Encoding.GetChars(data, offset, len);
@@ -81,118 +80,89 @@ namespace SCI_Lib
             return sb.ToString().TrimEnd();
         }
 
-        private static Escaper escaper = new DollarEscaper();
+        public BaseEscaper Escaper { get; set; } = new DollarEscaper();
 
-        public static byte[] Unescape(byte[] data) => escaper.Unescape(data);
+        public byte[] Unescape(byte[] data) => Escaper.Unescape(data);
 
         public byte[] GetBytes(string text) => Encoding.GetBytes(text);
 
-        public byte[] GetBytesUnescape(string text) => escaper.Unescape(Encoding.GetBytes(text));
+        public byte[] GetBytesUnescape(string text) => Escaper.Unescape(Encoding.GetBytes(text));
 
-        public string GetStringEscape(byte[] data)
-        {
-            char[] str866 = Encoding.GetChars(data);
-            return escaper.Escape(str866);
-        }
+        public string GetStringEscape(byte[] data) => Escaper.Escape(Encoding.GetChars(data));
 
-        public string GetStringEscape(byte[] data, int from, int length)
-        {
-            char[] str866 = Encoding.GetChars(data, from, length);
-            return escaper.Escape(str866);
-        }
+        public string GetStringEscape(byte[] data, int from, int length) => Escaper.Escape(Encoding.GetChars(data, from, length));
 
-        public string EscapeString(string str) => escaper.Escape(str.ToCharArray());
+        public string EscapeString(string str) => Escaper.Escape(str.ToCharArray());
 
         public string UnescapeString(string str) => GetString(GetBytesUnescape(str));
 
-        abstract class Escaper
+        public abstract class BaseEscaper
         {
             public abstract string Escape(char[] str866);
             public abstract byte[] Unescape(byte[] str866);
         }
 
-        class DollarEscaper : Escaper
+        public class DollarEscaper : BaseEscaper
         {
             public override string Escape(char[] str866)
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
 
                 for (int i = 0; i < str866.Length; i++)
                 {
-                    if (Char.IsControl(str866[i]))
-                    {
-                        sb.AppendFormat("${0:X2}", (byte)str866[i]);
-                    }
-                    else if (str866[i] == '$')
+                    var c = str866[i];
+
+                    if (c == '\r' || c == '\n')
+                        sb.Append(c);
+                    else if (char.IsControl(c))
+                        sb.AppendFormat("${0:X2}", (byte)c);
+                    else if (c == '$')
                         sb.Append("$$");
                     else
-                        sb.Append(str866[i]);
+                        sb.Append(c);
                 }
                 return sb.ToString();
             }
 
             public override byte[] Unescape(byte[] str866)
             {
-                List<byte> bb = new List<byte>();
-                for (int c = 0; c < str866.Length; c++)
+                List<byte> bb = new();
+                for (int i = 0; i < str866.Length; i++)
                 {
-                    if (str866[c] == 0) continue;
+                    var c = str866[i];
+                    if (c == 0) continue;
 
-                    if (str866[c] == '$')
+                    if (c == '$')
                     {
-                        if (str866[c + 1] == '$')
+                        if (str866[i + 1] == '$')
                         {
                             bb.Add((byte)'$');
-                            c++;
+                            i++;
                         }
                         else
                         {
-                            string hex = String.Concat((char)str866[c + 1], (char)str866[c + 2]);
+                            string hex = string.Concat((char)str866[i + 1], (char)str866[i + 2]);
                             bb.Add(Convert.ToByte(hex, 16));
-                            c += 2;
+                            i += 2;
                         }
                     }
                     else
-                    {
-                        bb.Add(str866[c]);
-                    }
+                        bb.Add(c);
                 }
 
                 return bb.ToArray();
             }
-
-            private static char GetEscape(byte val)
-            {
-                switch (val)
-                {
-                    case 9: return 't';
-                    case 0xa: return 'n';
-                    case 0xd: return 'r';
-                    default: throw new NotImplementedException();
-                }
-            }
-
-            private static byte GetUnescape(char val)
-            {
-                switch (val)
-                {
-                    case 't': return 9;
-                    case 'n': return 0xa;
-                    case 'r': return 0xd;
-                    default: throw new NotImplementedException();
-                }
-            }
         }
 
-        class SlashEscaper : Escaper
+        public class SlashEscaper : BaseEscaper
         {
             public override string Escape(char[] str866)
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
 
                 for (int i = 0; i < str866.Length; i++)
                 {
-                    if (Char.IsControl(str866[i]))
+                    if (char.IsControl(str866[i]))
                     {
                         sb.Append('\\').Append(GetEscape((byte)str866[i]));
                     }
@@ -206,7 +176,7 @@ namespace SCI_Lib
 
             public override byte[] Unescape(byte[] str866)
             {
-                List<byte> bb = new List<byte>();
+                List<byte> bb = new();
                 for (int c = 0; c < str866.Length; c++)
                 {
                     if (str866[c] == 0) continue;
