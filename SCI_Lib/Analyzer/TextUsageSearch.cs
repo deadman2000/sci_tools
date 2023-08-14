@@ -12,7 +12,8 @@ public class TextUsageSearch
     private readonly ushort? _scr;
     private readonly Dictionary<CodeNode, bool> _passed = new();
     private readonly Dictionary<int, IEnumerable<SaidExpression>> _prints = new();
-    private readonly HashSet<string> _printFunc = new();
+    private readonly HashSet<string> _localPrint = new();
+    private List<string> _globalPrint = new();
 
     public TextUsageSearch(SCIPackage package, ushort? scr = null)
     {
@@ -27,8 +28,13 @@ public class TextUsageSearch
         public SaidExpression[] Saids;
     }
 
-    public IEnumerable<PrintCall> FindUsage()
+    public IEnumerable<PrintCall> FindUsage(IEnumerable<string> globalPrint = null)
     {
+        _globalPrint.Clear();
+        _globalPrint.Add("scr255_00");
+        if (globalPrint != null)
+            _globalPrint.AddRange(globalPrint);
+
         if (_scr != null)
         {
             var res = _package.GetResource<ResScript>(_scr.Value);
@@ -57,8 +63,9 @@ public class TextUsageSearch
     {
         var analyzer = script.Analyze();
 
-        _printFunc.Clear();
-        _printFunc.Add("scr255_00");
+        _localPrint.Clear();
+        foreach (var f in _globalPrint) _localPrint.Add(f);
+        
         foreach (var proc in analyzer.Procedures)
         {
             if (proc.Name.StartsWith("localproc_"))
@@ -132,7 +139,7 @@ public class TextUsageSearch
 
     private void AddPrintFunc(ProcedureTree proc)
     {
-        _printFunc.Add(proc.Name);
+        _localPrint.Add(proc.Name);
     }
 
     private static bool DetectPrints(ProcedureTree proc)
@@ -145,7 +152,7 @@ public class TextUsageSearch
 
     private void CheckPrint(Expr ex, IEnumerable<SaidExpression> saids)
     {
-        if (ex is CallExpr call && _printFunc.Contains(call.Method)
+        if (ex is CallExpr call && _localPrint.Contains(call.Method)
             && call.Args.Count > 1
             && call.Args[0] is ConstExpr c0
             && call.Args[1] is ConstExpr c1)

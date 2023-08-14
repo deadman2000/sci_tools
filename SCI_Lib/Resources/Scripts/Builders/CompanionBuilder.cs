@@ -139,6 +139,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         private void WriteClass(ClassSection s)
         {
+            s.Prepare();
             sb.AppendFormat("// {0:x4}", s.Address + 2).AppendLine();
             var super = s.SuperClass;
             sb.AppendFormat("({0} {1} of {2}",
@@ -150,10 +151,11 @@ namespace SCI_Lib.Resources.Scripts.Builders
             var pack = s.Package;
             for (int i = 4; i < s.Properties.Length; i++)
             {
+                var prop = s.Properties[i];
                 if (i < s.PropNamesInd.Length)
-                    sb.AppendFormat("        {0} {1:x}", pack.GetName(s.PropNamesInd[i]), s.Properties[i]).AppendLine();
+                    sb.AppendFormat("        {0} = {1}", prop.Name, prop.ValueStr).AppendLine();
                 else
-                    sb.AppendFormat("        !!out of range!! {0:x}", s.Properties[i]).AppendLine();
+                    sb.AppendFormat("        !!out of range!! {0:x}", prop).AppendLine();
             }
             sb.AppendLine("    )");
 

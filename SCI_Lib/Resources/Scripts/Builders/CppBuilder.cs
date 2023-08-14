@@ -67,16 +67,15 @@ public class CppBuilder : IScriptBuilder
             var prop = s.Properties[i];
             var pname = Expr.ToCppName(prop.Name);
             if (prop.Reference is SaidExpression said)
-            {
                 Space().Append($"said_t {pname} = \"{said.Label}\";");
-            }
+            else if (prop.Reference is StringConst str)
+                Space().Append($"const char * {pname} = \"{str.Value}\";");
             else
             {
-                if (prop.Reference != null)
-                    Console.WriteLine($"PROP REF {prop.Reference.GetType().FullName}");
-
                 Space().Append($"short {pname} = {prop.Value};");
                 if (prop.Value > 9) sb.Append($" // 0x{prop.Value:x4}");
+                if (prop.Reference != null)
+                    Console.WriteLine($"PROP REF {prop.Reference.GetType().FullName}");
             }
             sb.AppendLine();
         }

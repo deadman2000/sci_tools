@@ -47,7 +47,8 @@ public abstract class Expr
         .Replace('-', '_')
         .Replace('\'', '_')
         .Replace(' ', '_')
-        .Replace('.', '_');
+        .Replace('.', '_')
+        .Replace('!', '_');
 
     public static string ToCppName(ClassSection cl)
     {

@@ -110,6 +110,8 @@ namespace SCI_Lib.Resources.Scripts
 
         internal IEnumerable<T> Get<T>(SectionType type) where T : Section => Sections.OfType<T>().Where(s => s.Type == type);
 
+        public ClassSection GetInstance(string name) => Get<ClassSection>().FirstOrDefault(c => c.Name == name);
+        
         public ClassSection GetClassSection(ushort id) => Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
 
         public string GetOpCodeName(byte type) => Package.GetOpCodeName(type);
