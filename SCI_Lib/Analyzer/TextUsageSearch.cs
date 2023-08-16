@@ -13,7 +13,7 @@ public class TextUsageSearch
     private readonly Dictionary<CodeNode, bool> _passed = new();
     private readonly Dictionary<int, IEnumerable<SaidExpression>> _prints = new();
     private readonly HashSet<string> _localPrint = new();
-    private List<string> _globalPrint = new();
+    private readonly HashSet<string> _globalPrint = new();
 
     public TextUsageSearch(SCIPackage package, ushort? scr = null)
     {
@@ -33,7 +33,8 @@ public class TextUsageSearch
         _globalPrint.Clear();
         _globalPrint.Add("scr255_00");
         if (globalPrint != null)
-            _globalPrint.AddRange(globalPrint);
+            foreach (var p in globalPrint)
+                _globalPrint.Add(p);
 
         if (_scr != null)
         {
@@ -65,7 +66,7 @@ public class TextUsageSearch
 
         _localPrint.Clear();
         foreach (var f in _globalPrint) _localPrint.Add(f);
-        
+
         foreach (var proc in analyzer.Procedures)
         {
             if (proc.Name.StartsWith("localproc_"))
@@ -142,13 +143,13 @@ public class TextUsageSearch
         _localPrint.Add(proc.Name);
     }
 
-    private static bool DetectPrints(ProcedureTree proc)
+    private bool DetectPrints(ProcedureTree proc)
     {
         var opt = proc.Optimize();
         return opt.Nodes.Where(n => n.Expressions.Any(e => IsPrint(e))).Any();
     }
 
-    static bool IsPrint(Expr ex) => ex is CallExpr call && call.Method == "scr255_00";
+    private bool IsPrint(Expr ex) => ex is CallExpr call && _globalPrint.Contains(call.Method);
 
     private void CheckPrint(Expr ex, IEnumerable<SaidExpression> saids)
     {

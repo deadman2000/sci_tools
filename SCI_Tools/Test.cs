@@ -20,7 +20,7 @@ namespace SCI_Tools
         {
             try
             {
-                FindTextSaids(58);
+                FindTextSaids(6, "proc_14");
                 //DecompileAll();
                 //Decompile(58);
                 //Decompile(255, "DText");
@@ -158,10 +158,10 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
-        private void FindTextSaids(ushort? scr = null)
+        private void FindTextSaids(ushort? scr = null, params string[] prints)
         {
             var search = new TextUsageSearch(package, scr);
-            var result = search.FindUsage();
+            var result = search.FindUsage(prints);
 
             foreach (var p in result.OrderBy(p => p.Script).ThenBy(p => p.Index))
             {
