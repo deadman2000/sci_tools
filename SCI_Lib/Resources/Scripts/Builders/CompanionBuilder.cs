@@ -86,7 +86,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
             if (section != null)
             {
                 foreach (var str in section.Strings)
-                    sb.AppendFormat("    string_{0:x4} \"{1}\"", str.Address, str.Value).AppendLine();
+                    sb.AppendFormat("    string_{0:x4} \"{1}\"", str.Address, str.ValueSlashEsc).AppendLine();
             }
             sb.AppendLine(")");
             sb.AppendLine();

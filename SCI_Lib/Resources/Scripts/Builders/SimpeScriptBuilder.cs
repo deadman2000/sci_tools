@@ -209,7 +209,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
             sb.AppendLine($"[String section]");
             foreach (var s in ss.Strings)
             {
-                sb.AppendLine($"string_{s.Address:x4} = '{s.GetStringEscape()}'");
+                sb.AppendLine($"string_{s.Address:x4} = '{s.ValueSlashEsc}'");
             }
         }
     }

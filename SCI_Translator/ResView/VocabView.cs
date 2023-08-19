@@ -51,7 +51,7 @@ namespace SCI_Translator.ResView
                 case ResVocab997 voc997:
                     {
                         var strings = voc997.GetVocabNames();
-                        StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new();
                         for (int i = 0; i < strings.Length; i++)
                             sb.AppendFormat("{0:x3}: {1}", i, strings[i]).AppendLine();
                         tbVocab.Text = sb.ToString();
@@ -61,7 +61,7 @@ namespace SCI_Translator.ResView
                 case ResVocab998 voc998:
                     {
                         var opcodes = voc998.GetVocabOpcodes();
-                        StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new();
                         foreach (var kv in opcodes)
                             sb.AppendFormat("{0:x2}: {1} {2}", kv.Key, kv.Value.Type, kv.Value.Name).AppendLine();
                         tbVocab.Text = sb.ToString();
@@ -71,7 +71,7 @@ namespace SCI_Translator.ResView
                 case ResVocab999 voc999:
                     {
                         var lines = voc999.GetText();
-                        StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new();
                         for (int i = 0; i < lines.Length; i++)
                             sb.AppendLine($"{i,-3}: {lines[i]}");
                         tbVocab.Text = sb.ToString();

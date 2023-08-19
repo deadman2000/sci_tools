@@ -399,7 +399,7 @@ namespace SCI_Translator.ResView
 
         private void tsbShiftRight_Click(object sender, EventArgs e)
         {
-            viewer.CurrentFrame.ShiftRight(0);
+            viewer.CurrentFrame.ShiftRight();
             viewer.Redraw();
         }
 

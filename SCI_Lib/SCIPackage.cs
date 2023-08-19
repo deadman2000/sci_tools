@@ -380,5 +380,10 @@ namespace SCI_Lib
             word = words.OrderBy(w => w.Text.Length).First();
             return word.Text;
         }
+
+        public void CleanCache()
+        {
+            foreach (var res in GetResources<ResScript>()) res.CleanCache();
+        }
     }
 }

@@ -147,10 +147,11 @@ public class RefExpr : Expr
 {
     public BaseElement Ref { get; }
     public RefExpr(RefToElement r) => Ref = r.Reference;
+
     public override string Label => Ref switch
     {
         SaidExpression s => $"\"{s.Label}\"",
-        StringConst str => $"\"{str.Value}\"",
+        StringConst str => $"\"{str.ValueSlashEsc}\"",
         _ => throw new NotImplementedException()
     };
 }

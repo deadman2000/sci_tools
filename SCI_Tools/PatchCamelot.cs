@@ -17,6 +17,7 @@ namespace SCI_Tools
 
             CreateWord("попроси", WordClass.ImperativeVerb);
             CreateWord("переоденься", WordClass.ImperativeVerb);
+            CreateWord("кланяйся,поклонись", WordClass.ImperativeVerb);
 
             CreateWord("у", WordClass.Proposition);
 
@@ -74,7 +75,20 @@ namespace SCI_Tools
             PatchSaid(5, 63, "[возьми]/бронза,(монета<бронза)");
             PatchSaid(5, 64, "[возьми]/золото,(монета<золото),серебро,(монета<серебро),медь,(монета<медь)>");
 
+            PatchSaid(6, 0, "говори[/гвен,дама]");
+            PatchSaid(6, 1, "говори[/гвен,дама]");
+            PatchSaid(6, 6, "/любишь<меня<ты"); // ты меня любишь?
+            PatchSaid(6, 16, "где/*>");
+            PatchSaid(6, 50, "посмотри[<вокруг][/!*][/!*]");
+            PatchSaid(6, 81, "брось/роза");
+            RemoveSynonyms(6, "rosebush");
+            RemoveSynonyms(6, "гвен");
+
+            PatchSaid(7, 62, "кланяйся");
             PatchSaid(7, 64, "преклони,встань/колено");
+            PatchSaid(7, 66, "встань,rise");
+            PatchSaid(7, 69, "проси/благословление");
+            PatchSaid(7, 88, "гаси/огонь,свеча");
 
             Save();
         }

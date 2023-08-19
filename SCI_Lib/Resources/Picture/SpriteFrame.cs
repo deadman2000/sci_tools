@@ -49,44 +49,44 @@ namespace SCI_Lib.Pictures
             Height = h;
         }
 
-        public void ShiftLeft(byte color)
+        public void ShiftLeft(byte transparentColor = 0)
         {
             for (int x = 0; x < Width - 1; x++)
                 for (int y = 0; y < Height; y++)
                     _pixelMap[x, y] = _pixelMap[x + 1, y];
 
             for (int y = 0; y < Height; y++)
-                _pixelMap[Width - 1, y] = color;
+                _pixelMap[Width - 1, y] = transparentColor;
         }
 
-        public void ShiftRight(byte color)
+        public void ShiftRight(byte transparentColor = 0)
         {
             for (int x = Width - 1; x > 0; x--)
                 for (int y = 0; y < Height; y++)
                     _pixelMap[x, y] = _pixelMap[x - 1, y];
 
             for (int y = 0; y < Height; y++)
-                _pixelMap[0, y] = color;
+                _pixelMap[0, y] = transparentColor;
         }
 
-        public void ShiftUp(byte color)
+        public void ShiftUp(byte transparentColor = 0)
         {
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height - 1; y++)
                     _pixelMap[x, y] = _pixelMap[x, y + 1];
 
             for (int x = 0; x < Width; x++)
-                _pixelMap[x, Height - 1] = color;
+                _pixelMap[x, Height - 1] = transparentColor;
         }
 
-        public void ShiftDown(byte color)
+        public void ShiftDown(byte transparentColor = 0)
         {
             for (int x = 0; x < Width; x++)
                 for (int y = Height - 1; y > 0; y--)
                     _pixelMap[x, y] = _pixelMap[x, y - 1];
 
             for (int x = 0; x < Width; x++)
-                _pixelMap[x, 0] = color;
+                _pixelMap[x, 0] = transparentColor;
         }
 
         public void Draw(Bitmap bitmap, int tx, int ty)

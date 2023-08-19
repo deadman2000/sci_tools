@@ -11,13 +11,17 @@ namespace SCI_Lib.Resources.Scripts.Elements
             Bytes = Helpers.GetBytes(data, offset, length);
         }
 
-        public byte[] Bytes { get; private set; }
+        public byte[] Bytes { get; set; }
 
         public string Value
         {
-            get { return GameEncoding.GetString(Bytes); }
-            set { Bytes = GameEncoding.GetBytes(value); }
+            get => GameEncoding.GetString(Bytes);
+            set => Bytes = GameEncoding.GetBytes(value);
         }
+
+        public char[] Chars => GameEncoding.GetChars(Bytes);
+
+        public string ValueSlashEsc => BaseEscaper.Slash.Escape(Chars);
 
         public bool IsClassName { get; set; } = false;
 

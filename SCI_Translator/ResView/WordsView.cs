@@ -125,6 +125,7 @@ namespace SCI_Translator.ResView
             _trvoc001.SetWords(words);
             _trvoc001.SavePatch();
             _tres.Package.ResetWords();
+            _tres.Package.CleanCache();
         }
 
         private void CheckUsage()

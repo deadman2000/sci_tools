@@ -44,5 +44,10 @@ namespace SCI_Lib.Resources
         {
             return GetScript().GetBytes();
         }
+
+        public void CleanCache()
+        {
+            _script = null;
+        }
     }
 }

@@ -69,7 +69,7 @@ public class CppBuilder : IScriptBuilder
             if (prop.Reference is SaidExpression said)
                 Space().Append($"said_t {pname} = \"{said.Label}\";");
             else if (prop.Reference is StringConst str)
-                Space().Append($"const char * {pname} = \"{str.Value}\";");
+                Space().Append($"const char * {pname} = \"{str.ValueSlashEsc}\";");
             else
             {
                 Space().Append($"short {pname} = {prop.Value};");

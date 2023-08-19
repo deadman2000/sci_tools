@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Resources;
+﻿using SCI_Lib;
+using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Elements;
@@ -89,10 +90,8 @@ namespace SCI_Translator.ResView
 
         private void FillRow(DataGridViewRow row, StringConst sc)
         {
-            string str = sc.GetStringEscape();
-            //str = str.Replace("$0D", "\r").Replace("$0A", "\n");
+            string str = sc.ValueSlashEsc;
             row.Cells[1].Value = str;
-
         }
 
         private void CommitStrings()
@@ -102,7 +101,7 @@ namespace SCI_Translator.ResView
             {
                 string val = (string)row.Cells[1].Value;
                 var sc = (StringConst)row.Tag;
-                sc.SetValueUnescape(val);
+                sc.Bytes = BaseEscaper.Slash.Unescape(GameEncoding.GetBytes(val));
 
                 var en = orig[(int)row.Cells[0].Value];
                 if (!en.Value.Equals(sc.Value))
