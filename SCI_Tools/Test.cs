@@ -4,6 +4,7 @@ using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Vocab;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -20,7 +21,37 @@ namespace SCI_Tools
         {
             try
             {
-                FindTextSaids(6, "proc_14");
+                // said спроси мерлина о столе & / / 8bc
+                var said = translate.ParseSaid("//стол");
+             
+                var parser = translate.GetParser();
+                parser.Verbose = true;
+                var result = parser.Tokenize("спроси мерлина о столе"); // parse спроси мерлина о столе
+                if (result.IsValid)
+                {
+                    var parseTree = parser.ParseGNF(result.Words);
+                    if (parseTree != null)
+                    {
+                        Console.WriteLine(parseTree.GetTree("parse-tree"));
+
+                        ParseTreeNode saidTree = parser.BuildSaidTree(said);
+                        Console.WriteLine(saidTree.GetTree("said-tree"));
+
+                        bool res = parser.Match(parseTree, saidTree);
+                        Console.WriteLine($"Result: {res}");
+                    }
+                    else
+                        Console.WriteLine("Parse error");
+                }
+                else
+                {
+                    var wrong = string.Join(", ",
+                        result.Words.Where(w => !w.IsValid).Select(w => $"'{w.Word}'"));
+
+                    Console.WriteLine($"Unknown words: {wrong}");
+                }
+
+                //FindTextSaids(6, "proc_14");
                 //DecompileAll();
                 //Decompile(58);
                 //Decompile(255, "DText");
@@ -163,9 +194,9 @@ namespace SCI_Tools
             var search = new TextUsageSearch(package, scr);
             var result = search.FindUsage(prints);
 
-            foreach (var p in result.OrderBy(p => p.Script).ThenBy(p => p.Index))
+            foreach (var p in result.OrderBy(p => p.Txt).ThenBy(p => p.Index))
             {
-                Console.WriteLine($"{p.Script}.{p.Index}");
+                Console.WriteLine($"{p.Txt}.{p.Index}");
                 foreach (var s in p.Saids)
                     Console.WriteLine($"\t{s}");
             }

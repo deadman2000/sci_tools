@@ -7,6 +7,7 @@ using SCI_Lib.Resources.View;
 using SCI_Lib.Resources.Vocab;
 using SCI_Lib.SCI0;
 using SCI_Lib.SCI1;
+using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -96,37 +97,31 @@ namespace SCI_Lib
             return res;
         }
 
-        protected virtual Resource CreateRes(ResType type, ushort num)
+        protected virtual Resource CreateRes(ResType type, ushort num) => type switch
         {
-            return type switch
-            {
-                ResType.Text => new ResText(),
-                ResType.Vocabulary => CreateVocab(num),
-                ResType.Script => new ResScript(),
-                ResType.Font => new ResFont(),
-                ResType.Message => new ResMessage(),
-                ResType.Picture => new ResPicture(),
-                ResType.View => new ResView(),
-                ResType.Palette => new ResPalette(),
-                ResType.Heap => new ResHeap(),
-                _ => new Resource(),
-            };
-        }
+            ResType.Text => new ResText(),
+            ResType.Vocabulary => CreateVocab(num),
+            ResType.Script => new ResScript(),
+            ResType.Font => new ResFont(),
+            ResType.Message => new ResMessage(),
+            ResType.Picture => new ResPicture(),
+            ResType.View => new ResView(),
+            ResType.Palette => new ResPalette(),
+            ResType.Heap => new ResHeap(),
+            _ => new Resource(),
+        };
 
-        private static Resource CreateVocab(ushort num)
+        private static Resource CreateVocab(ushort num) => num switch
         {
-            return num switch
-            {
-                0 => new ResVocab000(),
-                1 => new ResVocab001(),
-                900 => new ResVocab900(),
-                901 => new ResVocab901(),
-                997 => new ResVocab997(),
-                998 => new ResVocab998(),
-                999 => new ResVocab999(),
-                _ => new ResVocab()
-            };
-        }
+            0 => new ResVocab000(),
+            1 => new ResVocab001(),
+            900 => new ResVocab900(),
+            901 => new ResVocab901(),
+            997 => new ResVocab997(),
+            998 => new ResVocab998(),
+            999 => new ResVocab999(),
+            _ => new ResVocab()
+        };
 
         private IEnumerable<IScript> _scriptsCache;
         private IEnumerable<IScript> ScriptsCache => _scriptsCache ??= Scripts.Select(r => r.GetScript());
@@ -384,6 +379,48 @@ namespace SCI_Lib
         public void CleanCache()
         {
             foreach (var res in GetResources<ResScript>()) res.CleanCache();
+        }
+
+        public Parser GetParser() => new Parser(this);
+
+        public SaidData[] ParseSaid(string expression)
+        {
+            var data = new List<SaidData>();
+            var buff = new List<char>();
+            for (int i = 0; i < expression.Length; i++)
+            {
+                var c = expression[i];
+                if (char.IsWhiteSpace(c)) continue;
+                if (char.IsLetterOrDigit(c) || c == '*' || c == '!')
+                    buff.Add(c);
+                else
+                {
+                    if (buff.Count > 0)
+                    {
+                        ushort id = GetWord(buff);
+                        data.Add(new SaidData(id));
+                    }
+
+                    data.Add(new SaidData(c));
+                }
+            }
+
+            if (buff.Count > 0)
+            {
+                ushort id = GetWord(buff);
+                data.Add(new SaidData(id));
+            }
+
+            return data.ToArray();
+        }
+
+        private ushort GetWord(List<char> buff)
+        {
+            var word = new string(buff.ToArray());
+            buff.Clear();
+            var ids = GetWordId(word) ?? throw new SaidException(word, "Word not found");
+            if (ids.Length > 1) Console.WriteLine($"WARN: Multiple ids for word '{word}'");
+            return ids[0];
         }
     }
 }

@@ -23,7 +23,7 @@ public class TextUsageSearch
 
     public class PrintCall
     {
-        public int Script;
+        public int Txt;
         public int Index;
         public SaidExpression[] Saids;
     }
@@ -54,7 +54,7 @@ public class TextUsageSearch
 
         return _prints.Select(kv => new PrintCall
         {
-            Script = kv.Key >> 16 & 0xffff,
+            Txt = kv.Key >> 16 & 0xffff,
             Index = kv.Key & 0xffff,
             Saids = kv.Value.Distinct().ToArray()
         });
@@ -129,9 +129,9 @@ public class TextUsageSearch
         }
     }
 
-    private void AddPrint(ushort scr, ushort ind, IEnumerable<SaidExpression> saids)
+    private void AddPrint(ushort txt, ushort ind, IEnumerable<SaidExpression> saids)
     {
-        var print = scr << 16 | ind;
+        var print = txt << 16 | ind;
         if (!_prints.TryGetValue(print, out var s))
             _prints.Add(print, saids);
         else

@@ -164,7 +164,7 @@ namespace SCI_Translator.ResView
 
         private void tsbAddSuffix_Click(object sender, System.EventArgs e)
         {
-            _suffixes.Add(new Suffix("*", 0, "*", 0));
+            _suffixes.Add(new Suffix("", 0, "", 0));
             dgvSuffixes.DataSource = null;
             dgvSuffixes.DataSource = _suffixes;
             var cell = dgvSuffixes.Rows[_suffixes.Count - 1].Cells[0];

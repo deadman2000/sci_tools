@@ -29,7 +29,7 @@ namespace SCI_Lib.Resources
                 if (suffixClass == 0xffff) break;
                 var pattern = ms.ReadString(Package.GameEncoding);
                 var inputClass = ms.ReadUShortLE();
-                suffixes.Add(new Suffix(output, suffixClass, pattern, inputClass));
+                suffixes.Add(new Suffix(output.TrimStart('*'), suffixClass, pattern.TrimStart('*'), inputClass));
             }
 
             return suffixes.ToArray();
@@ -43,10 +43,10 @@ namespace SCI_Lib.Resources
 
             foreach (var s in _suffixes)
             {
-                bb.AddString(s.Output, Package.GameEncoding);
+                bb.AddString("*" + s.Output, Package.GameEncoding);
                 bb.AddByte(0);
                 bb.AddUShortLE((ushort)s.SuffixClass);
-                bb.AddString(s.Pattern, Package.GameEncoding);
+                bb.AddString("*" + s.Pattern, Package.GameEncoding);
                 bb.AddByte(0);
                 bb.AddUShortLE((ushort)s.InputClass);
             }

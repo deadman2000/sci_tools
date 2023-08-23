@@ -1,33 +1,45 @@
-﻿using SCI_Lib.Utils;
-using System;
+﻿using SCI_Lib.Resources.Vocab;
+using SCI_Lib.Utils;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SCI_Lib.Resources
 {
     public class ResVocab900 : ResVocab
     {
-        public void ReadBranches()
+        private List<ParseTreeBranch> _branches;
+
+        public List<ParseTreeBranch> GetBranches() => _branches ??= ReadBranches();
+
+        private List<ParseTreeBranch> ReadBranches()
         {
             var data = GetContent();
             var ms = new MemoryStream(data);
 
             int branchesCount = data.Length / 20;
+            List<ParseTreeBranch> list = new(branchesCount);
 
             for (int i = 0; i < branchesCount; i++)
             {
-                var id = ms.ReadUShortBE();
+                var br = new ParseTreeBranch
+                {
+                    Id = ms.ReadUShortBE()
+                };
 
-                ushort[] values = new ushort[9];
+                List<ushort> values = new(9);
                 for (int k = 0; k < 9; k++)
-                    values[k] = ms.ReadUShortBE();
+                {
+                    var v = ms.ReadUShortBE();
+                    if (v != 0)
+                        values.Add(v);
+                }
+                br.Data = values;
 
-                var valsStr = string.Join(", ", values.Select(v => v.ToString("X3")));
-                Console.WriteLine($"{id:X3} {valsStr}");
+                if (br.Id != 0)
+                    list.Add(br);
             }
+
+            return list;
         }
     }
 }

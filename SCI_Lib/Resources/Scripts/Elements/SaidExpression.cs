@@ -36,7 +36,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public bool Set(string expression)
         {
-            var parsed = Parse(expression);
+            var parsed = Script.Package.ParseSaid(expression);
             if (IsEqual(Expression, parsed)) return false;
             Expression = parsed;
             _label = null;
@@ -52,53 +52,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
             return true;
         }
 
-        private static bool IsEqual(SaidData[] e1, SaidData[] e2)
+        public static bool IsEqual(SaidData[] e1, SaidData[] e2)
         {
             //return Array.Equals(e1, e2);
             if (e1.Length != e2.Length) return false;
             for (int i = 0; i < e1.Length; i++)
                 if (!e1[i].Equals(e2[i])) return false;
             return true;
-        }
-
-        private SaidData[] Parse(string expression)
-        {
-            var data = new List<SaidData>();
-            var buff = new List<char>();
-            for (int i = 0; i < expression.Length; i++)
-            {
-                var c = expression[i];
-                if (char.IsWhiteSpace(c)) continue;
-                if (char.IsLetterOrDigit(c) || c == '*' || c == '!')
-                    buff.Add(c);
-                else
-                {
-                    if (buff.Count > 0)
-                    {
-                        ushort id = GetWord(buff);
-                        data.Add(new SaidData(id));
-                    }
-
-                    data.Add(new SaidData(c));
-                }
-            }
-
-            if (buff.Count > 0)
-            {
-                ushort id = GetWord(buff);
-                data.Add(new SaidData(id));
-            }
-
-            return data.ToArray();
-        }
-
-        private ushort GetWord(List<char> buff)
-        {
-            var word = new string(buff.ToArray());
-            buff.Clear();
-            var ids = Script.Package.GetWordId(word) ?? throw new Exception($"Word not found {word}");
-            if (ids.Length > 1) Console.WriteLine($"WARN: Multiple ids for word '{word}'");
-            return ids[0];
         }
 
         public bool Normalize()

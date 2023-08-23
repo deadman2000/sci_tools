@@ -1,4 +1,6 @@
-﻿namespace SCI_Lib.Resources.Vocab
+﻿using System;
+
+namespace SCI_Lib.Resources.Vocab
 {
     public class Suffix
     {
@@ -34,6 +36,29 @@
                 if (ushort.TryParse(value, System.Globalization.NumberStyles.HexNumber, null, out var res))
                     SuffixClass = (WordClass)res;
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{Pattern} [{InputClass}] => {Output} [{SuffixClass}]";
+        }
+
+        /// <summary>
+        /// Определяет, является ли входное слово результатом применения суффикса и возвращает исходное слово
+        /// </summary>
+        /// <param name="word"></param>
+        /// <param name="newWord"></param>
+        /// <returns></returns>
+        public bool IsMatchReverse(string word, out string newWord)
+        {
+            if (Output.Length == 0 || word.EndsWith(Output))
+            {
+                newWord = word[..^Output.Length] + Pattern;
+                return true;
+            }
+
+            newWord = null;
+            return false;
         }
     }
 }

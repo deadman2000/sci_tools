@@ -7,29 +7,32 @@ namespace SCI_Lib.Resources.Vocab
         public Word(string text, int id)
         {
             Text = text;
-            Class = (WordClass)(ushort)(id >> 12);
-            Group = (ushort)(id & 0xfff);
+            Id = id;
+            Class = GetClass(id);
+            Group = GetGroup(id);
         }
-
         public Word(string text, ushort cl, ushort group)
+            : this(text, (WordClass)cl, group)
         {
-            Text = text;
-            Class = (WordClass)cl;
-            Group = group;
         }
 
         public Word(string text, WordClass cl, ushort group)
         {
             Text = text;
+            Id = GetId(group, (ushort)cl);
             Class = cl;
             Group = group;
         }
 
-        public int Id => ((ushort)Class << 12) | Group;
+        public static int GetId(ushort gr, ushort cl) => gr | (cl << 12);
+        public static ushort GetGroup(int id) => (ushort)(id & 0xfff);
+        public static WordClass GetClass(int id) => (WordClass)(ushort)(id >> 12);
+
+        public int Id { get; }
+        public WordClass Class { get; }
+        public ushort Group { get; }
 
         public string Text { get; set; }
-        public WordClass Class { get; set; }
-        public ushort Group { get; set; }
 
         public override string ToString() => Text;
     }

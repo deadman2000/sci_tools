@@ -90,7 +90,6 @@ namespace SCI_Lib
 
         public override string Escape(char[] chars)
         {
-            var a = "\x001234";
             StringBuilder sb = new();
 
             for (int i = 0; i < chars.Length; i++)

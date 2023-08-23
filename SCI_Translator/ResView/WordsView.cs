@@ -47,7 +47,7 @@ namespace SCI_Translator.ResView
 
                 foreach (var clGr in gr.GroupBy(g => g.Class).OrderBy(g => g.Key))
                 {
-                    var groupWords = string.Join(',', gr.Select(w => w.Text));
+                    var groupWords = string.Join(',', clGr.Select(w => w.Text));
                     _dataSet.Add(new WordTranslate
                     {
                         Cl = clGr.Key,
@@ -148,7 +148,7 @@ namespace SCI_Translator.ResView
                         .Select(w => new { S = s, W = w })
                 )
                 .GroupBy(i => i.W)
-                .ToDictionary(g => g.Key, g => string.Join(',', g.Select(n => n.S.Resource.Number.ToString()).ToArray()));
+                .ToDictionary(g => g.Key, g => string.Join(',', g.Select(n => n.S.Resource.Number.ToString())));
 
 
             foreach (var wt in _dataSet)
