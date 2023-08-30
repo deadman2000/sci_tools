@@ -605,6 +605,21 @@ public class Parser
             }
         }
 
+
+        if (CurrToken.Letter == "[")
+        {
+            _saidToken++;
+            if (ParseRef(newNode))
+            {
+                if (CurrToken.Letter == "]")
+                {
+                    _saidToken++;
+                    parentNode.AttachSubtree(0x152, 0x144, newNode);
+                    return true;
+                }
+            }
+        }
+
         // Rollback
         _saidToken = curToken;
         parentNode.Right = oldRight;
@@ -893,7 +908,7 @@ public class Parser
             Console.WriteLine();
         }
 
-            int ret = 1;
+        int ret = 1;
         while (saidTree != null)
         {
             var saidChild = saidTree.Left;
