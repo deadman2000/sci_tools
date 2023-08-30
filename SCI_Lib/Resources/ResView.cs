@@ -45,7 +45,7 @@ namespace SCI_Lib.Resources
 
         public override byte[] GetPatch()
         {
-            if (_view == null) throw new Exception("Patch view is not set");
+            if (_view == null) return GetContent();
 
             return Package.ViewFormat switch
             {

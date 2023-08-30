@@ -42,7 +42,9 @@ namespace SCI_Lib.Resources
 
         public override byte[] GetPatch()
         {
-            return GetScript().GetBytes();
+            if (_script != null)
+                return _script.GetBytes();
+            return GetContent();
         }
 
         public void CleanCache()

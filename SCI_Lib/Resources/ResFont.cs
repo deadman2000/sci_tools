@@ -81,6 +81,8 @@ namespace SCI_Lib.Resources
 
         public override byte[] GetPatch()
         {
+            if (_font == null) return GetContent();
+
             ushort cnt = (ushort)(_font.Frames.Count & 0xFFFF);
 
             ByteBuilder bb = new ByteBuilder();

@@ -52,6 +52,8 @@ namespace SCI_Lib.Resources
 
         public override byte[] GetPatch()
         {
+            if (_data == null) return GetContent();
+
             using var ms = new MemoryStream();
             ms.WriteUShortBE(0);
             ms.Write(_data, 2, _strAddr[0] - 2);

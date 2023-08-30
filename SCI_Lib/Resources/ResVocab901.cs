@@ -39,7 +39,9 @@ namespace SCI_Lib.Resources
 
         public override byte[] GetPatch()
         {
-            ByteBuilder bb = new ByteBuilder();
+            if (_suffixes == null) return GetContent();
+
+            ByteBuilder bb = new();
 
             foreach (var s in _suffixes)
             {
