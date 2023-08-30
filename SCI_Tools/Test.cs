@@ -4,7 +4,6 @@ using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
-using SCI_Lib.Resources.Vocab;
 using System;
 using System.Diagnostics;
 using System.IO;

@@ -262,9 +262,23 @@ namespace SCI_Lib.Resources
             stream.Seek(end, SeekOrigin.Begin);
         }
 
+        /// <summary>
+        /// Setup resource content (exclude header)
+        /// </summary>
+        /// <param name="data"></param>
         public void SetContent(byte[] data)
         {
             _contentOverride = data;
+        }
+
+        /// <summary>
+        /// Setup patch with header
+        /// </summary>
+        /// <param name="data"></param>
+        public void SetPatch(byte[] data)
+        {
+            var offset = GetResourceOffsetInFile(data[1]);
+            _contentOverride = data[(offset + 2)..];
         }
     }
 }

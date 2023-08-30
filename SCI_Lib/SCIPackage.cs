@@ -249,7 +249,7 @@ namespace SCI_Lib
         {
             var res = GetResource(fileName);
             res ??= AddResource(fileName);
-            res.SetContent(data);
+            res.SetPatch(data);
             return res;
         }
 
