@@ -38,7 +38,7 @@ namespace SCI_Lib.SCI0
                 var resNum = (byte)(fnOffset >> 26);
                 var offset = (int)(fnOffset & 0x3ffffff);
 
-                var res = CreateRes(type, num);
+                var res = CreateResource(type, num);
                 res.Init(this, type, num, resNum, offset);
                 Resources.Add(res);
             }
@@ -56,21 +56,41 @@ namespace SCI_Lib.SCI0
 
         public override string GetResFileName(ResType type, int number) => $"{GetResName(type)}.{number:D3}";
 
-        private string GetResName(ResType type)
+        private static string GetResName(ResType type) => type switch
         {
-            return type switch
-            {
-                ResType.View => "view",
-                ResType.Picture => "pic",
-                ResType.Script => "script",
-                ResType.Text => "text",
-                ResType.Sound => "sound",
-                ResType.Vocabulary => "vocab",
-                ResType.Font => "font",
-                ResType.Cursor => "cursor",
-                ResType.Patch => "patch",
-                _ => throw new NotImplementedException(),
-            };
+            ResType.View => "view",
+            ResType.Picture => "pic",
+            ResType.Script => "script",
+            ResType.Text => "text",
+            ResType.Sound => "sound",
+            ResType.Vocabulary => "vocab",
+            ResType.Font => "font",
+            ResType.Cursor => "cursor",
+            ResType.Patch => "patch",
+            _ => throw new NotImplementedException(),
+        };
+
+        public override (ResType type, int number) FileNameToRes(string fileName)
+        {
+            var parts = fileName.Split('.');
+            if (parts.Length != 2) throw new FormatException($"Invalid file name '{fileName}'");
+            if (!int.TryParse(parts[1], out var num)) throw new FormatException($"Invalid file name '{fileName}'");
+
+            return (GetResType(parts[0]), num);
         }
+
+        private static ResType GetResType(string name) => name.ToLower() switch
+        {
+            "view" => ResType.View,
+            "pic" => ResType.Picture,
+            "script" => ResType.Script,
+            "text" => ResType.Text,
+            "sound" => ResType.Sound,
+            "vocab" => ResType.Vocabulary,
+            "font" => ResType.Font,
+            "cursor" => ResType.Cursor,
+            "patch" => ResType.Patch,
+            _ => throw new NotImplementedException(),
+        };
     }
 }

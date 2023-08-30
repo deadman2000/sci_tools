@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 
 namespace SCI_Lib.Resources.Vocab
 {
@@ -43,6 +43,10 @@ namespace SCI_Lib.Resources.Vocab
             return $"{Pattern} [{InputClass}] => {Output} [{SuffixClass}]";
         }
 
+        public bool IsEn => (Pattern.Length == 0 || Pattern.All(c => c >= 'a' && c <= 'z')) &&
+            (Output.Length == 0 || Output.All(c => c >= 'a' && c <= 'z'));
+
+
         /// <summary>
         /// Определяет, является ли входное слово результатом применения суффикса и возвращает исходное слово
         /// </summary>
@@ -54,6 +58,41 @@ namespace SCI_Lib.Resources.Vocab
             if (Output.Length == 0 || word.EndsWith(Output))
             {
                 newWord = word[..^Output.Length] + Pattern;
+                return true;
+            }
+
+            newWord = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Определяет, подходит ли слово под данный суффикс
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        public bool IsMatch(Word word)
+        {
+            if ((InputClass & word.Class) != word.Class) return false;
+            return Pattern.Length == 0 || word.Text.EndsWith(Pattern);
+        }
+
+        /// <summary>
+        /// Определяет, подходит ли слово под данный суффикс
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
+        public bool IsMatch(Word word, out string newWord)
+        {
+            if ((word.IsEn != IsEn) ||
+                ((InputClass & word.Class) != word.Class))
+            {
+                newWord = null;
+                return false;
+            }
+
+            if (Pattern.Length == 0 || word.Text.EndsWith(Pattern))
+            {
+                newWord = word.Text[..^Pattern.Length] + Output;
                 return true;
             }
 

@@ -1,5 +1,4 @@
 ﻿using SCI_Lib.Utils;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -96,7 +95,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             return changed;
         }
 
-        public override string Label => _label ??= string.Join("", Expression.Select(s => s.ToString(Script.Package.GetWords())).ToArray());
+        public override string Label => _label ??= Script.Package.GetSaidLabel(Expression);
 
         public string Hex => string.Join(" ", Expression.Select(s => s.Hex).ToArray());
     }

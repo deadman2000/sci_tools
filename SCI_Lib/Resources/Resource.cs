@@ -10,6 +10,8 @@ namespace SCI_Lib.Resources
     public class Resource
     {
         private ResourceFileInfo _info;
+        private byte[] _contentOverride;
+        byte[] _compressed = null;
 
         public void Init(SCIPackage package, ResType type, ushort number, byte resNum, int offset)
         {
@@ -93,6 +95,8 @@ namespace SCI_Lib.Resources
 
         private byte[] ReadContent(string dir, int volume = 0)
         {
+            if (_contentOverride != null) return _contentOverride;
+
             var path = Path.Combine(dir, FileName);
             if (File.Exists(path)) // Если есть внешний файл, используем его
             {
@@ -148,8 +152,6 @@ namespace SCI_Lib.Resources
             return secondHeaderByte;
         }
 
-        byte[] _compressed = null;
-
         public byte[] GetCompressed(int volume = 0)
         {
             if (_compressed != null) return _compressed;
@@ -190,7 +192,7 @@ namespace SCI_Lib.Resources
         {
             var data = GetContent();
 
-            MemoryStream mem = new MemoryStream();
+            MemoryStream mem = new();
             Save(mem, data);
             return mem.ToArray();
         }
@@ -258,6 +260,11 @@ namespace SCI_Lib.Resources
             stream.Seek(begin, SeekOrigin.Begin);
             info.Write(stream);
             stream.Seek(end, SeekOrigin.Begin);
+        }
+
+        public void SetContent(byte[] data)
+        {
+            _contentOverride = data;
         }
     }
 }

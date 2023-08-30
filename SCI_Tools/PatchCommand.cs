@@ -59,7 +59,7 @@ namespace SCI_Tools
 
         private ushort NextWordGroup()
         {
-            _groups ??= _translate.GetWords().Select(kv => kv.Key).ToHashSet();
+            _groups ??= _translate.GetIdToWord().Select(kv => kv.Key).ToHashSet();
 
             for (ushort i = 1; i < 0xeff; i++)
             {
@@ -264,7 +264,7 @@ namespace SCI_Tools
             BuildWordUsageMap();
             foreach (var id in _wordsUsage.Keys)
             {
-                var word = _translate.GetWords()[id];
+                var word = _translate.GetIdToWord()[id];
                 if (word[0] >= 'a' && word[0] <= 'z')
                     Console.WriteLine(word);
             }
@@ -320,13 +320,7 @@ namespace SCI_Tools
             var res = _translate.GetResource<ResScript>(scriptNum);
             var scr = res.GetScript() as Script;
 
-            SynonymSecion section;
-            var sections = scr.Get<SynonymSecion>();
-            if (!sections.Any())
-                return;
-
-            section = sections.First();
-
+            SynonymSecion section = scr.SynonymSecion;
             for (int i = 0; i < section.Synonyms.Count; i++)
             {
                 var syn = section.Synonyms[i];
@@ -345,13 +339,7 @@ namespace SCI_Tools
             var res = _translate.GetResource<ResScript>(scriptNum);
             var scr = res.GetScript() as Script;
 
-            SynonymSecion section;
-            var sections = scr.Get<SynonymSecion>();
-            if (!sections.Any())
-                return;
-
-            section = sections.First();
-
+            SynonymSecion section = scr.SynonymSecion;
             for (int i = 0; i < section.Synonyms.Count; i++)
             {
                 var syn = section.Synonyms[i];

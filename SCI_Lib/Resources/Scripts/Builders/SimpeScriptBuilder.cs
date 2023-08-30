@@ -15,7 +15,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         public string Decompile(Script script)
         {
-            _words = script.Package.GetWords();
+            _words = script.Package.GetIdToWord();
 
             foreach (Section sec in script.Sections)
                 WriteSection(sec);

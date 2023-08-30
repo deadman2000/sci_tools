@@ -62,6 +62,8 @@ namespace SCI_Lib.Resources.Scripts
         public SaidSection SaidSection => Sections.OfType<SaidSection>().FirstOrDefault();
 
         public StringSection StringSection => Sections.OfType<StringSection>().FirstOrDefault();
+        
+        public SynonymSecion SynonymSecion => Sections.OfType<SynonymSecion>().FirstOrDefault();
 
         public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings);
 

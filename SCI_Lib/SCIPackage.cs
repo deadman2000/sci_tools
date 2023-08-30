@@ -50,6 +50,8 @@ namespace SCI_Lib
 
         public abstract string GetResFileName(ResType type, int number);
 
+        public abstract (ResType type, int number) FileNameToRes(string fileName);
+
         public SCIPackage(string directory, Encoding enc)
         {
             if (enc == null)
@@ -89,15 +91,21 @@ namespace SCI_Lib
 
         protected abstract void SaveMap(FileStream fs);
 
-        public Resource CreateResource(ResType type, ushort num)
+        public Resource AddResource(string fileName)
         {
-            var res = CreateRes(type, num);
+            var (type, num) = FileNameToRes(fileName);
+            return AddResource(type, (ushort)num);
+        }
+
+        public Resource AddResource(ResType type, ushort num)
+        {
+            var res = CreateResource(type, num);
             res.Init(this, type, num, 1, -1);
             Resources.Add(res);
             return res;
         }
 
-        protected virtual Resource CreateRes(ResType type, ushort num) => type switch
+        protected virtual Resource CreateResource(ResType type, ushort num) => type switch
         {
             ResType.Text => new ResText(),
             ResType.Vocabulary => CreateVocab(num),
@@ -225,7 +233,7 @@ namespace SCI_Lib
             if (res != null) return res;
 
             if (File.Exists(Path.Combine(GameDirectory, GetResFileName(type, number))))
-                return CreateResource(type, number);
+                return AddResource(type, number);
             return null;
         }
 
@@ -236,6 +244,14 @@ namespace SCI_Lib
         public Resource Get(Resource res) => Resources.FirstOrDefault(r => r.Type == res.Type && r.Number == res.Number);
 
         public T Get<T>(T res) where T : Resource => GetResource<T>(res.Number);
+
+        public Resource SetPatch(string fileName, byte[] data)
+        {
+            var res = GetResource(fileName);
+            res ??= AddResource(fileName);
+            res.SetContent(data);
+            return res;
+        }
 
         #endregion
 
@@ -305,8 +321,6 @@ namespace SCI_Lib
             foreach (var num in volumes)
             {
                 var resName = $"RESOURCE.{num:D3}";
-                Console.WriteLine(resName);
-
                 var resources = all.Where(r => r.num == num).OrderBy(r => r.off);
 
                 var filePath = Path.Combine(directory, resName);
@@ -318,21 +332,20 @@ namespace SCI_Lib
                 }
             }
 
-            Console.WriteLine("RESOURCE.MAP");
             using (FileStream fs = File.OpenWrite(Path.Combine(directory, "RESOURCE.MAP")))
             {
                 SaveMap(fs);
             }
         }
 
-
+        private IEnumerable<Word> _words;
+        private Dictionary<string, Word[]> _txtToWord;
         private Dictionary<ushort, string> _idToWord;
         private Dictionary<string, ushort[]> _wordId;
+        private Suffix[] _suffixes;
 
-        public Dictionary<ushort, string> GetWords() => _idToWord ??= ReadIdToWords();
-        public Dictionary<string, ushort[]> GetWordIds() => _wordId ??= ReadWordsToId();
-
-        private Dictionary<ushort, string> ReadIdToWords()
+        public IEnumerable<Word> GetWords() => _words ??= ReadWords();
+        private IEnumerable<Word> ReadWords()
         {
             if (GetResource<ResVocab>(0) is not ResVocab000 voc) return null;
             IEnumerable<Word> words = voc.GetWords();
@@ -340,17 +353,27 @@ namespace SCI_Lib
             if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
                 words = words.Concat(vocTr.GetWords());
 
+            return words;
+        }
+
+        public Dictionary<ushort, string> GetIdToWord() => _idToWord ??= ReadIdToWord();
+        private Dictionary<ushort, string> ReadIdToWord()
+        {
+            var words = GetWords();
             return words.GroupBy(w => w.Group).ToDictionary(g => g.Key, g => GetTranslated(g));
         }
 
+        public Dictionary<string, Word[]> GetTxtWords() => _txtToWord ??= ReadTxtWords();
+        private Dictionary<string, Word[]> ReadTxtWords()
+        {
+            var words = GetWords();
+            return words.GroupBy(w => w.Text).ToDictionary(g => g.Key, g => g.ToArray());
+        }
+
+        public Dictionary<string, ushort[]> GetWordIds() => _wordId ??= ReadWordsToId();
         private Dictionary<string, ushort[]> ReadWordsToId()
         {
-            if (GetResource<ResVocab>(0) is not ResVocab000 voc) return null;
-            IEnumerable<Word> words = voc.GetWords();
-
-            if (GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
-                words = words.Union(vocTr.GetWords());
-
+            var words = GetWords();
             return words.GroupBy(w => w.Text).ToDictionary(g => g.Key, g => g.Select(s => s.Group).Distinct().ToArray());
         }
 
@@ -364,12 +387,15 @@ namespace SCI_Lib
         {
             _idToWord = null;
             _wordId = null;
+            _words = null;
+            _suffixes = null;
+            _txtToWord = null;
         }
 
         private static string GetTranslated(IEnumerable<Word> words)
         {
             if (words.Any(w => w.Text == "посмотри")) return "посмотри";
-            var word = words.Where(w => w.Text[0] > 'z').OrderBy(w => w.Text.Length).FirstOrDefault();
+            var word = words.Where(w => !w.IsEn).OrderBy(w => w.Text.Length).FirstOrDefault();
             if (word != null) return word.Text;
             if (words.Any(w => w.Text == "examine")) return "examine";
             word = words.OrderBy(w => w.Text.Length).First();
@@ -381,7 +407,7 @@ namespace SCI_Lib
             foreach (var res in GetResources<ResScript>()) res.CleanCache();
         }
 
-        public Parser GetParser() => new Parser(this);
+        public Parser GetParser() => new(this);
 
         public SaidData[] ParseSaid(string expression)
         {
@@ -419,8 +445,16 @@ namespace SCI_Lib
             var word = new string(buff.ToArray());
             buff.Clear();
             var ids = GetWordId(word) ?? throw new SaidException(word, "Word not found");
-            if (ids.Length > 1) Console.WriteLine($"WARN: Multiple ids for word '{word}'");
             return ids[0];
+        }
+
+        public string GetSaidLabel(SaidData[] said) => string.Join("", said.Select((s) => s.ToString(GetIdToWord())).ToArray());
+
+        public Suffix[] GetSuffixes() => _suffixes ??= ReadSuffixes();
+        private Suffix[] ReadSuffixes()
+        {
+            if (GetResource<ResVocab>(901) is not ResVocab901 voc) return null;
+            return voc.GetSuffixes();
         }
     }
 }

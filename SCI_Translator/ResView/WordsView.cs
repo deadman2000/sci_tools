@@ -61,7 +61,7 @@ namespace SCI_Translator.ResView
             {
                 colTranslate.Visible = true;
                 var voc = (ResVocab001)_tres.Package.GetResource(ResType.Vocabulary, 1);
-                voc ??= (ResVocab001)_tres.Package.CreateResource(ResType.Vocabulary, 1);
+                voc ??= (ResVocab001)_tres.Package.AddResource(ResType.Vocabulary, 1);
                 LoadTranslate(voc);
             }
             else

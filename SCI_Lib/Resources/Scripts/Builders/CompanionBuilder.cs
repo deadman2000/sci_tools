@@ -15,7 +15,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         public string Decompile(Script script)
         {
-            _words = script.Package.GetWords();
+            _words = script.Package.GetIdToWord();
 
             sb.AppendFormat("(script {0})", script.Resource.Number).AppendLine();
             sb.AppendLine();

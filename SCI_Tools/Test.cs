@@ -22,11 +22,11 @@ namespace SCI_Tools
             try
             {
                 // said спроси мерлина о столе & / / 8bc
-                var said = translate.ParseSaid("//стол");
+                /*var said = translate.ParseSaid("/герб/щит");
              
                 var parser = translate.GetParser();
                 parser.Verbose = true;
-                var result = parser.Tokenize("спроси мерлина о столе"); // parse спроси мерлина о столе
+                var result = parser.Tokenize("осмотри герб на щите");
                 if (result.IsValid)
                 {
                     var parseTree = parser.ParseGNF(result.Words);
@@ -49,7 +49,7 @@ namespace SCI_Tools
                         result.Words.Where(w => !w.IsValid).Select(w => $"'{w.Word}'"));
 
                     Console.WriteLine($"Unknown words: {wrong}");
-                }
+                }*/
 
                 //FindTextSaids(6, "proc_14");
                 //DecompileAll();

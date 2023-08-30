@@ -94,7 +94,7 @@ namespace SCI_Lib.SCI1
                     }
                     else
                     {
-                        Resource res = CreateRes(offsets[i].Type, num);
+                        Resource res = CreateResource(offsets[i].Type, num);
                         res.Init(this, offsets[i].Type, num, resNum, offset);
                         Resources.Add(res);
                     }
@@ -127,7 +127,7 @@ namespace SCI_Lib.SCI1
                         }
 
                         var info = new ResourceFileInfo1((byte)rt, num, method);
-                        var res = CreateRes(rt, num);
+                        var res = CreateResource(rt, num);
                         res.Init(this, rt, num, resNum, info);
                         Resources.Add(res);
                     }
@@ -236,31 +236,60 @@ namespace SCI_Lib.SCI1
 
         public override string GetResFileName(ResType type, int number) => $"{number}.{GetExtension(type)}";
 
-        private static string GetExtension(ResType type)
+        private static string GetExtension(ResType type) => type switch
         {
-            return type switch
-            {
-                ResType.View => "V56",
-                ResType.Picture => "P56",
-                ResType.Script => "SCR",
-                ResType.Text => "TEX",
-                ResType.Sound => "SND",
-                ResType.Vocabulary => "VOC",
-                ResType.Font => "FON",
-                ResType.Cursor => "CUR",
-                ResType.AudioPath => "PAT",
-                ResType.Bitmap => "BIT",
-                ResType.Palette => "PAL",
-                ResType.CDAudio => "CDA",
-                ResType.Audio => "AUD",
-                ResType.Sync => "SYN",
-                ResType.Message => "MSG",
-                ResType.Map => "MAP",
-                ResType.Heap => "HEP",
-                //ResType.Patch => "PAT",
-                _ => throw new NotImplementedException(),
-            };
+            ResType.View => "V56",
+            ResType.Picture => "P56",
+            ResType.Script => "SCR",
+            ResType.Text => "TEX",
+            ResType.Sound => "SND",
+            ResType.Vocabulary => "VOC",
+            ResType.Font => "FON",
+            ResType.Cursor => "CUR",
+            ResType.AudioPath => "PAT",
+            ResType.Bitmap => "BIT",
+            ResType.Palette => "PAL",
+            ResType.CDAudio => "CDA",
+            ResType.Audio => "AUD",
+            ResType.Sync => "SYN",
+            ResType.Message => "MSG",
+            ResType.Map => "MAP",
+            ResType.Heap => "HEP",
+            //ResType.Patch => "PAT",
+            _ => throw new NotImplementedException(),
+        };
+
+        public override (ResType type, int number) FileNameToRes(string fileName)
+        {
+            var parts = fileName.Split('.');
+            if (parts.Length != 2) throw new FormatException($"Invalid file name '{fileName}'");
+            if (!int.TryParse(parts[0], out var num)) throw new FormatException($"Invalid file name '{fileName}'");
+
+            return (GetResType(parts[1]), num);
         }
+
+        private static ResType GetResType(string extension) => extension.ToUpper() switch
+        {
+            "V56" => ResType.View,
+            "P56" => ResType.Picture,
+            "SCR" => ResType.Script,
+            "TEX" => ResType.Text,
+            "SND" => ResType.Sound,
+            "VOC" => ResType.Vocabulary,
+            "FON" => ResType.Font,
+            "CUR" => ResType.Cursor,
+            "PAT" => ResType.AudioPath,
+            "BIT" => ResType.Bitmap,
+            "PAL" => ResType.Palette,
+            "CDA" => ResType.CDAudio,
+            "AUD" => ResType.Audio,
+            "SYN" => ResType.Sync,
+            "MSG" => ResType.Message,
+            "MAP" => ResType.Map,
+            "HEP" => ResType.Heap,
+            //"PAT" => ResType.Patch,
+            _ => throw new NotImplementedException(),
+        };
 
     }
 }

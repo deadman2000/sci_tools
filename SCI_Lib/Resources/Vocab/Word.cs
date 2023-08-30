@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace SCI_Lib.Resources.Vocab
 {
@@ -35,6 +36,8 @@ namespace SCI_Lib.Resources.Vocab
         public string Text { get; set; }
 
         public override string ToString() => Text;
+
+        public bool IsEn => Text.All(c => c >= 'a' && c <= 'z');
     }
 
     [Flags]

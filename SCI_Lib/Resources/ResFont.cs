@@ -1,7 +1,6 @@
 ﻿using SCI_Lib.Pictures;
 using SCI_Lib.Utils;
 using System;
-using System.Drawing;
 using System.IO;
 
 namespace SCI_Lib.Resources
