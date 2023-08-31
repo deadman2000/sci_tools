@@ -37,7 +37,7 @@ namespace SCI_Lib.Resources.Vocab
 
         public override string ToString() => Text;
 
-        public bool IsEn => Text.All(c => c >= 'a' && c <= 'z');
+        public bool IsEn => Text.All(c => c <= 'z');
     }
 
     [Flags]

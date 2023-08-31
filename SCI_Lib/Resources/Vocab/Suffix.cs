@@ -43,8 +43,8 @@ namespace SCI_Lib.Resources.Vocab
             return $"{Pattern} [{InputClass}] => {Output} [{SuffixClass}]";
         }
 
-        public bool IsEn => (Pattern.Length == 0 || Pattern.All(c => c >= 'a' && c <= 'z')) &&
-            (Output.Length == 0 || Output.All(c => c >= 'a' && c <= 'z'));
+        public bool IsEn => (Pattern.Length == 0 || Pattern.All(c => c <= 'z')) &&
+            (Output.Length == 0 || Output.All(c => c <= 'z'));
 
 
         /// <summary>
