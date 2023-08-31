@@ -417,7 +417,7 @@ namespace SCI_Lib
             {
                 var c = expression[i];
                 if (char.IsWhiteSpace(c)) continue;
-                if (char.IsLetterOrDigit(c) || c == '*' || c == '!')
+                if (char.IsLetterOrDigit(c) || c == '*' || c == '!' || c == '.')
                     buff.Add(c);
                 else
                 {
