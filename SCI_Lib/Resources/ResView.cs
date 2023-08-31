@@ -1,5 +1,5 @@
 ﻿using SCI_Lib.Resources.View;
-using SCI_Lib.Utils;
+using SCI_Lib.SCI0;
 using System;
 using System.IO;
 
@@ -37,10 +37,17 @@ namespace SCI_Lib.Resources
 
         protected override void WriteHeader(Stream stream)
         {
-            var header = new byte[26];
-            header[0] = (byte)Type;
-            header[1] = 0x80;
-            stream.Write(header);
+            if (Package is SCI0Package)
+            {
+                base.WriteHeader(stream);
+            }
+            else
+            {
+                var header = new byte[26];
+                header[0] = (byte)Type;
+                header[1] = 0x80;
+                stream.Write(header);
+            }
         }
 
         public override byte[] GetPatch()
