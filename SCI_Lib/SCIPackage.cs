@@ -423,8 +423,10 @@ namespace SCI_Lib
                 {
                     if (buff.Count > 0)
                     {
-                        ushort id = GetWord(buff);
-                        data.Add(new SaidData(id));
+                        var word = new string(buff.ToArray());
+                        buff.Clear();
+                        ushort id = GetWord(word);
+                        data.Add(new SaidData(id, word));
                     }
 
                     data.Add(new SaidData(c));
@@ -433,17 +435,16 @@ namespace SCI_Lib
 
             if (buff.Count > 0)
             {
-                ushort id = GetWord(buff);
-                data.Add(new SaidData(id));
+                var word = new string(buff.ToArray());
+                ushort id = GetWord(word);
+                data.Add(new SaidData(id, word));
             }
 
             return data.ToArray();
         }
 
-        private ushort GetWord(List<char> buff)
+        private ushort GetWord(string word)
         {
-            var word = new string(buff.ToArray());
-            buff.Clear();
             var ids = GetWordId(word) ?? throw new SaidException(word, "Word not found");
             return ids[0];
         }

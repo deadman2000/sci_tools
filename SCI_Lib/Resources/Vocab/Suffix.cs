@@ -84,7 +84,7 @@ namespace SCI_Lib.Resources.Vocab
         public bool IsMatch(Word word, out string newWord)
         {
             if ((word.IsEn != IsEn) ||
-                ((InputClass & word.Class) != word.Class))
+                ((InputClass & word.Class) == 0))
             {
                 newWord = null;
                 return false;

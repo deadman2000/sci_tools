@@ -9,6 +9,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public bool IsOperator { get; set; }
 
+        public string OriginalWord { get; set; }
+
         public SaidData(byte val)
         {
             Data = val;
@@ -21,10 +23,11 @@ namespace SCI_Lib.Resources.Scripts.Elements
             IsOperator = true;
         }
 
-        public SaidData(ushort word)
+        public SaidData(ushort word, string orig = null)
         {
             Data = word;
             IsOperator = false;
+            OriginalWord = orig;
         }
 
         public override bool Equals(object obj)
