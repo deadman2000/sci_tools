@@ -50,6 +50,7 @@ namespace SCI_Lib.Resources.Scripts
         }
 
         public void Register(BaseElement el) => _elements[el.Address] = el;
+        public void Unregister(BaseElement el) => _elements.Remove(el.Address);
 
         public SCIPackage Package { get { return Resource.Package; } }
 
@@ -67,7 +68,7 @@ namespace SCI_Lib.Resources.Scripts
 
         public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings);
 
-        public IEnumerable<BaseElement> AllElements => _elements.Values.Where(e => !(e is StringPart));
+        public IEnumerable<BaseElement> AllElements => _elements.Values.Where(e => e is not StringPart);
 
         public IEnumerable<RefToElement> AllRefs => _elements.Values.OfType<RefToElement>();
 

@@ -467,8 +467,8 @@ public class CodeBlock
                     _rest = 0;
                 }
                 break;
-            case 0x050: // class
-            case 0x051:
+            case 0x50: // class
+            case 0x51:
                 {
                     var id = GetVal(code.Arguments[0]);
                     var cl = Procedure.GetClass(id);

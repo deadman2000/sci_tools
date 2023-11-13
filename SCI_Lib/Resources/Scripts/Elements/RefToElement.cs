@@ -88,6 +88,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             return $"{type}_{TargetOffset:x4}{comment}";
         }
 
+        // Обновляет ссылку на элемент
         public override void SetupByOffset()
         {
             IsSetup = true;

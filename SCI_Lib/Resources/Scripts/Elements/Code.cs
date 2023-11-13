@@ -25,7 +25,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public byte Type { get; set; }
 
-        public List<object> Arguments { get; private set; }
+        public List<object> Arguments { get; set; } = new List<object>();
 
         public Code Prev { get; private set; }
         public Code Next { get; private set; }
@@ -109,7 +109,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public void Read(byte[] data, ref ushort offset)
         {
-            Arguments = new List<object>();
             Type = data[offset++];
 
             if (Type > 0x7F)
@@ -523,15 +522,18 @@ namespace SCI_Lib.Resources.Scripts.Elements
             }
         }
 
-        public void InjectNext(byte type, params object[] args)
+        public Code InjectNext(byte type, params object[] args)
         {
             var ind = _section.Operators.IndexOf(this);
             var oldNext = Next;
-            var code = new Code(_section, 0, this);
-            code.Type = type;
-            code.Arguments = new List<object>(args);
+            var code = new Code(_section, 0, this)
+            {
+                Type = type,
+                Arguments = new List<object>(args)
+            };
             _section.Operators.Insert(ind + 1, code);
             code.Next = oldNext;
+            return code;
         }
     }
 }

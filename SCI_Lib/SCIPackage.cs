@@ -445,7 +445,7 @@ namespace SCI_Lib
 
         private ushort GetWord(string word)
         {
-            var ids = GetWordId(word) ?? throw new SaidException(word, "Word not found");
+            var ids = GetWordId(word) ?? throw new SaidException(word, $"Word {word} not found");
             return ids[0];
         }
 

@@ -399,5 +399,31 @@ namespace SCI_Tools
 
         #endregion
 
+        #region Script
+
+        protected void SetPushi(Script scr, ushort addr, int val)
+        {
+            var op = scr.GetOperator(addr);
+            if (op.Name != "pushi") throw new Exception();
+
+            object newVal;
+
+            if (op.Arguments[0] is ushort usV)
+            {
+                if (usV == val) return;
+                newVal = (ushort)val;
+            }
+            else if (op.Arguments[0] is byte bV)
+            {
+                if (bV == val) return;
+                newVal = (byte)val;
+            }
+            else throw new Exception();
+
+            op.Arguments[0] = newVal;
+            Changed(scr.Resource);
+        }
+
+        #endregion
     }
 }

@@ -18,6 +18,20 @@
 
 ## TODO
 
+### ƒекомпил€ци€
+
+- перенос стека
+- return value
+- PQ2 this у процедуры вне методов
+
+### C++
+- оптимизаци€
+- циклы:
+- - while Camelot 959
+- - for Camelot 032
+- инклуды
+ rest
+
 ### Messages
 
 * Voice
