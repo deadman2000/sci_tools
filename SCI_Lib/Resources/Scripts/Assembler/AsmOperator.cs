@@ -31,8 +31,12 @@ namespace SCI_Lib.Resources.Scripts.Assembler
                     return ParseBW(0x86, parts[1]);
                 case "ldi":
                     return ParseBW(0x34, parts[1]);
+                case "pushi":
+                    return ParseBW(0x38, parts[1]);
+                case "bt":
+                    return new BranchOperator(0x2e, parts[1]);
                 case "bnt":
-                    return new BntOperator(parts[1]);
+                    return new BranchOperator(0x30, parts[1]);
                 case "sub":
                     return new AsmOperator(0x04);
                 case "ge?":
@@ -41,6 +45,8 @@ namespace SCI_Lib.Resources.Scripts.Assembler
                     return new AsmOperator(0x24);
                 case "ret":
                     return new AsmOperator(0x48);
+                case "pprev":
+                    return new AsmOperator(0x60);
 
                 default:
                     throw new Exception($"Unknown or not yet supported operator {code}");
@@ -77,12 +83,12 @@ namespace SCI_Lib.Resources.Scripts.Assembler
         }
     }
 
-    internal class BntOperator : AsmOperator
+    internal class BranchOperator : AsmOperator
     {
         private string _targetRef;
 
-        public BntOperator(string targetRef)
-            : base(0x30, (ushort)0)
+        public BranchOperator(byte op, string targetRef)
+            : base(op, (ushort)0)
         {
             _targetRef = targetRef;
         }

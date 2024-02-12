@@ -41,16 +41,19 @@ namespace SCI_Lib.Resources.Scripts.Builders
         private void WriteProc(CodeSection cs)
         {
             if (_methods.Contains((ushort)cs.Address)) return;
-            sb.AppendFormat("(procedure (localproc_{0:x4})", cs.Address).AppendLine();
-            
+
             var code = cs.Operators.FirstOrDefault();
-            WriteCode(code);
-            
-            sb.AppendLine(")");
-            sb.AppendLine();
+
+            while (code != null && code.Type != 0)
+            {
+                sb.AppendFormat("(procedure (localproc_{0:x4})", code.Address).AppendLine();
+                code = WriteCode(code);
+                sb.AppendLine(")");
+                sb.AppendLine();
+            }
         }
 
-        private void WriteCode(Code code)
+        private Code WriteCode(Code code)
         {
             ushort lookTo = 0; // Адрес переходов
             while (code != null)
@@ -78,6 +81,8 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
                 code = code.Next;
             }
+
+            return code?.Next;
         }
 
         private void WriteStrings(StringSection section)

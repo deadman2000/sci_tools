@@ -51,6 +51,8 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public ushort AppendASM(string asm)
         {
+            if (Operators == null) Operators = new List<Code>();
+
             var lines = asm.Split('\r', '\n');
 
             string currentLabel = null;

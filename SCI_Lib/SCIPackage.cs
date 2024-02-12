@@ -175,7 +175,8 @@ namespace SCI_Lib
 
         private void DetectViewFormat()
         {
-            var data = GetResources<ResView>().First().GetContent();
+            var res = GetResources<ResView>().First();
+            var data = res.GetContent();
 
             try
             {

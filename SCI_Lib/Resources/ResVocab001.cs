@@ -61,7 +61,7 @@ namespace SCI_Lib.Resources
                 for (int i = 0; i < bytes.Length; i++)
                 {
                     var c = bytes[i];
-                    if (c < 0x80) throw new FormatException();
+                    if (c < 0x80) throw new FormatException($"Invalid symbol in translated word {word.Text}");
 
                     c &= 0x7f;
                     if (isStart)

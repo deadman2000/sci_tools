@@ -11,7 +11,7 @@ namespace SCI_Tools
 {
     // patch_colonel -d D:\Dos\GAMES\Laura_Bow_RUS
     // Русификация Colonel's Bequest
-    [Command("patch_colonel", Description = "Export font to images")]
+    [Command("patch_colonel", Description = "")]
     class PatchColonel : PatchCommand
     {
         protected override void Patch()

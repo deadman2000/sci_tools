@@ -52,7 +52,7 @@ namespace SCI_Tools
 
                 //FindTextSaids(6, "proc_14");
                 //DecompileAll();
-                //Decompile(58);
+                //Decompile(8);
                 //Decompile(255, "DText");
                 //Decompile(24, "Room24", "handleEvent");
                 //Decompile(2, null, "handleEvent");
@@ -151,7 +151,7 @@ namespace SCI_Tools
                     var voc = translate.CreateResource(ResType.Vocabulary, 1) as ResVocab001;
                     List<Word> words = new();
 
-                    var lines = File.ReadAllLines(@"c:\Projects\TranslateWeb\words.txt");
+                    var lines = File.ReadAllLines(@"d:\Projects\TranslateWeb\words.txt");
                     foreach (var line in lines)
                     {
                         var parts = line.Split(' ');
@@ -203,7 +203,7 @@ namespace SCI_Tools
 
         private void Decompile(ushort num, string cl = null, string method = null)
         {
-            var res = package.GetResource<ResScript>(num);
+            var res = translate.GetResource<ResScript>(num);
             var script = res.GetScript() as Script;
 
             var analyzer = script.Analyze(cl, method);
@@ -216,14 +216,14 @@ namespace SCI_Tools
             analyzer.Optimize();
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP_OPT);
 
-            var h_path = @$"c:\Projects\TranslateWeb\out\scr{num}.h";
+            var h_path = @$"d:\Projects\TranslateWeb\out\scr{num}.h";
             File.WriteAllText(h_path, new CppBuilder(cl, method).Decompile(script));
         }
 
         private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)
         {
-            var dot_path = @$"c:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.graph";
-            var svg_path = @$"c:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.svg";
+            var dot_path = @$"d:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.graph";
+            var svg_path = @$"d:\Projects\TranslateWeb\out\{number}_{type.ToString().ToLower()}.svg";
             File.WriteAllText(dot_path, graph.GetGraph(type));
             Debug.WriteLine("Start dot");
             var proc = new Process();
@@ -342,8 +342,9 @@ namespace SCI_Tools
             var trRes = translate.GetResource<ResFont>(num);
             var font = srcRes.GetFont();
             var trFont = trRes.GetFont();
+            int ind = Math.Min(128, font.Frames.Count);
 
-            for (int i = 0; i < font.Frames.Count; i++)
+            for (int i = 0; i < ind; i++)
                 trFont[i] = font[i];
 
             trRes.SetFont(trFont);
@@ -389,7 +390,7 @@ namespace SCI_Tools
 
         void ExtractText()
         {
-            using var file = File.CreateText(@"c:\Projects\TranslateWeb\ru_text.txt");
+            using var file = File.CreateText(@"d:\Projects\TranslateWeb\ru_text.txt");
             var messages = package.GetResources<ResMessage>();
             foreach (var msg in messages)
             {

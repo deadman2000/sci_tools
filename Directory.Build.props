@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>1.2.21</Version>
+    <Version>1.2.22</Version>
     <Authors>dead_man</Authors>
     <Product>SCI_Tools</Product>
     <Description>https://github.com/deadman2000/sci_tools</Description>

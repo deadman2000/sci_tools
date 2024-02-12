@@ -2,6 +2,7 @@
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -121,7 +122,8 @@ namespace SCI_Lib.Resources.Scripts
 
         public Section CreateSection(SectionType type)
         {
-            Section sec = Section.Create(this, type, SourceData, 0, 0);
+            var last = Sections[^1];
+            Section sec = Section.Create(this, type, SourceData, (ushort)(last.Address + last.Size + 4), 0);
             Sections.Add(sec);
             return sec;
         }
@@ -134,5 +136,11 @@ namespace SCI_Lib.Resources.Scripts
         }
 
         public ScriptAnalyzer Analyze(string cl = null, string method = null) => new(this, cl, method);
+
+        public ushort AppendASM(string asm)
+        {
+            var code = (CodeSection)CreateSection(SectionType.Code);
+            return code.AppendASM(asm);
+        }
     }
 }
