@@ -31,7 +31,8 @@ public class ScriptAnalyzer
             if (e == null) continue;
             if (e.Reference is Code code)
             {
-                var name = $"proc_{s.Script.Resource.Number}_{_procId++}";
+                //var name = $"proc_{s.Script.Resource.Number}_{_procId++}";
+                var name = $"localproc_{code.Address:x4}"; // Имя процедуры должно соответствовать имени в вызове. Оператор call
                 if (_methodFilter == null || _methodFilter == name)
                     BuildProc(null, code, name);
             }

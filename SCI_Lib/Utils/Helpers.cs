@@ -24,21 +24,17 @@ namespace SCI_Lib.Utils
         
         public static string ByteToHex(byte[] data)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = 0; i < data.Length; i++)
-            {
-                sb.Append(String.Format("{0:X2} ", data[i]));
-            }
+                sb.Append($"{data[i]:X2} ");
             return sb.ToString().TrimEnd();
         }
 
         public static string ByteToHex(byte[] data, int offset, int len)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = offset; i < offset + len && i < data.Length; i++)
-            {
-                sb.Append(String.Format("{0:X2} ", data[i]));
-            }
+                sb.Append($"{data[i]:X2} ");
             return sb.ToString().TrimEnd();
         }
 

@@ -50,7 +50,7 @@ namespace SCI_Tools
                     Console.WriteLine($"Unknown words: {wrong}");
                 }*/
 
-                //FindTextSaids(6, "proc_14");
+                //FindTextSaids(6);
                 //DecompileAll();
                 //Decompile(8);
                 //Decompile(255, "DText");
@@ -188,10 +188,10 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
-        private void FindTextSaids(ushort? scr = null, params string[] prints)
+        private void FindTextSaids(ushort? scr = null)
         {
             var search = new TextUsageSearch(package, scr);
-            var result = search.FindUsage(prints);
+            var result = search.FindUsage();
 
             foreach (var p in result.OrderBy(p => p.Txt).ThenBy(p => p.Index))
             {
