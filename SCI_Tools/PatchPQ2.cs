@@ -14,6 +14,7 @@ namespace SCI_Tools
         {
             Patch8();
             Patch15();
+            Patch25();
             Patch996();
             Patch153();
             Save();
@@ -66,6 +67,24 @@ namespace SCI_Tools
                     push.Arguments[0] = (byte)34;
                     Changed(res);
                 }
+            }
+        }
+
+        // осмотри ордер на обыск
+        private void Patch25()
+        {
+            var res = _translate.GetResource<ResScript>(25);
+            var scr = res.GetScript() as Script;
+
+            var bnt = scr.GetOperator(0x5c5);
+            if (bnt.Name != "bnt") throw new Exception();
+            var r = bnt.Arguments[0] as CodeRef; // a.Value = 0xe8c - a.Address(0x5c6) - 2
+            //r.Value = 0x62c - r.Address - 2;  // code_0e8c -> code_062c
+            r.Reference = scr.GetOperator(0x62c);
+            //if ((byte)push.Arguments[0] != 34)
+            {
+                //push.Arguments[0] = (byte)34;
+                Changed(res);
             }
         }
 

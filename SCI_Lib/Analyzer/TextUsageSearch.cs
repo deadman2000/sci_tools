@@ -3,6 +3,7 @@ using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SCI_Lib.Analyzer;
 
@@ -14,6 +15,8 @@ public class TextUsageSearch
     private readonly Dictionary<int, IEnumerable<SaidExpression>> _prints = new();
     private readonly HashSet<string> _localPrint = new();
     private readonly HashSet<string> _globalPrint = new();
+    private readonly HashSet<string> _nonPrint = new(); // Фильтр для процедур, прошедших проверку
+    private readonly HashSet<ushort> _checkedScripts = new(); // Фильтр для скриптов, прошедших проверку
 
     public TextUsageSearch(SCIPackage package, ushort? scr = null)
     {
@@ -31,7 +34,7 @@ public class TextUsageSearch
     public IEnumerable<PrintCall> FindUsage(IEnumerable<string> globalPrint = null)
     {
         _globalPrint.Clear();
-        _globalPrint.Add("scr255_00");
+        _globalPrint.Add("scr255_0");
         if (globalPrint != null)
             foreach (var p in globalPrint)
                 _globalPrint.Add(p);
@@ -71,7 +74,7 @@ public class TextUsageSearch
         {
             if (proc.Name.StartsWith("localproc_"))
                 if (DetectPrints(proc))
-                    AddPrintFunc(proc);
+                    _localPrint.Add(proc.Name);
         }
 
         foreach (var proc in analyzer.Procedures)
@@ -138,11 +141,6 @@ public class TextUsageSearch
             _prints[print] = s.Concat(saids);
     }
 
-    private void AddPrintFunc(ProcedureTree proc)
-    {
-        _localPrint.Add(proc.Name);
-    }
-
     private bool DetectPrints(ProcedureTree proc)
     {
         var opt = proc.Optimize();
@@ -151,14 +149,56 @@ public class TextUsageSearch
 
     private bool IsPrint(Expr ex) => ex is CallExpr call && _globalPrint.Contains(call.Method);
 
+    private readonly Regex _scrRegex = new("scr(\\d+)_(\\d+)");
+
     private void CheckPrint(Expr ex, IEnumerable<SaidExpression> saids)
     {
-        if (ex is CallExpr call && _localPrint.Contains(call.Method)
+        if (ex is CallExpr call
             && call.Args.Count > 1
             && call.Args[0] is ConstExpr c0
             && call.Args[1] is ConstExpr c1)
         {
-            AddPrint(c0.Value, c1.Value, saids);
+            if (_localPrint.Contains(call.Method))
+                AddPrint(c0.Value, c1.Value, saids);
+            else
+            {
+                if (_nonPrint.Contains(call.Method)) return;
+
+                var match = _scrRegex.Match(call.Method);
+                if (match.Success)
+                {
+                    var scr = ushort.Parse(match.Groups[1].Value);
+                    CheckScript(scr);
+
+                    if (_localPrint.Contains(call.Method))
+                        AddPrint(c0.Value, c1.Value, saids);
+                }
+            }
+        }
+    }
+
+    private void CheckScript(ushort scr)
+    {
+        if (_checkedScripts.Contains(scr)) return;
+
+        _checkedScripts.Add(scr);
+
+        var res = _package.GetResource<ResScript>(scr);
+        var script = res.GetScript() as Script;
+
+        var analyzer = script.Analyze();
+
+        foreach (var (exp, tree) in analyzer.Exports)
+        {
+            if (DetectPrints(tree))
+            {
+                _localPrint.Add(exp);
+                _globalPrint.Add(exp);
+            }
+            else
+            {
+                _nonPrint.Add(exp);
+            }
         }
     }
 

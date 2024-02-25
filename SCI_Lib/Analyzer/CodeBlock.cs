@@ -427,7 +427,7 @@ public class CodeBlock
                     var ind = GetVal(code.Arguments[1]);
                     var cnt = (byte)code.Arguments[2] / 2;
                     var args = PopArgs(cnt);
-                    SetAcc(new CallExpr($"scr{scr}_{ind:x2}", args));
+                    SetAcc(new CallExpr($"scr{scr}_{ind}", args));
                 }
                 break;
             case 0x48: // ret

@@ -12,6 +12,7 @@ public class ScriptAnalyzer
     private readonly string _methodFilter;
     private readonly HashSet<ushort> _usedCode = new();
     public List<ProcedureTree> Procedures { get; } = new();
+    public Dictionary<string, ProcedureTree> Exports { get; } = new();
 
     public ScriptAnalyzer(Script script, string classFilter, string methodFilter)
     {
@@ -26,15 +27,20 @@ public class ScriptAnalyzer
     {
         if (_classFilter != null) return;
 
-        foreach (var e in s.Exports)
+        for (int i = 0; i < s.Exports.Length; i++)
         {
+            var e = s.Exports[i];
+
             if (e == null) continue;
             if (e.Reference is Code code)
             {
-                //var name = $"proc_{s.Script.Resource.Number}_{_procId++}";
+                var exportName = $"scr{s.Script.Resource.Number}_{i}";
                 var name = $"localproc_{code.Address:x4}"; // Имя процедуры должно соответствовать имени в вызове. Оператор call
                 if (_methodFilter == null || _methodFilter == name)
-                    BuildProc(null, code, name);
+                {
+                    var proc = BuildProc(null, code, name);
+                    Exports.Add(exportName, proc);
+                }
             }
         }
     }
