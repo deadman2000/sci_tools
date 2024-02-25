@@ -154,6 +154,7 @@ public class TextUsageSearch
     private void CheckPrint(Expr ex, IEnumerable<SaidExpression> saids)
     {
         if (ex is CallExpr call
+            && call.Args != null
             && call.Args.Count > 1
             && call.Args[0] is ConstExpr c0
             && call.Args[1] is ConstExpr c1)

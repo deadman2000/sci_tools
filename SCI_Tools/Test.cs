@@ -50,6 +50,7 @@ namespace SCI_Tools
                     Console.WriteLine($"Unknown words: {wrong}");
                 }*/
 
+                //FindTextSaids();
                 //FindTextSaids(6);
                 //DecompileAll();
                 //Decompile(8);
