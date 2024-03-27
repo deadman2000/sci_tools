@@ -12,12 +12,56 @@ namespace SCI_Tools
     {
         protected override void Patch()
         {
+            Patch4();
             Patch8();
             Patch15();
             Patch25();
-            Patch996();
             Patch153();
+            Patch200();
+            Patch996();
             Save();
+        }
+
+
+        private void Patch4()
+        {
+            var res = _translate.GetResource<ResScript>(4);
+            var scr = res.GetScript() as Script;
+
+            // Исправление проверки пробирки крови
+            {
+                var op = scr.GetOperator(0x1164);
+                if (op.Name != "pushi") throw new Exception();
+                if (op.Arguments[0] is ushort val && val != 146)
+                {
+                    op.Arguments[0] = (ushort)146;
+                    Changed(res);
+                }
+            }
+            {
+                var op = scr.GetOperator(0x11f9);
+                if (op.Name != "pushi") throw new Exception();
+                if (op.Arguments[0] is ushort val && val != 146)
+                {
+                    op.Arguments[0] = (ushort)146;
+                    Changed(res);
+                }
+            }
+
+            // Исправление переходов при проверке флагов результатов экспертизы
+            foreach (var adr in new ushort[] { 0x120b, 0x1221, 0x1237, 0x124d, 0x1262 })
+            {
+                var op = scr.GetOperator(adr);
+                if (op.Type == 0) continue;
+                if (op.Name != "jmp") throw new Exception();
+                op.Type = 0;
+                op.Arguments.Clear();
+
+                op.InjectNext(0);
+                op.InjectNext(0);
+
+                Changed(res);
+            }
         }
 
         // Ввод на русском языке в компьютере
@@ -78,12 +122,10 @@ namespace SCI_Tools
 
             var bnt = scr.GetOperator(0x5c5);
             if (bnt.Name != "bnt") throw new Exception();
-            var r = bnt.Arguments[0] as CodeRef; // a.Value = 0xe8c - a.Address(0x5c6) - 2
-            //r.Value = 0x62c - r.Address - 2;  // code_0e8c -> code_062c
-            r.Reference = scr.GetOperator(0x62c);
-            //if ((byte)push.Arguments[0] != 34)
+            var r = bnt.Arguments[0] as CodeRef;
+            if (r.Reference.Address != 0x62c)
             {
-                //push.Arguments[0] = (byte)34;
+                r.Reference = scr.GetOperator(0x62c);
                 Changed(res);
             }
         }
@@ -129,6 +171,26 @@ namespace SCI_Tools
                     Changed(res);
                 }
             }
+        }
+
+        private void Patch200()
+        {
+            var res = _translate.GetResource<ResScript>(200);
+            var scr = res.GetScript() as Script;
+
+            // Изменение положения текста во вступлении на карточке Уоллса
+            SetPushi(scr, 0x108c, 120); // Псевдоним
+            SetPushi(scr, 0x109d, 120); // Деятельность
+            SetPushi(scr, 0x10ae, 140); // дизайнер
+            SetPushi(scr, 0x10c0, 120); // Полицейская
+
+            // Художники аниматоры
+            SetPushi(scr, 0x2138, 96); // art.x
+            SetPushi(scr, 0x213a, 32); // art.y
+            SetPushi(scr, 0x2166, 96); // animation x
+
+            // системные разработчики
+            SetPushi(scr, 0x1d91, 158); // system.x
         }
 
         const string asm_cp866_to_upper = @"
