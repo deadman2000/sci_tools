@@ -234,5 +234,11 @@ namespace SCI_Translator
                 }
             }
         }
+
+        private void tsbTextBoxDraw_Click(object sender, EventArgs e)
+        {
+            FormTextBoxDraw form = new(_translate);
+            form.Show();
+        }
     }
 }

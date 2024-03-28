@@ -28,174 +28,180 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
-            this.sc = new System.Windows.Forms.SplitContainer();
-            this.tv = new System.Windows.Forms.TreeView();
-            this.ilTree = new System.Windows.Forms.ImageList(this.components);
-            this.cmsResource = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.tcmiExportToFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.tsbSave = new System.Windows.Forms.ToolStripButton();
-            this.tsbTranslated = new System.Windows.Forms.ToolStripButton();
-            this.tsbFind = new System.Windows.Forms.ToolStripButton();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.tsslResourceInfo = new System.Windows.Forms.ToolStripStatusLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.sc)).BeginInit();
-            this.sc.Panel1.SuspendLayout();
-            this.sc.SuspendLayout();
-            this.cmsResource.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
-            this.SuspendLayout();
+            sc = new System.Windows.Forms.SplitContainer();
+            tv = new System.Windows.Forms.TreeView();
+            ilTree = new System.Windows.Forms.ImageList(components);
+            cmsResource = new System.Windows.Forms.ContextMenuStrip(components);
+            tcmiExportToFile = new System.Windows.Forms.ToolStripMenuItem();
+            toolStrip1 = new System.Windows.Forms.ToolStrip();
+            tsbSave = new System.Windows.Forms.ToolStripButton();
+            tsbTranslated = new System.Windows.Forms.ToolStripButton();
+            tsbFind = new System.Windows.Forms.ToolStripButton();
+            statusStrip1 = new System.Windows.Forms.StatusStrip();
+            tsslResourceInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            tsbTextBoxDraw = new System.Windows.Forms.ToolStripButton();
+            ((System.ComponentModel.ISupportInitialize)sc).BeginInit();
+            sc.Panel1.SuspendLayout();
+            sc.SuspendLayout();
+            cmsResource.SuspendLayout();
+            toolStrip1.SuspendLayout();
+            statusStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // sc
             // 
-            this.sc.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.sc.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.sc.Location = new System.Drawing.Point(0, 27);
-            this.sc.Margin = new System.Windows.Forms.Padding(4);
-            this.sc.Name = "sc";
+            sc.Dock = System.Windows.Forms.DockStyle.Fill;
+            sc.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            sc.Location = new System.Drawing.Point(0, 27);
+            sc.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            sc.Name = "sc";
             // 
             // sc.Panel1
             // 
-            this.sc.Panel1.Controls.Add(this.tv);
-            this.sc.Size = new System.Drawing.Size(1053, 741);
-            this.sc.SplitterDistance = 227;
-            this.sc.SplitterWidth = 5;
-            this.sc.TabIndex = 0;
+            sc.Panel1.Controls.Add(tv);
+            sc.Size = new System.Drawing.Size(1053, 939);
+            sc.SplitterDistance = 227;
+            sc.SplitterWidth = 5;
+            sc.TabIndex = 0;
             // 
             // tv
             // 
-            this.tv.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tv.HideSelection = false;
-            this.tv.ImageIndex = 0;
-            this.tv.ImageList = this.ilTree;
-            this.tv.Location = new System.Drawing.Point(0, 0);
-            this.tv.Margin = new System.Windows.Forms.Padding(4);
-            this.tv.Name = "tv";
-            this.tv.SelectedImageIndex = 0;
-            this.tv.Size = new System.Drawing.Size(227, 741);
-            this.tv.TabIndex = 0;
-            this.tv.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tv_AfterSelect);
-            this.tv.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tv_NodeMouseClick);
+            tv.Dock = System.Windows.Forms.DockStyle.Fill;
+            tv.HideSelection = false;
+            tv.ImageIndex = 0;
+            tv.ImageList = ilTree;
+            tv.Location = new System.Drawing.Point(0, 0);
+            tv.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            tv.Name = "tv";
+            tv.SelectedImageIndex = 0;
+            tv.Size = new System.Drawing.Size(227, 939);
+            tv.TabIndex = 0;
+            tv.AfterSelect += tv_AfterSelect;
+            tv.NodeMouseClick += tv_NodeMouseClick;
             // 
             // ilTree
             // 
-            this.ilTree.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("ilTree.ImageStream")));
-            this.ilTree.TransparentColor = System.Drawing.Color.Transparent;
-            this.ilTree.Images.SetKeyName(0, "folder");
-            this.ilTree.Images.SetKeyName(1, "file");
-            this.ilTree.Images.SetKeyName(2, "book");
-            this.ilTree.Images.SetKeyName(3, "image");
-            this.ilTree.Images.SetKeyName(4, "character");
-            this.ilTree.Images.SetKeyName(5, "script");
-            this.ilTree.Images.SetKeyName(6, "music");
-            this.ilTree.Images.SetKeyName(7, "sound");
-            this.ilTree.Images.SetKeyName(8, "font");
-            this.ilTree.Images.SetKeyName(9, "cursor");
-            this.ilTree.Images.SetKeyName(10, "palette");
+            ilTree.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
+            ilTree.ImageStream = (System.Windows.Forms.ImageListStreamer)resources.GetObject("ilTree.ImageStream");
+            ilTree.TransparentColor = System.Drawing.Color.Transparent;
+            ilTree.Images.SetKeyName(0, "folder");
+            ilTree.Images.SetKeyName(1, "file");
+            ilTree.Images.SetKeyName(2, "book");
+            ilTree.Images.SetKeyName(3, "image");
+            ilTree.Images.SetKeyName(4, "character");
+            ilTree.Images.SetKeyName(5, "script");
+            ilTree.Images.SetKeyName(6, "music");
+            ilTree.Images.SetKeyName(7, "sound");
+            ilTree.Images.SetKeyName(8, "font");
+            ilTree.Images.SetKeyName(9, "cursor");
+            ilTree.Images.SetKeyName(10, "palette");
             // 
             // cmsResource
             // 
-            this.cmsResource.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.cmsResource.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tcmiExportToFile});
-            this.cmsResource.Name = "cmsTree";
-            this.cmsResource.Size = new System.Drawing.Size(174, 28);
+            cmsResource.ImageScalingSize = new System.Drawing.Size(20, 20);
+            cmsResource.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tcmiExportToFile });
+            cmsResource.Name = "cmsTree";
+            cmsResource.Size = new System.Drawing.Size(174, 28);
             // 
             // tcmiExportToFile
             // 
-            this.tcmiExportToFile.Name = "tcmiExportToFile";
-            this.tcmiExportToFile.Size = new System.Drawing.Size(173, 24);
-            this.tcmiExportToFile.Text = "Export to file...";
-            this.tcmiExportToFile.Click += new System.EventHandler(this.tcmiExportToFile_Click);
+            tcmiExportToFile.Name = "tcmiExportToFile";
+            tcmiExportToFile.Size = new System.Drawing.Size(173, 24);
+            tcmiExportToFile.Text = "Export to file...";
+            tcmiExportToFile.Click += tcmiExportToFile_Click;
             // 
             // toolStrip1
             // 
-            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbSave,
-            this.tsbTranslated,
-            this.tsbFind});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1053, 27);
-            this.toolStrip1.TabIndex = 1;
-            this.toolStrip1.Text = "toolStrip1";
+            toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbSave, tsbTranslated, tsbFind, tsbTextBoxDraw });
+            toolStrip1.Location = new System.Drawing.Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new System.Drawing.Size(1053, 27);
+            toolStrip1.TabIndex = 1;
+            toolStrip1.Text = "toolStrip1";
             // 
             // tsbSave
             // 
-            this.tsbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbSave.Image = global::SCI_Translator.Properties.Resources.disk;
-            this.tsbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbSave.Name = "tsbSave";
-            this.tsbSave.Size = new System.Drawing.Size(29, 24);
-            this.tsbSave.Text = "Save";
-            this.tsbSave.Click += new System.EventHandler(this.tsbSave_Click);
+            tsbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            tsbSave.Image = Properties.Resources.disk;
+            tsbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsbSave.Name = "tsbSave";
+            tsbSave.Size = new System.Drawing.Size(29, 24);
+            tsbSave.Text = "Save";
+            tsbSave.Click += tsbSave_Click;
             // 
             // tsbTranslated
             // 
-            this.tsbTranslated.Checked = true;
-            this.tsbTranslated.CheckOnClick = true;
-            this.tsbTranslated.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tsbTranslated.Image = global::SCI_Translator.Properties.Resources.font;
-            this.tsbTranslated.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbTranslated.Name = "tsbTranslated";
-            this.tsbTranslated.Size = new System.Drawing.Size(102, 24);
-            this.tsbTranslated.Text = "Translated";
-            this.tsbTranslated.CheckedChanged += new System.EventHandler(this.tsbTranslated_CheckedChanged);
+            tsbTranslated.Checked = true;
+            tsbTranslated.CheckOnClick = true;
+            tsbTranslated.CheckState = System.Windows.Forms.CheckState.Checked;
+            tsbTranslated.Image = Properties.Resources.font;
+            tsbTranslated.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsbTranslated.Name = "tsbTranslated";
+            tsbTranslated.Size = new System.Drawing.Size(101, 24);
+            tsbTranslated.Text = "Translated";
+            tsbTranslated.CheckedChanged += tsbTranslated_CheckedChanged;
             // 
             // tsbFind
             // 
-            this.tsbFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbFind.Image = global::SCI_Translator.Properties.Resources.find;
-            this.tsbFind.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbFind.Name = "tsbFind";
-            this.tsbFind.Size = new System.Drawing.Size(29, 24);
-            this.tsbFind.Text = "Find";
-            this.tsbFind.Click += new System.EventHandler(this.tsbFind_Click);
+            tsbFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            tsbFind.Image = Properties.Resources.find;
+            tsbFind.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsbFind.Name = "tsbFind";
+            tsbFind.Size = new System.Drawing.Size(29, 24);
+            tsbFind.Text = "Find";
+            tsbFind.Click += tsbFind_Click;
             // 
             // statusStrip1
             // 
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsslResourceInfo});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 768);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(1053, 22);
-            this.statusStrip1.TabIndex = 1;
-            this.statusStrip1.Text = "statusStrip1";
+            statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsslResourceInfo });
+            statusStrip1.Location = new System.Drawing.Point(0, 966);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
+            statusStrip1.Size = new System.Drawing.Size(1053, 22);
+            statusStrip1.TabIndex = 1;
+            statusStrip1.Text = "statusStrip1";
             // 
             // tsslResourceInfo
             // 
-            this.tsslResourceInfo.Name = "tsslResourceInfo";
-            this.tsslResourceInfo.Size = new System.Drawing.Size(0, 16);
+            tsslResourceInfo.Name = "tsslResourceInfo";
+            tsslResourceInfo.Size = new System.Drawing.Size(0, 16);
+            // 
+            // tsbTextBoxDraw
+            // 
+            tsbTextBoxDraw.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            tsbTextBoxDraw.Image = Properties.Resources.type;
+            tsbTextBoxDraw.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsbTextBoxDraw.Name = "tsbTextBoxDraw";
+            tsbTextBoxDraw.Size = new System.Drawing.Size(29, 24);
+            tsbTextBoxDraw.Text = "toolStripButton1";
+            tsbTextBoxDraw.Click += tsbTextBoxDraw_Click;
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1053, 790);
-            this.Controls.Add(this.sc);
-            this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.statusStrip1);
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "FormMain";
-            this.Text = "SCI Translator";
-            this.sc.Panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.sc)).EndInit();
-            this.sc.ResumeLayout(false);
-            this.cmsResource.ResumeLayout(false);
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(1053, 988);
+            Controls.Add(sc);
+            Controls.Add(toolStrip1);
+            Controls.Add(statusStrip1);
+            Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            Name = "FormMain";
+            Text = "SCI Translator";
+            sc.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)sc).EndInit();
+            sc.ResumeLayout(false);
+            cmsResource.ResumeLayout(false);
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -211,6 +217,7 @@
         private System.Windows.Forms.ToolStripButton tsbFind;
         private System.Windows.Forms.ContextMenuStrip cmsResource;
         private System.Windows.Forms.ToolStripMenuItem tcmiExportToFile;
+        private System.Windows.Forms.ToolStripButton tsbTextBoxDraw;
     }
 }
 

@@ -93,10 +93,20 @@ namespace SCI_Lib.Pictures
         {
             for (int x = 0; x < Width; x++)
             {
+                var px = tx + x;
+                if (px < 0) continue;
+                if (px >= bitmap.Width) break;
+
                 for (int y = 0; y < Height; y++)
                 {
+                    var py = ty + y;
+                    if (py < 0) continue;
+                    if (py >= bitmap.Height) break;
+
                     if (this[x, y] == 1)
-                        bitmap.SetPixel(tx + x, ty + y, Color.Black);
+                    {
+                        bitmap.SetPixel(px, py, Color.Black);
+                    }
                 }
             }
         }
