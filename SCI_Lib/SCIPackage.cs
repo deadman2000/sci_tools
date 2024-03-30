@@ -361,6 +361,7 @@ namespace SCI_Lib
         private Dictionary<ushort, string> ReadIdToWord()
         {
             var words = GetWords();
+            if (words == null) return null;
             return words.GroupBy(w => w.Group).ToDictionary(g => g.Key, g => GetTranslated(g));
         }
 

@@ -16,7 +16,8 @@ namespace SCI_Tools
         typeof(MapFont),
         typeof(PatchColonel),
         typeof(PatchCamelot),
-        typeof(PatchPQ2)
+        typeof(PatchPQ2),
+        typeof(PatchEQ)
     )]
     partial class Program
     {

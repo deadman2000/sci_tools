@@ -1,9 +1,6 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
-using SCI_Lib.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace SCI_Lib.Resources.Scripts.Builders

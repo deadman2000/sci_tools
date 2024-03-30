@@ -37,7 +37,7 @@ namespace SCI_Lib.Resources
 
         protected override void WriteHeader(Stream stream)
         {
-            if (Package is SCI0Package)
+            if (Package.ViewFormat != ViewFormat.VGA1_1)
             {
                 base.WriteHeader(stream);
             }
