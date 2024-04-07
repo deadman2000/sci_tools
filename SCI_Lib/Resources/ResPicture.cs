@@ -17,7 +17,6 @@ namespace SCI_Lib.Resources
                 return _pic = new SCIPicture11(Package, data);
             }
 
-
             return _pic = new SCIPicture1(data);
         }
 
@@ -28,21 +27,21 @@ namespace SCI_Lib.Resources
 
         protected override void WriteHeader(Stream stream)
         {
-            if (Package is SCI0Package)
-            {
-                base.WriteHeader(stream);
-            }
-            else
+            if (_pic is SCIPicture11)
             {
                 var header = new byte[26];
                 header[0] = (byte)Type;
                 stream.Write(header);
             }
+            else
+            {
+                base.WriteHeader(stream);
+            }
         }
 
-        /*public override byte[] GetPatch()
+        public override byte[] GetPatch()
         {
-            return _pic.GetBytes();
-        }*/
+            return GetPicture().GetBytes();
+        }
     }
 }

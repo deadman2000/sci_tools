@@ -36,6 +36,8 @@ namespace SCI_Lib.Pictures
 
         public int Height { get; private set; }
 
+        public SpriteFrame Clone() => new(this);
+
         public void Resize(int w, int h)
         {
             byte[,] newMap = new byte[w, h];
