@@ -1,10 +1,11 @@
 ﻿using SCI_Lib.Utils;
+using System;
 using System.Drawing;
 using System.IO;
 
 namespace SCI_Lib.Resources.Picture
 {
-    class PicPalette : PicExtCommand
+    public class PicPalette : PicExtCommand
     {
         private byte[] mapping;
         private int ts;
@@ -46,9 +47,30 @@ namespace SCI_Lib.Resources.Picture
                 bb.AddByte(c.B);
             }
         }
+
+        public byte GetColorIndex(Color color)
+        {
+            int bestDiff = 0;
+            byte best = 0;
+
+            for (int i = 0; i < Colors.Length; i++)
+            {
+                var c = Colors[i].GetColor();
+                if (c == color) return (byte)i;
+
+                var d = Math.Abs(c.R - color.R) + Math.Abs(c.G - color.G) + Math.Abs(c.B - color.B);
+                if (bestDiff == 0 || d < bestDiff)
+                {
+                    bestDiff = d;
+                    best = (byte)i;
+                }
+            }
+
+            return best;
+        }
     }
 
-    class PalColor
+    public class PalColor
     {
         public byte Used;
         public byte R;

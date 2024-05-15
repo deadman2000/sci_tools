@@ -1,7 +1,7 @@
 ﻿using SCI_Lib.Resources.Picture;
 using SCI_Lib.Utils;
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -11,6 +11,8 @@ namespace SCI_Lib.Resources.View
 {
     public class Cell
     {
+        private byte _always_0xa;
+
         public Cell(SCIPackage package, Palette pal)
         {
             Package = package;
@@ -34,6 +36,7 @@ namespace SCI_Lib.Resources.View
         public uint PaletteOffset { get; internal set; }
 
         public byte[] Pixels { get; set; }
+
         public bool NoRLE { get; set; }
 
         public PointByte[] Bones { get; set; }
@@ -103,6 +106,20 @@ namespace SCI_Lib.Resources.View
             ImageEncoder.ReadImage(stream, stream, Pixels, TransparentColor, isVGA);
         }
 
+        public void WriteEVGA(ByteBuilder bb, bool isVGA)
+        {
+            bb.AddUShortBE(Width);
+            bb.AddUShortBE(Height);
+            bb.AddByte((byte)X);
+            bb.AddByte((byte)Y);
+            bb.AddByte(TransparentColor);
+
+            if (isVGA)
+                bb.AddByte(0); // Unknown
+
+            ImageEncoder.WriteImage(bb, bb, Pixels, Width, TransparentColor);
+        }
+
         public void ReadVGA11(byte[] data, int offset)
         {
             var ms = new MemoryStream(data);
@@ -114,7 +131,7 @@ namespace SCI_Lib.Resources.View
             Y = ms.ReadShortBE();
             TransparentColor = ms.ReadB();
 
-            var always_0xa = ms.ReadB();
+            _always_0xa = ms.ReadB();
             var temp2 = ms.ReadB();
             var temp3 = ms.ReadB();
             var totalCellDataSize = ms.ReadUIntBE();
@@ -124,7 +141,7 @@ namespace SCI_Lib.Resources.View
             if (offsetRLE == 0) throw new FormatException();
             var offsetLiteral = ms.ReadUIntBE();
             var perRowOffsets = ms.ReadUIntBE();
-            if (always_0xa == 0xa || always_0xa == 0x8a)
+            if (_always_0xa == 0xa || _always_0xa == 0x8a)
             {
                 if (offsetLiteral == 0) throw new FormatException();
             }
@@ -136,11 +153,12 @@ namespace SCI_Lib.Resources.View
             ms.Position = offsetRLE;
             if (offsetLiteral == 0)
             {
-                Pixels = ms.ReadBytes(Width * Height);
                 NoRLE = true;
+                Pixels = ms.ReadBytes(Width * Height);
             }
             else
             {
+                NoRLE = false;
                 ms.Position = offsetRLE;
                 using var msLiteral = new MemoryStream(data);
                 msLiteral.Seek(offsetLiteral, SeekOrigin.Begin);
@@ -149,33 +167,92 @@ namespace SCI_Lib.Resources.View
             }
         }
 
-
-        private byte ColorToPal(Color color)
+        public void WriteVGA11(ByteBuilder bb)
         {
-            int bestDiff = 0;
-            byte best = 0;
+            bb.AddUShortBE(Width);
+            bb.AddUShortBE(Height);
+            bb.AddShortBE(X);
+            bb.AddShortBE(Y);
+            bb.AddByte(TransparentColor);
+            bb.AddByte((byte)(NoRLE ? 0 : 0x0a));
+            bb.AddShortBE(0);
 
-            for (int i = 0; i < Palette.Colors.Length; i++)
+            if (NoRLE)
             {
-                var c = Palette.Colors[i];
-                if (c == color) return (byte)i;
+                bb.AddIntBE(Pixels.Length); // Total size
+                bb.AddIntBE(0); // RLE size
 
-                var d = Math.Abs(c.R - color.R) + Math.Abs(c.G - color.G) + Math.Abs(c.B - color.B);
-                if (bestDiff == 0 || d < bestDiff)
+                int offsetsPos = bb.Position;
+                bb.AddIntBE(0); // Palette offset
+                bb.AddIntBE(0); // RLE offset
+                bb.AddIntBE(0); // Literals offset
+                bb.AddIntBE(0); // Per row offset
+
+                bb.AddBytes(Pixels);
+
+                // Palette
+                if (Palette != null)
                 {
-                    bestDiff = d;
-                    best = (byte)i;
+                    bb.SetIntBE(offsetsPos, bb.Position);
+                    Palette.Write(bb);
                 }
             }
+            else
+            {
+                var bbRLE = new ByteBuilder();
+                var bbLit = new ByteBuilder();
 
-            return best;
+                Write(bbRLE, bbLit);
+                var rleData = bbRLE.GetArray();
+                var litData = bbLit.GetArray();
+
+                bb.AddIntBE(rleData.Length + litData.Length); // Total size
+                bb.AddIntBE(rleData.Length); // RLE size
+
+                int offsetsPos = bb.Position;
+                bb.AddIntBE(0); // Palette offset
+                bb.AddIntBE(0); // RLE offset
+                bb.AddIntBE(0); // Literals offset
+                bb.AddIntBE(0); // Per row offset
+
+                // RLE
+                bb.SetIntBE(offsetsPos + 4, bb.Position);
+                bb.AddBytes(rleData);
+
+                // Literals
+                bb.SetIntBE(offsetsPos + 8, bb.Position);
+                bb.AddBytes(litData);
+
+                // Palette
+                if (Palette != null)
+                {
+                    bb.SetIntBE(offsetsPos, bb.Position);
+                    Palette.Write(bb);
+                }
+            }
         }
 
         public void SetImage(Bitmap bitmap)
         {
             for (int x = 0; x < bitmap.Width; x++)
                 for (int y = 0; y < bitmap.Height; y++)
-                    Pixels[x + y * Width] = ColorToPal(bitmap.GetPixel(x, y));
+                    Pixels[x + y * Width] = Palette.GetColorIndex(bitmap.GetPixel(x, y));
+        }
+
+        public void SetImageIndexed(Bitmap bmp)
+        {
+            if (bmp.Width != Width || bmp.Height != Height)
+                throw new ArgumentException("Different image size");
+
+            if (bmp.PixelFormat != PixelFormat.Format8bppIndexed)
+                throw new ArgumentException($"Wrong image pixel format {bmp.PixelFormat}");
+
+            var data = bmp.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+
+            var scan0 = data.Scan0;
+            Marshal.Copy(scan0, Pixels, 0, Pixels.Length);
+
+            bmp.UnlockBits(data);
         }
     }
 }

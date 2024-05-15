@@ -1,5 +1,4 @@
 ﻿using SCI_Lib.Resources.Picture;
-using SCI_Lib.SCI0;
 using System.IO;
 
 namespace SCI_Lib.Resources

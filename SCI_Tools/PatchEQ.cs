@@ -12,7 +12,9 @@ namespace SCI_Tools
         protected override void Patch()
         {
             Patch0();
+            Parch140();
             Patch360();
+            Patch816();
 
             //Pic360();
             //Font310();
@@ -46,7 +48,7 @@ namespace SCI_Tools
 
             var res = _translate.GetResource<ResPicture>(360);
             var pic = res.GetPicture();
-            pic.SetBackground(bmp);
+            pic.SetBackgroundIndexed(bmp);
             res.SetPicture(pic);
             res.SavePatch();
         }
@@ -85,6 +87,16 @@ namespace SCI_Tools
             }
         }
 
+        private void Parch140()
+        {
+            var res = _translate.GetResource<ResScript>(140);
+            var scr = res.GetScript() as Script;
+
+            // Размер кнопки "Помощь"
+            SetPushi(scr, 0x0873, 160);
+            SetPushi(scr, 0x2508, 160);
+        }
+
         private void Patch360()
         {
             var res = _translate.GetResource<ResScript>(360);
@@ -97,6 +109,16 @@ namespace SCI_Tools
                 presents.Properties[4].Value = val;
                 Changed(res);
             }
+        }
+
+        private void Patch816()
+        {
+            var res = _translate.GetResource<ResScript>(816);
+            var scr = res.GetScript() as Script;
+            SetPushi(scr, 0x02ad, 55); // Нажми на Свиток, чтобы прокрутить.
+            SetPushi(scr, 0x02c6, 36); // Щёлкни рядом со Свитком, чтобы закрыть.
+            SetPushi(scr, 0x0302, 70); // Для прокрутки нажми стрелки вверх или вниз.
+            //SetPushi(scr, 0x031b, 83); // Чтобы закрыть, нажми ESC.
         }
     }
 }

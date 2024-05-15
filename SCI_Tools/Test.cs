@@ -1,4 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
+using SCI_Lib;
 using SCI_Lib.Analyzer;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
@@ -20,6 +21,10 @@ namespace SCI_Tools
         {
             try
             {
+                var res = translate.GetResource<ResPicture>(360);
+                var pic = res.GetPicture();
+                res.SavePatch();
+
                 // said спроси мерлина о столе & / / 8bc
                 /*var said = translate.ParseSaid("/герб/щит");
              

@@ -12,6 +12,7 @@ namespace SCI_Lib.Resources.Picture
         private ushort[] _priBars;
         private Palette _palette;
         private Cell _cell;
+        private PicVector _vector;
 
         public SCIPackage Package { get; }
 
@@ -24,12 +25,25 @@ namespace SCI_Lib.Resources.Picture
         private void Read(byte[] data)
         {
             using var stream = new MemoryStream(data);
-            _header = new PicHeader11(stream);
-            stream.Seek(40, SeekOrigin.Begin);
+            _header = PicHeader11.Read(stream);
 
-            _priBars = new ushort[14];
+            if (stream.Position != 40) throw new FormatException();
+            //stream.Seek(40, SeekOrigin.Begin);
+
+            _priBars = new ushort[_header.PriBandCount];
             for (int i = 0; i < _priBars.Length; i++)
                 _priBars[i] = stream.ReadUShortBE();
+
+            if (_header.CtlCelOffset > 0)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (_header.VectorDataOffset > 0)
+            {
+                stream.Seek(_header.VectorDataOffset, SeekOrigin.Begin);
+                _vector = PicVector.Read(stream);
+            }
 
             if (_header.PaletteOffset > 0)
             {
@@ -46,7 +60,31 @@ namespace SCI_Lib.Resources.Picture
 
         public override byte[] GetBytes()
         {
-            throw new NotImplementedException();
+            ByteBuilder bb = new();
+
+            _header.Write(bb);
+            for (int i = 0; i < _header.PriBandCount; i++)
+                bb.AddUShortBE(_priBars[i]);
+
+            if (_cell != null)
+            {
+                _header.SetCellPosition(bb, bb.Position);
+                _cell.WriteVGA11(bb);
+            }
+
+            if (_palette != null)
+            {
+                _header.SetPalettePosition(bb, bb.Position);
+                _palette.Write(bb);
+            }
+
+            if (_vector != null)
+            {
+                _header.SetVectorPosition(bb, bb.Position);
+                _vector.Write(bb);
+            }
+
+            return bb.GetArray();
         }
 
         public override Image GetBackground()
@@ -56,7 +94,12 @@ namespace SCI_Lib.Resources.Picture
 
         public override void SetBackground(Bitmap bmp)
         {
-            throw new NotImplementedException();
+            _cell.SetImage(bmp);
+        }
+
+        public override void SetBackgroundIndexed(Bitmap bmp)
+        {
+            _cell.SetImageIndexed(bmp);
         }
     }
 }

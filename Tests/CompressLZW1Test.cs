@@ -10,7 +10,7 @@ namespace Tests
         [Test]
         public void SuccessUncompress()
         {
-            var package = Utils.LoadPackage();
+            var package = Utils.LoadConquest();
 
             //var r = package.GetResource("95.p56");
             foreach (var r in package.Resources.Take(250))
@@ -36,7 +36,7 @@ namespace Tests
         //[Test]
         public void CompressedEqual()
         {
-            var package = Utils.LoadPackage();
+            var package = Utils.LoadConquest();
 
             //var r = package.GetResource("95.p56");
             foreach (var r in package.Resources)

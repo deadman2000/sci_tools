@@ -45,13 +45,13 @@ namespace Tests
         [Test]
         public void DisassembleAll()
         {
-            CheckPackage(Utils.LoadPackage());
+            CheckPackage(Utils.LoadConquest());
         }
 
         [Test]
         public void ParseAndBack()
         {
-            SCIPackage package = Utils.LoadPackage();
+            SCIPackage package = Utils.LoadConquest();
 
             foreach (var res in package.Scripts)
             {
@@ -64,7 +64,7 @@ namespace Tests
         [Test]
         public void SetAddressOnWrite()
         {
-            SCIPackage package = Utils.LoadPackage();
+            SCIPackage package = Utils.LoadConquest();
             
             foreach (var r in package.Scripts)
             {
@@ -82,7 +82,7 @@ namespace Tests
         [Test]
         public void RefsLifeCycle()
         {
-            SCIPackage package = Utils.LoadPackage();
+            SCIPackage package = Utils.LoadConquest();
 
             foreach (var res in package.Scripts)
             {
@@ -103,7 +103,7 @@ namespace Tests
         public void StringsRefs()
         {
             // Проверяем, теряются ли имена классов при сдвиге адресов строк
-            SCIPackage package = Utils.LoadPackage();
+            SCIPackage package = Utils.LoadConquest();
             var res = package.GetResource<ResScript>(0);
             var scr = res.GetScript() as Script;
 

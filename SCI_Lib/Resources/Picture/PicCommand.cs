@@ -3,7 +3,7 @@ using System;
 
 namespace SCI_Lib.Resources.Picture
 {
-    class PicCommand
+    public class PicCommand
     {
         public PicOpCode OpCode { get; private set; }
 
@@ -13,7 +13,7 @@ namespace SCI_Lib.Resources.Picture
         {
             OpCode = opcode;
 
-            if (SCIPicture1.LOG) Console.WriteLine($"Code {opcode}");
+            if (PicVector.LOG) Console.WriteLine($"Code {opcode}");
         }
 
         public PicCommand(PicOpCode opcode, byte[] args)
@@ -21,7 +21,7 @@ namespace SCI_Lib.Resources.Picture
             OpCode = opcode;
             Args = args;
 
-            if (SCIPicture1.LOG) Console.WriteLine($"Code {opcode} len: {Args.Length}");
+            if (PicVector.LOG) Console.WriteLine($"Code {opcode} len: {Args.Length}");
         }
 
         public virtual void Write(ByteBuilder bb)
@@ -29,5 +29,7 @@ namespace SCI_Lib.Resources.Picture
             if (Args != null)
                 bb.AddBytes(Args);
         }
+
+        public override string ToString() => OpCode.ToString();
     }
 }

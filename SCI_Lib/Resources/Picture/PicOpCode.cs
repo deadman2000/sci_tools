@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SCI_Lib.Resources.Picture
+﻿namespace SCI_Lib.Resources.Picture
 {
-    enum PicOpCode : byte
+    public enum PicOpCode : byte
     {
         SET_COLOR = 0xf0,
         DISABLE_VISUAL = 0xf1,

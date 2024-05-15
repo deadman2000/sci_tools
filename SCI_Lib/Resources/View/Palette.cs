@@ -189,5 +189,26 @@ namespace SCI_Lib.Resources.View
 
             bb.SetUShortBE(offsetEndRef, (ushort)(bb.Position - offsetEndRef)); // Setup offset end
         }
+
+        public byte GetColorIndex(Color color)
+        {
+            int bestDiff = 0;
+            byte best = 0;
+
+            for (int i = 0; i < Colors.Length; i++)
+            {
+                var c = Colors[i];
+                if (c == color) return (byte)i;
+
+                var d = Math.Abs(c.R - color.R) + Math.Abs(c.G - color.G) + Math.Abs(c.B - color.B);
+                if (bestDiff == 0 || d < bestDiff)
+                {
+                    bestDiff = d;
+                    best = (byte)i;
+                }
+            }
+
+            return best;
+        }
     }
 }

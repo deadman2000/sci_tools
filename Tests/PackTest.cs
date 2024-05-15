@@ -21,10 +21,10 @@ namespace Tests
         [Test]
         public void Pack()
         {
-            var package = Utils.LoadPackage();
+            var package = Utils.LoadConquest();
             package.Pack(tmp);
 
-            package = Utils.LoadPackage();
+            package = Utils.LoadConquest();
             var packed = SCIPackage.Load(tmp);
 
             foreach (var r in package.Resources)

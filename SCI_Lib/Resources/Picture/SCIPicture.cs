@@ -1,7 +1,4 @@
-﻿using System;
-using System.Drawing.Imaging;
-using System.Drawing;
-using System.Runtime.InteropServices;
+﻿using System.Drawing;
 
 namespace SCI_Lib.Resources.Picture
 {
@@ -12,5 +9,7 @@ namespace SCI_Lib.Resources.Picture
         public abstract Image GetBackground();
 
         public abstract void SetBackground(Bitmap bmp);
+
+        public abstract void SetBackgroundIndexed(Bitmap bmp);
     }
 }

@@ -9,6 +9,7 @@ namespace SCI_Lib.Resources.View
     public class SCIView
     {
         private ushort _mask;
+        private ushort _unknown2;
         private byte _scaleFlags;
         private byte _scaleRes;
         private ushort _nativeResolution;
@@ -29,12 +30,12 @@ namespace SCI_Lib.Resources.View
 
         public void ReadVGA(byte[] data)
         {
-            MemoryStream ms = new MemoryStream(data);
+            MemoryStream ms = new(data);
             var loopsCount = ms.ReadB();
             var const80 = ms.ReadB();
             if (const80 != 0x80) throw new FormatException();
             _mask = ms.ReadUShortBE();
-            var unknown = ms.ReadUShortBE();
+            _unknown2 = ms.ReadUShortBE();
             var palOffset = ms.ReadUShortBE();
 
             ushort[] loopOffsets = new ushort[loopsCount];
@@ -69,23 +70,49 @@ namespace SCI_Lib.Resources.View
 
         public byte[] GetBytesVGA()
         {
-            ByteBuilder bb = new ByteBuilder();
+            ByteBuilder bb = new();
 
             if (Loops.Count > 255) throw new Exception("Too many loops");
             bb.AddByte((byte)Loops.Count);
-            bb.AddByte(80);
+            bb.AddByte(0x80);
             bb.AddUShortBE(_mask);
-            bb.AddShortBE(0);
+            bb.AddUShortBE(_unknown2);
 
-            var palRefOffest = bb.Position;
+            var palAddr = bb.Position;
+            bb.AddUShortBE(0);
 
-            throw new NotImplementedException();
-            //return bb.GetArray();
+            for (int i = 0; i < Loops.Count; i++)
+                bb.AddUShortBE(0);
+
+            for (int i = 0; i < Loops.Count; i++)
+            {
+                var loop = Loops[i];
+                bb.SetUShortBE(palAddr + 2 + i * 2, (ushort)bb.Position);
+
+                bb.AddUShortBE((ushort)loop.Cells.Count);
+                bb.AddUShortBE(0);
+
+                var cellAddr = bb.Position;
+                for (int j = 0; j < loop.Cells.Count; j++)
+                    bb.AddUShortBE(0);
+
+                for (int j = 0; j < loop.Cells.Count; j++)
+                {
+                    var cell = loop.Cells[j];
+                    bb.SetUShortBE(cellAddr + j * 2, (ushort)bb.Position);
+                    cell.WriteEVGA(bb, true);
+                }
+            }
+
+            bb.SetUShortBE(palAddr, (ushort)bb.Position);
+            Palette.Write(bb);
+
+            return bb.GetArray();
         }
 
         public void ReadVGA11(byte[] data)
         {
-            MemoryStream ms = new MemoryStream(data);
+            MemoryStream ms = new(data);
             var headerSize = ms.ReadUShortBE();
             if (headerSize < 14) throw new FormatException();
             var loopsCount = ms.ReadB();
@@ -154,7 +181,7 @@ namespace SCI_Lib.Resources.View
         }
         public byte[] GetBytesVGA11()
         {
-            ByteBuilder bb = new ByteBuilder();
+            ByteBuilder bb = new();
             bb.AddShortBE(0x10); // header size
 
             if (Loops.Count > 255) throw new Exception("Too many loops");
@@ -291,7 +318,7 @@ namespace SCI_Lib.Resources.View
 
         public void ReadEGA(byte[] data)
         {
-            MemoryStream ms = new MemoryStream(data);
+            MemoryStream ms = new(data);
             var loopsCount = ms.ReadByte();
             if (loopsCount == 0) throw new FormatException();
 

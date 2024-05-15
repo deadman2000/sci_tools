@@ -4,7 +4,7 @@ using System.IO;
 
 namespace SCI_Lib.Resources.Picture
 {
-    class PicImage : PicExtCommand
+    public class PicImage : PicExtCommand
     {
         private PointShort _coord;
         private byte _transpCol;
