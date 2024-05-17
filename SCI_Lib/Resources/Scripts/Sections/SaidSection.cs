@@ -19,7 +19,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 if (val == 0xff)
                 {
                     var said = new SaidExpression(_script, address, buff.ToArray());
-                    _script.Register(said);
                     Saids.Add(said);
                     buff.Clear();
                     address = (ushort)(offset + i + 1);

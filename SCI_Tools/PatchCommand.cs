@@ -2,6 +2,7 @@
 using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
+using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Vocab;
 using System;
@@ -33,7 +34,12 @@ namespace SCI_Tools
 
         protected abstract void Patch();
 
-        protected void Changed(Resource res) => _changed.Add(res);
+        protected void Changed(Resource res)
+        {
+            if (res is ResScript && _translate.SeparateHeapResources)
+                _changed.Add(_translate.GetResource<ResHeap>(res.Number));
+            _changed.Add(res);
+        }
 
         protected void Save()
         {
@@ -406,21 +412,18 @@ namespace SCI_Tools
             var op = scr.GetOperator(addr);
             if (op.Name != "pushi") throw new Exception();
 
-            object newVal;
-
-            if (op.Arguments[0] is ushort usV)
+            if (op.Arguments[0] is ShortArg s)
             {
-                if (usV == val) return;
-                newVal = (ushort)val;
+                if (s.Value == val) return;
+                s.Value = (short)val;
             }
-            else if (op.Arguments[0] is byte bV)
+            else if (op.Arguments[0] is ByteArg b)
             {
-                if (bV == val) return;
-                newVal = (byte)val;
+                if (b.Value == val) return;
+                b.Value = (byte)val;
             }
             else throw new Exception();
 
-            op.Arguments[0] = newVal;
             Changed(scr.Resource);
         }
 

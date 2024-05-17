@@ -27,7 +27,7 @@ public class CodeBlock
     public Expr Prev { get; private set; }
     public Expr Acc { get; private set; }
     public Expr Condition { get; private set; }
-    private ushort _rest;
+    private short _rest;
     private bool _mainUsed;
 
     public List<CodeBlock> Parents { get; } = new();
@@ -55,7 +55,7 @@ public class CodeBlock
         Code = list;
         IsBegin = isBegin;
 
-        _package = list[0].Script.Package;
+        _package = list[0].Owner.Package;
         //if (!isBegin)
         {
             LinkAcc = new LinkExpr(true, $"A {AddrBegin:x4}", this);
@@ -194,7 +194,7 @@ public class CodeBlock
     {
         if (code.Type >= 0x80)
         {
-            ushort val = GetVal(code.Arguments[0]);
+            var val = GetVal(code.Arguments[0]);
             var type = code.Type >> 1 & 0x3;
             bool isStack = (code.Type & 1 << 3) != 0;
             bool isAccIndex = (code.Type & 1 << 4) != 0;
@@ -382,8 +382,8 @@ public class CodeBlock
             case 0x3e: // link
             case 0x3f:
                 {
-                    ushort cnt = GetVal(code.Arguments[0]);
-                    for (ushort i = 0; i < cnt; i++)
+                    var cnt = GetVal(code.Arguments[0]);
+                    for (short i = 0; i < cnt; i++)
                         Push(Procedure.GetParam(i));
                     Push(cnt);
                 }
@@ -393,7 +393,7 @@ public class CodeBlock
                 {
                     var cr = (CodeRef)code.Arguments[0];
                     var proc = $"localproc_{cr.TargetOffset:x4}";
-                    var cnt = (byte)code.Arguments[1] / 2;
+                    var cnt = code.GetByte(1) / 2;
                     var args = PopArgs(cnt);
                     SetAcc(new CallExpr(proc, args));
                 }
@@ -401,10 +401,10 @@ public class CodeBlock
             case 0x42: // callk
             case 0x43:
                 {
-                    ushort fun = GetVal(code.Arguments[0]);
+                    var fun = GetVal(code.Arguments[0]);
                     string method = _package.GetFuncName(fun);
                     //string method = Kernel.GetFunc(fun);
-                    var cnt = (byte)code.Arguments[1] / 2;
+                    var cnt = code.GetByte(1) / 2;
                     var args = PopArgs(cnt);
                     SetAcc(new CallExpr(method, args));
                 }
@@ -413,8 +413,8 @@ public class CodeBlock
             case 0x45:
                 {
                     _mainUsed = true;
-                    ushort ind = GetVal(code.Arguments[0]);
-                    var cnt = (byte)code.Arguments[1] / 2;
+                    var ind = GetVal(code.Arguments[0]);
+                    var cnt = code.GetByte(1) / 2;
                     var args = PopArgs(cnt);
                     SetAcc(new CallExpr($"proc_{ind}", args)); // индекс - номер процедуры из экспорта скрипта 0
                 }
@@ -422,10 +422,10 @@ public class CodeBlock
             case 0x46: // calle
             case 0x47:
                 {
-                    ushort scr = GetVal(code.Arguments[0]);
+                    var scr = GetVal(code.Arguments[0]);
                     Procedure.Using(scr);
                     var ind = GetVal(code.Arguments[1]);
-                    var cnt = (byte)code.Arguments[2] / 2;
+                    var cnt = code.GetByte(2) / 2;
                     var args = PopArgs(cnt);
                     SetAcc(new CallExpr($"scr{scr}_{ind}", args));
                 }
@@ -437,7 +437,7 @@ public class CodeBlock
             case 0x4a: // send
             case 0x4b:
                 {
-                    var cnt = (byte)code.Arguments[0] / 2;
+                    var cnt = code.GetByte(0) / 2;
                     var target = GetAcc();
                     target.Use();
                     if (target.Var != null)
@@ -471,7 +471,7 @@ public class CodeBlock
             case 0x51:
                 {
                     var id = GetVal(code.Arguments[0]);
-                    var cl = Procedure.GetClass(id);
+                    var cl = Procedure.GetClass((ushort)id);
                     if (cl != null)
                         SetAcc(new ClassExpr(cl));
                     else
@@ -481,7 +481,7 @@ public class CodeBlock
             case 0x54: // self
             case 0x55:
                 {
-                    var cnt = (byte)code.Arguments[0] / 2;
+                    var cnt = code.GetByte(0) / 2;
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
                     {
@@ -491,7 +491,7 @@ public class CodeBlock
                         if (Procedure.Class == null)
                             name = "this." + name;
                         else
-                            isProp = Procedure.Class.IsProp(sel);
+                            isProp = Procedure.Class.IsProp((ushort)sel);
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
 
@@ -527,9 +527,9 @@ public class CodeBlock
             case 0x57:
                 {
                     var sel = GetVal(code.Arguments[0]);
-                    var super = _package.GetClassSection(sel);
+                    var super = _package.GetClassSection((ushort)sel);
                     var className = Expr.ToCppName(super);
-                    var cnt = (byte)code.Arguments[1] / 2;
+                    var cnt = code.GetByte(1) / 2;
 
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
@@ -665,9 +665,9 @@ public class CodeBlock
         }
     }
 
-    private string GetName(ushort sel) => Expr.ToCppName(_package.GetName(sel));
+    private string GetName(short sel) => Expr.ToCppName(_package.GetName(sel));
 
-    private ParamExpr OpGetExpression(int type, ushort ind)
+    private ParamExpr OpGetExpression(int type, short ind)
     {
         switch (type)
         {
@@ -686,7 +686,7 @@ public class CodeBlock
         }
     }
 
-    private ParamExpr GetPropExpr(object val)
+    private ParamExpr GetPropExpr(BaseElement val)
     {
         var ind = GetVal(val) / 2;
         var cl = Procedure.Class;
@@ -710,14 +710,14 @@ public class CodeBlock
         return new RefExpr(r);
     }
 
-    private static ushort GetVal(object val)
+    private static short GetVal(BaseElement val)
     {
-        if (val is byte b) return b;
-        if (val is ushort s) return s;
+        if (val is ByteArg b) return b.Value;
+        if (val is ShortArg s) return s.Value;
         throw new NotImplementedException();
     }
 
-    private void Push(ushort val) => Push(new ConstExpr(val));
+    private void Push(short val) => Push(new ConstExpr(val));
 
     private void Push(Expr exp)
     {
@@ -779,7 +779,7 @@ public class CodeBlock
     private void Set(Expr param, Expr value, bool ext) => AddExpr(new SetExpr(param, value, ext));
 
 
-    private void SetAcc(ushort val) => SetAcc(new ConstExpr(val));
+    private void SetAcc(short val) => SetAcc(new ConstExpr(val));
     private void SetAcc(RefToElement r) => SetAcc(GetExpr(r));
     private void SetAcc(CallExpr expr)
     {

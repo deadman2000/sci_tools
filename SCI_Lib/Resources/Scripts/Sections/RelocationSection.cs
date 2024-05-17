@@ -33,12 +33,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
             }
         }
 
-        public override void SetupByOffset()
-        {
-            foreach (var r in Refs)
-                r.SetupByOffset();
-        }
-
         public override void Write(ByteBuilder bb)
         {
             _offset = bb.Position;
@@ -47,12 +41,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 bb.AddShortBE(0);
             for (int i = 0; i < Refs.Length; i++)
                 Refs[i].Write(bb);
-        }
-
-        public override void WriteOffsets(ByteBuilder bb)
-        {
-            foreach (var r in Refs)
-                r.WriteOffset(bb);
         }
     }
 }

@@ -17,8 +17,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 e = s;
                 while (data[e] != 0x00) e++;
 
-                StringConst str = new StringConst(_script, data, s, e - s);
-                _script.Register(str);
+                StringConst str = new(_script, data, s, e - s);
                 Strings.Add(str);
 
                 /*if (s != e && (data[s] == '.' || data[s] == 7))
@@ -36,12 +35,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
         {
             foreach (StringConst str in Strings)
                 str.Write(bb);
-        }
-
-        public override void WriteOffsets(ByteBuilder bb)
-        {
-            foreach (StringConst str in Strings)
-                str.WriteOffset(bb);
         }
     }
 }

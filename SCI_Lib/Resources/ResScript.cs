@@ -1,6 +1,6 @@
 ﻿
 using SCI_Lib.Resources.Scripts;
-using SCI_Lib.Resources.Scripts1_1;
+using SCI_Lib.Resources.Scripts1;
 using System;
 using System.Linq;
 
@@ -8,14 +8,14 @@ namespace SCI_Lib.Resources
 {
     public class ResScript : Resource
     {
-        private IScript _script;
+        private BaseScript _script;
 
-        public IScript GetScript()
+        public BaseScript GetScript()
         {
             if (_script != null) return _script;
 
             if (Package.SeparateHeapResources)
-                return _script = new Script1_1(this);
+                return _script = new Script1(this);
 
             return _script = new Script(this);
         }
@@ -27,9 +27,9 @@ namespace SCI_Lib.Resources
 
         public override void SetStrings(string[] strings)
         {
-            var trScr = GetScript();
+            var scr = GetScript();
 
-            var scriptStrings = trScr.AllStrings().ToArray();
+            var scriptStrings = scr.AllStrings().ToArray();
             if (strings.Length != scriptStrings.Length)
                 throw new Exception("Line count mismatch");
 

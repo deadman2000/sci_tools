@@ -9,9 +9,8 @@ namespace Tests
 {
     public class DecompressTest
     {
-        protected async Task CheckDecompress(string mapPath, string uncompDir, Func<Resource, bool> match = null)
+        protected async Task CheckDecompress(SCIPackage package, string uncompDir, Func<Resource, bool> match = null)
         {
-            var package = SCIPackage.Load(mapPath);
             foreach (var r in package.Resources)
             {
                 if (match != null && !match(r)) continue;
@@ -37,28 +36,17 @@ namespace Tests
                 Assert.AreEqual(trimmed, unpack, $"Decompress error in {r.FileName}");
             }
         }
-    }
-
-    public class DecompressConquestTest : DecompressTest
-    {
-        readonly string UNCOMPRESSED = Path.Combine(Utils.ASSETS, "Conquest_res");
 
         [Test]
         public async Task DecompressConquest()
         {
-            await CheckDecompress(Utils.ConquestPath, UNCOMPRESSED, r => r.Type != ResType.View && r.Type != ResType.Picture);
+            await CheckDecompress(Utils.LoadConquest(), Path.Combine(Utils.ASSETS, "Conquest_res"), r => r.Type != ResType.View && r.Type != ResType.Picture);
         }
-    }
-
-    public class DecompressQGTest : DecompressTest
-    {
-        readonly string MAP_PATH = Path.Combine(Utils.ASSETS, "QG_VGA");
-        readonly string UNCOMPRESSED = Path.Combine(Utils.ASSETS, "QG_VGA_res");
 
         [Test]
         public async Task DecompressQG_VGA()
         {
-            await CheckDecompress(MAP_PATH, UNCOMPRESSED);
+            await CheckDecompress(Utils.LoadQG(), Path.Combine(Utils.ASSETS, "QG_VGA_res"));
         }
     }
 }

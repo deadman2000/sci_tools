@@ -25,7 +25,7 @@ namespace SCI_Translator.ResView
         private System.ComponentModel.IContainer components;
         private ToolStripMenuItem tsmiRevert;
 
-        private IScript script;
+        private BaseScript script;
         private StringConst[] orig = null;
 
         public ScriptView()

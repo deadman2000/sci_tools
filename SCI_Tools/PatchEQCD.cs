@@ -1,11 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SCI_Tools
 {
@@ -15,14 +10,68 @@ namespace SCI_Tools
     {
         protected override void Patch()
         {
-            /*Patch0();
-            Parch140();
+            Patch822();
+            /*Parch140();
             Patch360();
             Patch816();*/
 
             //Pic360();
 
+            ReplaceToTransparent(40);
+            ReplaceToTransparent(364);
+            ReplaceToTransparent(377);
+            ReplaceToTransparent(442);
+
             Save();
+        }
+
+        private void Patch822()
+        {
+            var res = _translate.GetResource<ResScript>(822);
+            var resH = _translate.GetResource<ResHeap>(822);
+            var scr = res.GetScript();
+
+            var iconRestore = scr.GetInstance("iconRestore");
+            if (iconRestore.GetProperty("nsLeft") != 64)
+            {
+                iconRestore.SetProperty("nsLeft", 64);
+                Changed(resH);
+            }
+
+            var iconQuit = scr.GetInstance("iconQuit");
+            if (iconQuit.GetProperty("nsLeft") != 137)
+            {
+                iconQuit.SetProperty("nsLeft", 137);
+                Changed(resH);
+            }
+        }
+
+        private void ReplaceToTransparent(ushort num)
+        {
+            bool changed = false;
+            var res = _translate.GetResource<ResView>(num);
+            var view = res.GetView();
+
+            foreach (var loop in view.Loops)
+            {
+                foreach (var cell in loop.Cells)
+                {
+                    for (int i = 0; i < cell.Pixels.Length; i++)
+                    {
+                        if (cell.Pixels[i] == 0)
+                        {
+                            cell.Pixels[i] = cell.TransparentColor;
+                            changed = true;
+                        }
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                res.SetView(view);
+                Changed(res);
+            }
         }
 
         private void Pic360()

@@ -56,10 +56,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public abstract void Write(ByteBuilder bb);
 
-        public virtual void WriteOffsets(ByteBuilder bb)
-        {
-        }
-
         public override string ToString()
         {
             return $"{_offset:x4}: {Type}";

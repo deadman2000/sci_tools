@@ -6,17 +6,19 @@ namespace Tests
     {
         public const string ASSETS = "../../../../assets/";
 
-        public const string ConquestPath = ASSETS + "Conquest/";
-        public const string EQPath = ASSETS + "EQ/";
-
         public static SCIPackage LoadConquest()
         {
-            return SCIPackage.Load(ConquestPath);
+            return SCIPackage.Load(ASSETS + "Conquest/");
         }
 
         public static SCIPackage LoadEQ()
         {
-            return SCIPackage.Load(EQPath);
+            return SCIPackage.Load(ASSETS + "EQ/");
+        }
+
+        public static SCIPackage LoadQG()
+        {
+            return SCIPackage.Load(ASSETS + "QG_VGA/");
         }
     }
 }

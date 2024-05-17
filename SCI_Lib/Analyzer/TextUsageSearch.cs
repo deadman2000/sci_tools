@@ -132,9 +132,9 @@ public class TextUsageSearch
         }
     }
 
-    private void AddPrint(ushort txt, ushort ind, IEnumerable<SaidExpression> saids)
+    private void AddPrint(short txt, short ind, IEnumerable<SaidExpression> saids)
     {
-        var print = txt << 16 | ind;
+        var print = (ushort)txt << 16 | (ushort)ind;
         if (!_prints.TryGetValue(print, out var s))
             _prints.Add(print, saids);
         else

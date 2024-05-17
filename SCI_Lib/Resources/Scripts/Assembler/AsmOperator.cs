@@ -1,5 +1,4 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
-using SCI_Lib.Resources.Scripts.Sections;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -69,13 +68,14 @@ namespace SCI_Lib.Resources.Scripts.Assembler
             return new AsmOperator(type, arg);
         }
 
-        internal Code GetCode(CodeSection section, ushort address, Code prev)
+        internal Code GetCode(ICodeBlock block, ushort address, Code prev)
         {
-            return Code = new Code(section, address, prev)
+            Code = new Code(block, address, prev)
             {
                 Type = _type,
-                Arguments = new List<object>(_args)
             };
+            Code.SetArguments(_args);
+            return Code;
         }
 
         public virtual void SetupLabels(Dictionary<string, AsmOperator> labels)
@@ -98,8 +98,7 @@ namespace SCI_Lib.Resources.Scripts.Assembler
             if (!labels.TryGetValue(_targetRef, out var op))
                 throw new Exception($"Label {_targetRef} not found");
 
-            var val = (ushort)(op.Code.Address - (Code.Address + Code.Size));
-            Code.Arguments[0] = val;
+            ((ShortArg)Code.Arguments[0]).Value = (short)(op.Code.Address - (Code.Address + Code.Size));
         }
     }
 }

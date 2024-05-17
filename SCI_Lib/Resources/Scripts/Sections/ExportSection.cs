@@ -37,12 +37,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public ExportRef[] Exports { get; private set; }
 
-        public override void SetupByOffset()
-        {
-            foreach (ExportRef exp in Exports)
-                exp?.SetupByOffset();
-        }
-
         public override void Write(ByteBuilder bb)
         {
             bb.AddUShortBE((ushort)Exports.Length);
@@ -56,12 +50,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 if (_isExportWide)
                     bb.AddShortBE(0);
             }
-        }
-
-        public override void WriteOffsets(ByteBuilder bb)
-        {
-            foreach (ExportRef exp in Exports)
-                exp?.WriteOffset(bb);
         }
     }
 }

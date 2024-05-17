@@ -760,10 +760,10 @@ namespace SCI_Tools
 
             var op = scr.GetOperator(0x82b);
             if (op == null || op.Name != "pushi") throw new Exception("PatchScr781 failed");
-            
-            if ((byte)op.Arguments[0] != 56)
+
+            if (op.GetByte(0) != 56)
             {
-                op.Arguments[0] = (byte)56;
+                op.SetByte(0, 56);
                 Changed(res);
             }
         }
@@ -796,10 +796,10 @@ namespace SCI_Tools
             {
                 foreach (var op in code.Operators)
                 {
-                    if (op.Type == 0x67 && op.Arguments[0] is byte arg && arg == 0x20)
+                    if (op.Type == 0x67 && op.GetByte(0) == 0x20)
                     {
                         Console.WriteLine($"Patch room 49 at {op.Address:x04}");
-                        op.Arguments[0] = (byte)0x1c;
+                        op.SetByte(0, 0x1c);
                         Changed(res);
                     }
                 }
@@ -828,10 +828,10 @@ namespace SCI_Tools
 
             var op = scr.GetOperator(0x178a);
             if (op == null || op.Name != "ldi") throw new Exception("PatchRoom74 failed");
-            var val = (byte)op.Arguments[0];
+            var val = op.GetByte(0);
             if (val != 40)
             {
-                op.Arguments[0] = (byte)40;
+                op.SetByte(0, 40);
                 Changed(res);
             }
         }
@@ -903,11 +903,11 @@ namespace SCI_Tools
             // заменяем оператор на pushi 3 
             op.Type = 0x39;
             op.Arguments.Clear();
-            op.Arguments.Add((byte)3);
+            op.AddByte(3);
 
             // меняем на callb 1 6
             var op2 = scr.GetOperator(0xd36) ?? throw new Exception("PatchScr259 failed");
-            op2.Arguments[1] = (byte)6;
+            op2.SetByte(1, 6);
 
             // Вставляем оператор push1
             op.InjectNext(0x78);
@@ -990,7 +990,7 @@ namespace SCI_Tools
         {
             // Смещаем капли крови
             var res = _translate.GetResource<ResScript>(777);
-            var scr = res.GetScript();
+            var scr = res.GetScript() as Script;
             var drip1 = scr.Get<ClassSection>().First(c => c.Name == "Drip1");
             if (drip1.Properties[4].Value == 165) return;
 
@@ -1013,10 +1013,10 @@ namespace SCI_Tools
             bool found = false;
             foreach (var codeSec in scr.Get<CodeSection>())
             {
-                var op = codeSec.Operators.Find(o => o.Name == "ldi" && o.Arguments[0] is byte v && v == srcKey);
+                var op = codeSec.Operators.Find(o => o.Name == "ldi" && o.GetByte(0) == srcKey);
                 if (op != null)
                 {
-                    op.Arguments[0] = (byte)32;
+                    op.SetByte(0, 32);
                     found = true;
                 }
             }

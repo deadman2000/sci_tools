@@ -6,19 +6,27 @@ namespace SCI_Lib.Resources.Scripts.Elements
     public class RefToElement : BaseElement
     {
         /// <summary>
-        /// Конструктор для относительной ссылки
+        /// Общий конструктор
         /// </summary>
         /// <param name="script"></param>
         /// <param name="value"></param>
-        /// <param name="targetOffset"></param>
-        /// <param name="size"></param>
-        public RefToElement(Script script, ushort addr, ushort value, ushort targetOffset, byte size)
+        /// <param name="targetOffset">Указатель</param>
+        /// <param name="size">Число байт в значении</param>
+        RefToElement(BaseScript script, ushort addr, ushort value, ushort targetOffset, byte size, bool relative)
             : base(script, addr)
         {
+            RefScript = script;
             Value = value;
             TargetOffset = targetOffset;
             Size = size;
-            Relative = true;
+            Relative = relative;
+            if (relative)
+                Shift = targetOffset - addr - value;
+        }
+
+        public RefToElement(BaseScript script, ushort addr, ushort value, ushort targetOffset, byte size)
+            : this(script, addr, value, targetOffset, size, true)
+        {
         }
 
         /// <summary>
@@ -26,11 +34,12 @@ namespace SCI_Lib.Resources.Scripts.Elements
         /// </summary>
         /// <param name="script"></param>
         /// <param name="value"></param>
-        public RefToElement(Script script, ushort addr, ushort value)
-            : this(script, addr, value, value, 2)
+        public RefToElement(BaseScript script, ushort addr, ushort value)
+            : this(script, addr, value, value, 2, false)
         {
-            Relative = false;
         }
+
+        public BaseScript RefScript { get; set; }
 
         public ushort Value { get; }
 
@@ -38,9 +47,9 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public bool Relative { get; }
 
-        public byte Size { get; }
+        public int Shift { get; }
 
-        public int Index { get; set; }
+        public byte Size { get; }
 
         public BaseElement Reference { get; set; }
 
@@ -68,21 +77,21 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     break;
                 case PropertyElement p:
                     type = "prop";
-                    comment = $";  ${p.ValueStr:x4}";
+                    comment = $";  ${p.ValueStr}";
                     break;
                 case SaidExpression s:
                     return s.ToString();
                 case RefToElement r:
                     type = "ref_ref";
-                    comment = $";  {r.Address:x4}";
+                    comment = $";  {r.Address:x04}";
                     break;
                 case null:
                     type = "null";
                     break;
                 default:
                     type = "ref_el";
+                    comment = $";  {Reference}";
                     break;
-
             }
 
             return $"{type}_{TargetOffset:x4}{comment}";
@@ -93,7 +102,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
         {
             IsSetup = true;
             Reference?.XRefs.Remove(this);
-            Reference = Script.GetElement(TargetOffset);
+            Reference = RefScript.GetElement(TargetOffset);
             Reference?.XRefs.Add(this);
         }
 
@@ -110,11 +119,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public override void WriteOffset(ByteBuilder bb)
         {
-            WriteOffset(0, bb);
-        }
-
-        public void WriteOffset(int rel, ByteBuilder bb)
-        {
             IsOffsetWrited = true;
 
             if (Reference != null)
@@ -122,40 +126,37 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
             int val = TargetOffset;
             if (Relative)
-                val -= rel;
+                val -= Address + Shift;
 
             switch (Size)
             {
                 case 1: bb.SetByte(Address, (byte)val); break;
-                case 2: bb.SetUShortBE(Address, (ushort)val); break;
+                case 2: bb.SetShortBE(Address, (short)val); break;
                 default: throw new NotImplementedException();
             }
         }
 
         public string ToHex(int rel)
         {
-            int val;
-
             if (Reference != null)
-                val = Reference.Address;
-            else
-                val = TargetOffset;
+                TargetOffset = Reference.Address;
 
+            int val = TargetOffset;
             if (Relative)
-                val -= rel;
+                val -= Address + Shift;
 
-            switch (Size)
+            return Size switch
             {
-                case 1: return $"{val:x2}";
-                case 2: return $"{val:x4}";
-                default: throw new NotImplementedException();
-            }
+                1 => $"{val:x2}",
+                2 => $"{val:x4}",
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 
     public class ExportRef : RefToElement
     {
-        public ExportRef(Script script, ushort addr, ushort value)
+        public ExportRef(BaseScript script, ushort addr, ushort value)
             : base(script, addr, value)
         {
         }
@@ -164,7 +165,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
     public class FuncRef : RefToElement
     {
-        public FuncRef(Script script, ushort addr, ushort value)
+        public FuncRef(BaseScript script, ushort addr, ushort value)
             : base(script, addr, value)
         {
         }
@@ -172,19 +173,15 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
     public class CodeRef : RefToElement
     {
-        private Code _code;
-
         public CodeRef(Code code, ushort addr, ushort value, ushort targetOffset, byte size)
-            : base(code.Script, addr, value, targetOffset, size)
+            : base(code.Owner, addr, value, targetOffset, size)
         {
-            Source = _code = code;
+            Source = code;
         }
 
-        public override void SetupByOffset()
+        protected override void WriteData(ByteBuilder bb)
         {
-            base.SetupByOffset();
-            /*if (!(Reference is Code))
-                throw new Exception($"{_code.Script.Resource} {_code}");*/
+            base.WriteData(bb);
         }
     }
 }

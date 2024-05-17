@@ -13,7 +13,7 @@ public abstract class Expr
     public int UseCount { get; set; }
     public virtual bool Used { get; private set; }
     public ParamExpr Var { get; set; }
-    public virtual ushort GetValue() => throw new NotImplementedException();
+    public virtual short GetValue() => throw new NotImplementedException();
     public abstract string Label { get; }
 
     public static bool MetaOut = true;
@@ -69,11 +69,11 @@ public class ParamExpr : Expr
 
 public class ConstExpr : Expr
 {
-    public ushort Value { get; }
-    public ConstExpr(ushort val) => Value = val;
-    public ConstExpr(int val) : this((ushort)val) { }
+    public short Value { get; }
+    public ConstExpr(short val) => Value = val;
+    public ConstExpr(int val) : this((short)val) { }
     public override string Label => Value.ToString();
-    public override ushort GetValue() => Value;
+    public override short GetValue() => Value;
 }
 
 public class Math1Expr : Expr

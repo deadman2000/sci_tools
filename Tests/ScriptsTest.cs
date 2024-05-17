@@ -4,6 +4,7 @@ using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
 using System;
 using System.Linq;
 
@@ -15,19 +16,24 @@ namespace Tests
         public void Setup()
         {
         }
-        
-        private void CheckPackage(SCIPackage package)
+
+        private static void CheckPackage(SCIPackage package)
         {
             foreach (var res in package.Scripts)
             {
-                var scr = res.GetScript() as Script;
+                var scr = res.GetScript();
                 Assert.IsNotNull(scr);
 
-                CheckScriptValid(scr);
+                if (scr is Script s0)
+                    CheckScriptValid(s0);
+                else if (scr is Script1 s1)
+                    CheckScriptValid(s1);
+                else
+                    throw new NotImplementedException();
             }
         }
 
-        private void CheckScriptValid(Script scr)
+        private static void CheckScriptValid(Script scr)
         {
             // Проверка ссылок на ссылки
             foreach (var rel in scr.Sections.OfType<RelocationSection>())
@@ -42,22 +48,68 @@ namespace Tests
             }
         }
 
+        private static void CheckScriptValid(Script1 scr)
+        {
+            foreach (var obj in scr.Objects)
+            {
+                foreach (var m in obj.Methods)
+                {
+                    Assert.NotNull(m.Reference.Reference, $"Wrong method reference in {scr.Resource.Number} {m.Name}");
+                }
+            }
+        }
+
         [Test]
-        public void DisassembleAll()
+        public void DisassembleConquest()
         {
             CheckPackage(Utils.LoadConquest());
         }
 
         [Test]
-        public void ParseAndBack()
+        public void DisassembleEQ()
         {
-            SCIPackage package = Utils.LoadConquest();
+            CheckPackage(Utils.LoadEQ());
+        }
 
+        [Test]
+        public void DisassembleQG()
+        {
+            CheckPackage(Utils.LoadQG());
+        }
+
+        [Test]
+        public void ParseAndBackConquest() => ParseAndBack(Utils.LoadConquest());
+
+        [Test]
+        public void ParseAndBackEQ() => ParseAndBack(Utils.LoadEQ());
+
+        [Test]
+        public void ParseAndBackQG() => ParseAndBack1(Utils.LoadQG());
+
+        private static void ParseAndBack(SCIPackage package)
+        {
             foreach (var res in package.Scripts)
             {
                 var bytes = res.GetContent();
                 var newbytes = res.GetScript().GetBytes();
-                CollectionAssert.AreEqual(bytes, newbytes);
+                CollectionAssert.AreEqual(bytes, newbytes, $"Problem in {res.Number}");
+            }
+        }
+
+        private static void ParseAndBack1(SCIPackage package)
+        {
+            foreach (var res in package.Scripts)
+            {
+                var resHeap = package.GetResource<ResHeap>(res.Number);
+
+                var bytes = res.GetContent();
+                var bytesH = resHeap.GetContent();
+
+                var newbytes = res.GetScript().GetBytes();
+                var newbytesH = resHeap.GetHeap().GetBytes();
+
+                CollectionAssert.AreEqual(bytes, newbytes, $"Problem in script {res.Number}");
+                CollectionAssert.AreEqual(bytesH, newbytesH, $"Problem in heap {res.Number}");
             }
         }
 
@@ -65,17 +117,17 @@ namespace Tests
         public void SetAddressOnWrite()
         {
             SCIPackage package = Utils.LoadConquest();
-            
+
             foreach (var r in package.Scripts)
             {
                 var scr = r.GetScript() as Script;
                 foreach (var e in scr.AllElements)
-                    e.IsAddressSet = false;
+                    e.ResetAddress();
 
                 scr.GetBytes();
 
                 foreach (var e in scr.AllElements)
-                    Assert.IsTrue(e.IsAddressSet, $"{e} is not set address");
+                    Assert.IsTrue(e.Address != 0, $"{e} is not set address");
             }
         }
 

@@ -5,10 +5,16 @@ namespace SCI_Lib.Resources.Scripts.Elements
 {
     public class StringConst : BaseElement
     {
-        public StringConst(Script script, byte[] data, ushort offset, int length)
+        public StringConst(BaseScript script, byte[] data, ushort offset, int length)
             : base(script, offset)
         {
             Bytes = Helpers.GetBytes(data, offset, length);
+        }
+
+        public StringConst(BaseScript script, string str, ushort offset)
+            : base(script, offset)
+        {
+            Bytes = GameEncoding.GetBytes(str);
         }
 
         public byte[] Bytes { get; set; }
@@ -38,10 +44,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
             bb.AddBytes(Bytes);
             bb.AddByte(0);
         }
-
-        public override void WriteOffset(ByteBuilder bb)
-        {
-        }
     }
 
     public class StringPart : BaseElement
@@ -49,7 +51,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
         private int _offset;
 
         public StringPart(StringConst str, int offset)
-            : base(str.Script, (ushort)(str.Address + offset))
+            : base(str.Owner, (ushort)(str.Address + offset))
         {
             if (offset >= str.Bytes.Length)
                 throw new ArgumentException();
@@ -58,7 +60,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             OrigString = str;
         }
 
-        public override ushort Address
+        /*public override ushort Address
         {
             get
             {
@@ -67,17 +69,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 return (ushort)(OrigString.Address + _offset);
             }
             set => base.Address = value;
-        }
+        }*/
 
         public StringConst OrigString { get; private set; }
 
         public string String => OrigString.Value.Substring(_offset);
 
         protected override void WriteData(ByteBuilder bb)
-        {
-        }
-
-        public override void WriteOffset(ByteBuilder bb)
         {
         }
     }

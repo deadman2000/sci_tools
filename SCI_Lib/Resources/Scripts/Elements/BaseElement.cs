@@ -5,33 +5,23 @@ namespace SCI_Lib.Resources.Scripts.Elements
 {
     public abstract class BaseElement
     {
-        private ushort address;
+        protected ushort _address;
 
-        public BaseElement(Script script, ushort address)
+        public BaseElement(BaseScript script, ushort address)
         {
-            Script = script;
-            Address = address;
-            //if (Address == 0x14e)                Console.WriteLine();
+            Owner = script;
+            _address = address;
 
-            Script.Register(this);
+            Owner.Register(this);
         }
 
-        public Script Script { get; private set; }
+        public BaseScript Owner { get; private set; }
 
-        public GameEncoding GameEncoding => Script.Package.GameEncoding;
+        public GameEncoding GameEncoding => Owner.Package.GameEncoding;
 
         public List<RefToElement> XRefs { get; } = new List<RefToElement>();
 
-        public virtual ushort Address
-        {
-            get => address; set
-            {
-                address = value;
-                IsAddressSet = true;
-            }
-        }
-
-        public bool IsAddressSet { get; set; }
+        public ushort Address => _address;
 
         public virtual string Label => $"{GetType().Name.ToLower()}_{Address:x4}";
 
@@ -39,13 +29,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public void Write(ByteBuilder bb)
         {
-            Address = (ushort)bb.Position;
+            _address = (ushort)bb.Position;
             WriteData(bb);
         }
 
         protected abstract void WriteData(ByteBuilder bb);
 
-        public abstract void WriteOffset(ByteBuilder bb);
+        public virtual void WriteOffset(ByteBuilder bb) { }
 
         public void ReplaceBy(BaseElement el)
         {
@@ -53,6 +43,11 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 r.Reference = el;
 
             el.XRefs.AddRange(XRefs);
+        }
+
+        public void ResetAddress()
+        {
+            _address = 0;
         }
     }
 }

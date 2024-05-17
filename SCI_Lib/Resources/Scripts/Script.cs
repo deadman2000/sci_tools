@@ -7,21 +7,18 @@ using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts
 {
-    public class Script : IScript
+    public class Script : BaseScript
     {
-        private readonly Dictionary<ushort, BaseElement> _elements = new();
         private StringSection _strings;
 
-        public Script(Resource res)
+        public Script(Resource res) : base(res)
         {
-            Resource = res;
             SourceData = res.GetContent();
             Read();
         }
 
-        public Script(Resource res, byte[] data)
+        public Script(Resource res, byte[] data) : base(res)
         {
-            Resource = res;
             SourceData = data;
             Read();
         }
@@ -47,14 +44,10 @@ namespace SCI_Lib.Resources.Scripts
 
             foreach (var sec in Sections)
                 sec.SetupByOffset();
+
+            foreach (var el in AllElements)
+                el.SetupByOffset();
         }
-
-        public void Register(BaseElement el) => _elements[el.Address] = el;
-        public void Unregister(BaseElement el) => _elements.Remove(el.Address);
-
-        public SCIPackage Package { get { return Resource.Package; } }
-
-        public Resource Resource { get; }
 
         public byte[] SourceData { get; }
 
@@ -66,19 +59,9 @@ namespace SCI_Lib.Resources.Scripts
         
         public SynonymSecion SynonymSecion => Sections.OfType<SynonymSecion>().FirstOrDefault();
 
-        public IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings);
+        public override IEnumerable<StringConst> AllStrings() => Sections.OfType<StringSection>().SelectMany(s => s.Strings);
 
-        public IEnumerable<BaseElement> AllElements => _elements.Values.Where(e => e is not StringPart);
-
-        public IEnumerable<RefToElement> AllRefs => _elements.Values.OfType<RefToElement>();
-
-        public BaseElement GetElement(ushort offset)
-        {
-            if (_elements.TryGetValue(offset, out var el)) return el;
-            return null;
-        }
-
-        public byte[] GetBytes()
+        public override byte[] GetBytes()
         {
             ByteBuilder bb = new();
 
@@ -92,8 +75,8 @@ namespace SCI_Lib.Resources.Scripts
                 bb.SetUShortBE(sizePos, (ushort)(endPos - sizePos + 2));
             }
 
-            foreach (Section sec in Sections)
-                sec.WriteOffsets(bb);
+            foreach (var el in AllElements)
+                el.WriteOffset(bb);
 
             bb.AddShortBE(0);
             return bb.GetArray();
@@ -113,11 +96,9 @@ namespace SCI_Lib.Resources.Scripts
 
         internal IEnumerable<T> Get<T>(SectionType type) where T : Section => Sections.OfType<T>().Where(s => s.Type == type);
 
-        public ClassSection GetInstance(string name) => Get<ClassSection>().FirstOrDefault(c => c.Name == name);
-        
-        public ClassSection GetClassSection(ushort id) => Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
+        public override IScriptInstance GetInstance(string name) => Get<ClassSection>().FirstOrDefault(c => c.Name == name);
 
-        public string GetOpCodeName(byte type) => Package.GetOpCodeName(type);
+        public ClassSection GetClassSection(ushort id) => Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
 
         public Section CreateSection(SectionType type)
         {
@@ -125,13 +106,6 @@ namespace SCI_Lib.Resources.Scripts
             Section sec = Section.Create(this, type, SourceData, (ushort)(last.Address + last.Size + 4), 0);
             Sections.Add(sec);
             return sec;
-        }
-
-        public Code GetOperator(ushort address)
-        {
-            if (_elements.TryGetValue(address, out var el) && el is Code code)
-                return code;
-            return null;
         }
 
         public ScriptAnalyzer Analyze(string cl = null, string method = null) => new(this, cl, method);

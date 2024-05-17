@@ -80,27 +80,23 @@ namespace SCI_Translator
             var script = res.GetScript();
             if (script == null) return;
 
-            var sections = script.Get<StringSection>().ToArray();
-            if (sections == null) return;
+            var strings = script.AllStrings().ToArray();
+            if (strings == null) return;
 
-            StringSection[] trSections = null;
+            StringConst[] trStrings = null;
             if (_translate != null)
             {
                 var tr = _translate.Get(res).GetScript();
-                trSections = tr.Get<StringSection>().ToArray();
+                trStrings = tr.AllStrings().ToArray();
             }
 
-            for (int i = 0; i < sections.Length; i++)
+            for (int i = 0; i < strings.Length; i++)
             {
-                var sec = sections[i];
-                for (int ind = 0; ind < sec.Strings.Count; ind++)
-                {
-                    StringConst str = sec.Strings[ind];
-                    if (IsPass(str.Value))
-                        AddResult(res, ind, str.Value);
-                    else if (trSections != null && IsPass(trSections[i].Strings[ind].Value))
-                        AddResult(res, ind, trSections[i].Strings[ind].Value);
-                }
+                var str = strings[i];
+                if (IsPass(str.Value))
+                    AddResult(res, i, str.Value);
+                else if (trStrings != null && IsPass(trStrings[i].Value))
+                    AddResult(res, i, trStrings[i].Value);
             }
         }
 

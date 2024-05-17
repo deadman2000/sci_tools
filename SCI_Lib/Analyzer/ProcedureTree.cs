@@ -13,7 +13,7 @@ public class ProcedureTree
 
     private readonly HashSet<ushort> _usedScripts = new();
     private readonly Dictionary<ushort, CodeBlock> _blocksByAddress = new();
-    private readonly Dictionary<ushort, ParamExpr> _params = new();
+    private readonly Dictionary<short, ParamExpr> _params = new();
     private readonly List<LinkExpr> _links = new();
     private int _nextVarId = 0;
     private CodeBlock _first;
@@ -47,7 +47,7 @@ public class ProcedureTree
 
     public ProcedureTree(ScriptAnalyzer decompiler, ClassSection cl, Code code, string name)
     {
-        _package = code.Script.Package;
+        _package = code.Owner.Package;
         Decompiler = decompiler;
         Class = cl;
         Begin = code;
@@ -231,7 +231,7 @@ public class ProcedureTree
     internal string GetVarName() => $"var{_nextVarId++}";
     internal ParamExpr CreateVar() => new(GetVarName());
 
-    internal ParamExpr GetParam(ushort num)
+    internal ParamExpr GetParam(short num)
     {
         if (_params.TryGetValue(num, out var e)) return e;
         var name = num == 0 ? "argc" : $"p{num}";
@@ -259,7 +259,7 @@ public class ProcedureTree
     }
 
     internal void Using(Resource resource) => _usedScripts.Add(resource.Number);
-    internal void Using(ushort scr) => _usedScripts.Add(scr);
+    internal void Using(short scr) => _usedScripts.Add((ushort)scr);
 
     public OptimizedTree Optimize()
     {

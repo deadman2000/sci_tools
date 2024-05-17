@@ -2,7 +2,7 @@
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
-using SCI_Lib.Resources.Scripts1_1;
+using SCI_Lib.Resources.Scripts1;
 using SCI_Lib.Resources.View;
 using SCI_Lib.Resources.Vocab;
 using SCI_Lib.SCI0;
@@ -131,8 +131,8 @@ namespace SCI_Lib
             _ => new ResVocab()
         };
 
-        private IEnumerable<IScript> _scriptsCache;
-        private IEnumerable<IScript> ScriptsCache => _scriptsCache ??= Scripts.Select(r => r.GetScript());
+        private IEnumerable<BaseScript> _scriptsCache;
+        private IEnumerable<BaseScript> ScriptsCache => _scriptsCache ??= Scripts.Select(r => r.GetScript());
 
         public ClassSection GetClassSection(ushort id)
         {
@@ -145,9 +145,9 @@ namespace SCI_Lib
             return classes[0];
         }
 
-        public Object1_1 GetObject(ushort id)
+        public Object1 GetObject(ushort id)
         {
-            foreach (var s in ScriptsCache.OfType<Script1_1>())
+            foreach (var s in ScriptsCache.OfType<Script1>())
             {
                 var cls = s.GetObject(id);
                 if (cls != null) return cls;

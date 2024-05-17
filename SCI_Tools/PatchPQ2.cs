@@ -32,18 +32,18 @@ namespace SCI_Tools
             {
                 var op = scr.GetOperator(0x1164);
                 if (op.Name != "pushi") throw new Exception();
-                if (op.Arguments[0] is ushort val && val != 146)
+                if (op.GetShort(0) != 146)
                 {
-                    op.Arguments[0] = (ushort)146;
+                    op.SetShort(0, 146);
                     Changed(res);
                 }
             }
             {
                 var op = scr.GetOperator(0x11f9);
                 if (op.Name != "pushi") throw new Exception();
-                if (op.Arguments[0] is ushort val && val != 146)
+                if (op.GetShort(0) != 146)
                 {
-                    op.Arguments[0] = (ushort)146;
+                    op.SetShort(0, 146);
                     Changed(res);
                 }
             }
@@ -73,10 +73,10 @@ namespace SCI_Tools
             { // Фильтр символов
                 var ldi = scr.GetOperator(0x743);
                 if (ldi.Name != "ldi") throw new Exception();
-                if (ldi.Arguments[0] is not ushort)
+                if (ldi.Arguments[0] is not ShortArg)
                 {
                     ldi.Type = 0x34;
-                    ldi.Arguments[0] = (ushort)0xff;
+                    ldi.Arguments[0] = new ShortArg(ldi, 0, 0xff);
 
                     Changed(res);
                 }
@@ -91,7 +91,7 @@ namespace SCI_Tools
                 op.Arguments.Clear();
                 short val = (short)(addr - op.Address - 4);
                 op.Arguments.Add(new CodeRef(op, (ushort)(op.Address + 1), (ushort)val, addr, 2));
-                op.Arguments.Add((byte)2);
+                op.AddByte(2);
 
                 Changed(res);
             }
@@ -106,9 +106,9 @@ namespace SCI_Tools
             { // Фильтр символов
                 var push = scr.GetOperator(0xa76);
                 if (push.Name != "pushi") throw new Exception();
-                if ((byte)push.Arguments[0] != 34)
+                if (push.GetByte(0) != 34)
                 {
-                    push.Arguments[0] = (byte)34;
+                    push.SetByte(0, 34);
                     Changed(res);
                 }
             }
@@ -137,37 +137,37 @@ namespace SCI_Tools
             var scr = res.GetScript() as Script;
             var ldi = scr.GetOperator(0xdd);
             if (ldi.Name != "ldi") throw new Exception();
-            if (ldi.Arguments[0] is ushort) return;
+            if (ldi.Arguments[0] is ShortArg) return;
 
             ldi.Type = 0x34;
-            ldi.Arguments[0] = (ushort)0xff;
+            ldi.Arguments[0] = new ShortArg(ldi, 0, 0xff);
             Changed(res);
         }
 
         // Осмотр полевого набора. Размеры окна с текстом
         private void Patch153()
         {
-            ushort newX = 184 - 50;
-            ushort newW = 110 + 77;
+            short newX = 184 - 50;
+            short newW = 110 + 77;
 
             var res = _translate.GetResource<ResScript>(153);
             var scr = res.GetScript() as Script;
             {
                 var opX = scr.GetOperator(0x138);
                 if (opX.Name != "pushi") throw new Exception();
-                if ((ushort)opX.Arguments[0] != newX)
+                if (opX.GetShort(0) != newX)
                 {
-                    opX.Arguments[0] = newX;
+                    opX.SetShort(0, newX);
                     Changed(res);
                 }
             }
             {
                 var opW = scr.GetOperator(0x143);
                 if (opW.Name != "pushi") throw new Exception();
-                if (opW.Arguments[0] is not ushort || (ushort)opW.Arguments[0] != newW)
+                if (opW.Arguments[0] is not ShortArg || opW.GetShort(0) != newW)
                 {
                     opW.Type = 0x38;
-                    opW.Arguments[0] = newW;
+                    opW.Arguments[0] = new ShortArg(opW, 0, newW);
                     Changed(res);
                 }
             }

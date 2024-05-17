@@ -57,11 +57,5 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 }
             }
         }
-
-        public override void WriteOffsets(ByteBuilder bb)
-        {
-            foreach (var v in Vars)
-                (v as RefToElement)?.WriteOffset(bb);
-        }
     }
 }

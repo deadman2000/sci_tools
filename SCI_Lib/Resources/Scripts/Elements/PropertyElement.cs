@@ -34,9 +34,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public override void WriteOffset(ByteBuilder bb)
         {
-            if (Value == 0x1e86)
-                System.Console.WriteLine();
-
             if (Reference != null)
                 Value = Reference.Address;
 

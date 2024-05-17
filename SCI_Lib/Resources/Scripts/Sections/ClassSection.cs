@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
-    public class ClassSection : Section
+    public class ClassSection : Section, IScriptInstance
     {
         public ushort Id => Properties[0].Value;
 
@@ -134,9 +134,6 @@ namespace SCI_Lib.Resources.Scripts.Sections
                     }
                 }
             }
-
-            foreach (var r in FuncCode)
-                r.SetupByOffset();
         }
 
         public override void Write(ByteBuilder bb)
@@ -165,17 +162,16 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 r.Write(bb);
         }
 
-        public override void WriteOffsets(ByteBuilder bb)
-        {
-            for (int i = 0; i < Properties.Length; i++)
-                Properties[i].WriteOffset(bb);
-
-            foreach (RefToElement r in FuncCode)
-                r.WriteOffset(bb);
-        }
-
         public bool IsProp(string name) => Properties.Any(p => p.Name == name);
 
         public bool IsProp(ushort sel) => Properties.Any(p => p.NameSel == sel);
+
+        public ushort GetProperty(string name) => Properties.FirstOrDefault(p => p.Name == name).Value;
+
+        public void SetProperty(string name, ushort value)
+        {
+            var prop = Properties.FirstOrDefault(p => p.Name == name) ?? throw new Exception();
+            prop.Value = value;
+        }
     }
 }

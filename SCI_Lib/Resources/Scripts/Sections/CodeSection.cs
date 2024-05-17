@@ -5,42 +5,21 @@ using System.Collections.Generic;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
-    public class CodeSection : Section
+    public class CodeSection : Section, ICodeBlock
     {
         public override void Read(byte[] data, ushort offset, int length)
         {
-            Operators = new List<Code>();
-            ushort i = offset;
-
-            Code prev = null;
-
-            while (i < offset + length)
-            {
-                Code c = new(this, i, prev);
-                c.Read(data, ref i);
-                Operators.Add(c);
-                prev = c;
-            }
+            Operators = Code.Read(this, data, offset, length);
         }
 
         public List<Code> Operators { get; private set; }
 
-        public override void SetupByOffset()
-        {
-            foreach (Code c in Operators)
-                c.SetupByOffset();
-        }
+        public BaseScript CodeOwner => Script;
 
         public override void Write(ByteBuilder bb)
         {
             foreach (Code c in Operators)
                 c.Write(bb);
-        }
-
-        public override void WriteOffsets(ByteBuilder bb)
-        {
-            foreach (Code c in Operators)
-                c.WriteOffset(bb);
         }
 
         public ushort ReplaceASM(string asm)

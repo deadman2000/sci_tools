@@ -129,17 +129,17 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         private void FillLeaDescription(Code c, StringBuilder sb)
         {
-            ushort vi, vt;
+            short vi, vt;
 
             if ((c.Type & 1) == 0)
             {
-                vt = (ushort)c.Arguments[0];
-                vi = (ushort)c.Arguments[1];
+                vt = c.GetShort(0);
+                vi = c.GetShort(1);
             }
             else
             {
-                vt = (byte)c.Arguments[0];
-                vi = (byte)c.Arguments[1];
+                vt = c.GetByte(0);
+                vi = c.GetByte(1);
             }
 
             sb.Append(LeaVarType(vt >> 1 & 3))

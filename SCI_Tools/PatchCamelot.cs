@@ -87,7 +87,7 @@ namespace SCI_Tools
             op.Arguments.Clear();
             short val = (short)(0x2b6 - op.Address - 4);
             op.Arguments.Add(new CodeRef(op, (ushort)(op.Address + 1), (ushort)val, 0x2b6, 2));
-            op.Arguments.Add((byte)4);
+            op.AddByte(4);
 
             //var op2 = scr.GetOperator(0xf8f);
 
@@ -157,7 +157,7 @@ label_ret:
 
             code.ReplaceASM(asm_cp866_to_upper);
 
-            if (scr.GetOperator(0x768).Arguments[0] is ushort)
+            if (scr.GetOperator(0x768).Arguments[0] is ShortArg)
                 return;
 
             ReplaceLdiBtoW(scr, 0x768, 0x9b); // S -> Ы
@@ -166,15 +166,15 @@ label_ret:
             ReplaceLdiBtoW(scr, 0x792, 0x80); // F -> А
         }
 
-        private void ReplaceLdiBtoW(Script scr, ushort addr, ushort val)
+        private void ReplaceLdiBtoW(Script scr, ushort addr, short val)
         {
             var op = scr.GetOperator(addr);
             if (op.Name != "ldi") throw new Exception();
 
-            if (op.Arguments[0] is ushort s)
-                if (s == val) return;
+            if (op.Arguments[0] is ShortArg s)
+                if (s.Value == val) return;
 
-            op.Arguments[0] = val;
+            op.Arguments[0] = new ShortArg(op, 0, val);
             op.Type = 0x34; // байты в SCI знаковые, поэтому меняем оператор на ldi W с 2-байтовым аргументом
 
             Changed(scr.Resource);

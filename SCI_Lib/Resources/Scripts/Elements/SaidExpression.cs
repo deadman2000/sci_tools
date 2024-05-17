@@ -27,15 +27,11 @@ namespace SCI_Lib.Resources.Scripts.Elements
             bb.AddByte(0xff);
         }
 
-        public override void WriteOffset(ByteBuilder bb)
-        {
-        }
-
         public override string ToString() => Label;
 
         public bool Set(string expression)
         {
-            var parsed = Script.Package.ParseSaid(expression);
+            var parsed = Owner.Package.ParseSaid(expression);
             if (IsEqual(Expression, parsed)) return false;
             Expression = parsed;
             _label = null;
@@ -95,7 +91,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             return changed;
         }
 
-        public override string Label => _label ??= Script.Package.GetSaidLabel(Expression);
+        public override string Label => _label ??= Owner.Package.GetSaidLabel(Expression);
 
         public string Hex => string.Join(" ", Expression.Select(s => s.Hex).ToArray());
     }

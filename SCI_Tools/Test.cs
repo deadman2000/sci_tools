@@ -21,10 +21,6 @@ namespace SCI_Tools
         {
             try
             {
-                var res = translate.GetResource<ResPicture>(360);
-                var pic = res.GetPicture();
-                res.SavePatch();
-
                 // said спроси мерлина о столе & / / 8bc
                 /*var said = translate.ParseSaid("/герб/щит");
              
@@ -407,23 +403,6 @@ namespace SCI_Tools
                 }
                 file.WriteLine();
             }
-        }
-
-        void RobinPatch851()
-        {
-            var res = package.GetResource<ResScript>(851);
-            var scr = res.GetScript();
-
-            // Патчим строку
-            var stringsSec = scr.Get<StringSection>().First();
-            stringsSec.Strings[8].Value = "Aye";
-
-            // Фиксим оператор
-            var code = scr.Get<CodeSection>().ElementAt(4);
-            var op = code.Operators.Find(o => o.Address == 0xb9f);
-            op.Arguments[0] = (ushort)0x10ac;
-
-            res.SavePatch();
         }
     }
 }

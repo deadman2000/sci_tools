@@ -1,6 +1,7 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
+using SCI_Lib.Resources.Scripts.Sections;
 using System.Drawing;
 
 namespace SCI_Tools
@@ -59,30 +60,30 @@ namespace SCI_Tools
             var scr = res.GetScript() as Script;
 
             var iconRestore = scr.GetInstance("iconRestore");
-            if (iconRestore.Properties[7].Value != 64)
+            if (iconRestore.GetProperty("nsLeft") != 64)
             {
-                iconRestore.Properties[7].Value = 64;
+                iconRestore.SetProperty("nsLeft", 64);
                 Changed(res);
             }
 
             var iconAbout = scr.GetInstance("iconAbout");
-            if (iconAbout.Properties[7].Value != 64)
+            if (iconAbout.GetProperty("nsLeft") != 64)
             {
-                iconAbout.Properties[7].Value = 64;
+                iconAbout.SetProperty("nsLeft", 64);
                 Changed(res);
             }
 
             var iconHelp = scr.GetInstance("iconHelp");
-            if (iconHelp.Properties[7].Value != 100)
+            if (iconHelp.GetProperty("nsLeft") != 100)
             {
-                iconHelp.Properties[7].Value = 100;
+                iconHelp.SetProperty("nsLeft", 100);
                 Changed(res);
             }
 
             var iconQuit = scr.GetInstance("iconQuit");
-            if (iconQuit.Properties[7].Value != 136)
+            if (iconQuit.GetProperty("nsLeft") != 136)
             {
-                iconQuit.Properties[7].Value = 136;
+                iconQuit.SetProperty("nsLeft", 136);
                 Changed(res);
             }
         }
@@ -102,7 +103,7 @@ namespace SCI_Tools
             var res = _translate.GetResource<ResScript>(360);
             var scr = res.GetScript() as Script;
 
-            var presents = scr.GetInstance("presents");
+            var presents = scr.GetInstance("presents") as ClassSection;
             ushort val = 32;
             if (presents.Properties[4].Value != val)
             {
