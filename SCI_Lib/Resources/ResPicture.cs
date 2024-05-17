@@ -30,6 +30,7 @@ namespace SCI_Lib.Resources
             {
                 var header = new byte[26];
                 header[0] = (byte)Type;
+                header[1] = 0x80;
                 stream.Write(header);
             }
             else
