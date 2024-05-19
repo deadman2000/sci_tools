@@ -57,7 +57,7 @@ namespace SCI_Tools
         private void Patch0()
         {
             var res = _translate.GetResource<ResScript>(0);
-            var scr = res.GetScript() as Script;
+            var scr = res.GetScript();
 
             var iconRestore = scr.GetInstance("iconRestore");
             if (iconRestore.GetProperty("nsLeft") != 64)
@@ -91,9 +91,10 @@ namespace SCI_Tools
         private void Parch140()
         {
             var res = _translate.GetResource<ResScript>(140);
-            var scr = res.GetScript() as Script;
+            var scr = res.GetScript();
 
             // Размер кнопки "Помощь"
+            // 140 -> 160   proc_4456
             SetPushi(scr, 0x0873, 160);
             SetPushi(scr, 0x2508, 160);
         }
@@ -101,7 +102,7 @@ namespace SCI_Tools
         private void Patch360()
         {
             var res = _translate.GetResource<ResScript>(360);
-            var scr = res.GetScript() as Script;
+            var scr = res.GetScript();
 
             var presents = scr.GetInstance("presents") as ClassSection;
             ushort val = 32;
@@ -115,10 +116,11 @@ namespace SCI_Tools
         private void Patch816()
         {
             var res = _translate.GetResource<ResScript>(816);
-            var scr = res.GetScript() as Script;
-            SetPushi(scr, 0x02ad, 55); // Нажми на Свиток, чтобы прокрутить.
-            SetPushi(scr, 0x02c6, 36); // Щёлкни рядом со Свитком, чтобы закрыть.
-            SetPushi(scr, 0x0302, 70); // Для прокрутки нажми стрелки вверх или вниз.
+            var scr = res.GetScript();
+            // Display 10
+            SetPushi(scr, 0x02ad, 55); // Нажми на Свиток, чтобы прокрутить.          67->55
+            SetPushi(scr, 0x02c6, 36); // Щёлкни рядом со Свитком, чтобы закрыть.     66->36
+            SetPushi(scr, 0x0302, 70); // Для прокрутки нажми стрелки вверх или вниз. 46->70
             //SetPushi(scr, 0x031b, 83); // Чтобы закрыть, нажми ESC.
         }
     }

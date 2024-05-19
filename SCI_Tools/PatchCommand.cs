@@ -4,6 +4,7 @@ using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
 using SCI_Lib.Resources.Vocab;
 using System;
 using System.Collections.Generic;
@@ -36,8 +37,8 @@ namespace SCI_Tools
 
         protected void Changed(Resource res)
         {
-            if (res is ResScript && _translate.SeparateHeapResources)
-                _changed.Add(_translate.GetResource<ResHeap>(res.Number));
+            //if (res is ResScript && _translate.SeparateHeapResources)
+                //_changed.Add(_translate.GetResource<ResHeap>(res.Number));
             _changed.Add(res);
         }
 
@@ -407,7 +408,7 @@ namespace SCI_Tools
 
         #region Script
 
-        protected void SetPushi(Script scr, ushort addr, int val)
+        protected void SetPushi(BaseScript scr, ushort addr, int val)
         {
             var op = scr.GetOperator(addr);
             if (op.Name != "pushi") throw new Exception();
