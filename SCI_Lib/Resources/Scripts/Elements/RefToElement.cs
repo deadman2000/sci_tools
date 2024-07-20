@@ -47,7 +47,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public bool Relative { get; }
 
-        public int Shift { get; }
+        public int Shift { get; set; }
 
         public byte Size { get; }
 

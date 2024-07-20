@@ -162,11 +162,19 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 r.Write(bb);
         }
 
-        public bool IsProp(string name) => Properties.Any(p => p.Name == name);
+        public bool IsProp(string name)
+        {
+            Prepare();
+            return Properties.Any(p => p.Name == name);
+        }
 
         public bool IsProp(ushort sel) => Properties.Any(p => p.NameSel == sel);
 
-        public ushort GetProperty(string name) => Properties.FirstOrDefault(p => p.Name == name).Value;
+        public ushort GetProperty(string name)
+        {
+            Prepare();
+            return Properties.FirstOrDefault(p => p.Name == name).Value;
+        }
 
         public void SetProperty(string name, ushort value)
         {

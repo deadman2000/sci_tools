@@ -351,6 +351,7 @@ namespace SCI_Tools
 
             trRes.SetFont(trFont);
             trRes.SavePatch();
+            Console.WriteLine($"Patched {trRes.FileName}");
         }
 
         private void PatchFont()
@@ -390,18 +391,31 @@ namespace SCI_Tools
             res.SavePatch();
         }
 
-        void ExtractText()
+        void ExtractText(SCIPackage pack, string dir)
         {
-            using var file = File.CreateText(@"d:\Projects\TranslateWeb\ru_text.txt");
-            var messages = package.GetResources<ResMessage>();
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            var messages = pack.GetResources<ResMessage>();
             foreach (var msg in messages)
             {
-                file.WriteLine($"{msg.Number}.msg");
+                using var file = File.CreateText(Path.Combine(dir, $"{msg.Number}.msg.txt"));
                 foreach (var str in msg.GetStrings())
-                {
                     file.WriteLine(str);
-                }
-                file.WriteLine();
+            }
+
+            var texts = pack.GetResources<ResText>();
+            foreach (var tex in texts)
+            {
+                using var file = File.CreateText(Path.Combine(dir, $"{tex.Number}.tex.txt"));
+                foreach (var str in tex.GetStrings())
+                    file.WriteLine(str);
+            }
+
+            var scripts = pack.GetResources<ResScript>();
+            foreach (var scr in scripts)
+            {
+                using var file = File.CreateText(Path.Combine(dir, $"{scr.Number}.scr.txt"));
+                foreach (var str in scr.GetStrings())
+                    file.WriteLine(str);
             }
         }
     }
