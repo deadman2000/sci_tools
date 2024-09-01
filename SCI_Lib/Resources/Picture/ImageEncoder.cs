@@ -8,11 +8,15 @@ namespace SCI_Lib.Resources.Picture
     public static class ImageEncoder
     {
         private const bool LOG = false;
+        private static StreamWriter logStream;
+
         private static bool WRITE_BY_ROW = true; // Построчная запись
         private static bool USE_ADD_COUNT = false;
 
         public static void ReadImage(Stream rle, Stream literal, byte[] img, byte transpColor, bool isVGA)
         {
+            if (LOG) logStream = new StreamWriter(new FileStream("decoder.log", FileMode.Create));
+
             int ind = 0;
             int addCount = 0;
             while (ind < img.Length)
@@ -30,30 +34,30 @@ namespace SCI_Lib.Resources.Picture
                 {
                     var cnt = (d & 0x3f) + addCount; // 2 бита - код, 6 - количество
                     var code = d >> 6;
-                    if (LOG) Console.Write($"{code} x{cnt} ");
+                    if (LOG) logStream.Write($"[{rle.Position-1:X}] {code} x{cnt} ");
 
                     switch (code)
                     {
                         case 0: // Разные пиксели
-                            if (LOG) Console.Write("[");
+                            if (LOG) logStream.Write("[");
                             for (var i = 0; i < cnt; i++)
                             {
                                 img[ind + i] = literal.ReadB();
-                                if (LOG) Console.Write($"{img[ind + i]:X2} ");
+                                if (LOG) logStream.Write($"{img[ind + i]:X2} ");
                             }
                             ind += cnt;
                             addCount = 0;
-                            if (LOG) Console.WriteLine("]");
+                            if (LOG) logStream.WriteLine("]");
                             break;
 
                         case 1: // Увеличиваем счетчик
                             addCount += 64;
-                            if (LOG) Console.WriteLine();
+                            if (LOG) logStream.WriteLine();
                             break;
 
                         case 2: // Одинаковые пиксели подряд
                             var c = literal.ReadB();
-                            if (LOG) Console.WriteLine($"{c:X2}");
+                            if (LOG) logStream.WriteLine($"{c:X2}");
                             for (var i = 0; i < cnt; i++)
                                 img[ind + i] = c;
                             ind += cnt;
@@ -61,7 +65,7 @@ namespace SCI_Lib.Resources.Picture
                             break;
 
                         case 3: // Прозрачные пиксели подряд
-                            if (LOG) Console.WriteLine("T");
+                            if (LOG) logStream.WriteLine("T");
                             for (var i = 0; i < cnt; i++)
                                 img[ind + i] = transpColor;
                             ind += cnt;
@@ -70,10 +74,18 @@ namespace SCI_Lib.Resources.Picture
                     }
                 }
             }
+
+            if (LOG)
+            {
+                logStream.Flush();
+                logStream.Close();
+            }
         }
 
         public static void WriteImage(ByteBuilder bbRLE, ByteBuilder bbLiterals, byte[] image, int width, byte transpCol)
         {
+            if (LOG) logStream = new StreamWriter(new FileStream("encoder.log", FileMode.Create));
+
             if (WRITE_BY_ROW)
             {
                 int height = image.Length / width;
@@ -85,6 +97,12 @@ namespace SCI_Lib.Resources.Picture
             else
             {
                 WriteImageRow(bbRLE, bbLiterals, image, 0, image.Length, transpCol);
+            }
+
+            if (LOG)
+            {
+                logStream.Flush();
+                logStream.Close();
             }
         }
 
@@ -110,13 +128,13 @@ namespace SCI_Lib.Resources.Picture
                         if (curr == transpColor)
                         {
                             WriteCode(bbRLE, 3, cnt);
-                            if (LOG) Console.WriteLine("T");
+                            if (LOG) logStream.WriteLine("T");
                         }
                         else
                         {
                             WriteCode(bbRLE, 2, cnt);
                             bbLiterals.AddByte(curr);
-                            if (LOG) Console.WriteLine($"{curr:X}");
+                            if (LOG) logStream.WriteLine($"{curr:X2}");
                         }
 
                         i = end;
@@ -125,10 +143,10 @@ namespace SCI_Lib.Resources.Picture
                     {
                         // Ищем количество неповторений
                         // Двигаемся вперед пока пиксели меняются
-                        var end = i + 1;
-                        int cnt = 2;
+                        var end = i;
+                        int cnt = 1;
                         while (end + 1 < count
-                            && (!IsEquals(data, offset + end + 1, cnt < 3 ? 2 : 3))
+                            && (!IsEquals(data, offset + end + 1, 3))
                             && (USE_ADD_COUNT || end - i + 1 < 0x3f))
                         {
                             end++;
@@ -136,13 +154,13 @@ namespace SCI_Lib.Resources.Picture
                         }
 
                         WriteCode(bbRLE, 0, cnt);
-                        if (LOG) Console.Write("[");
+                        if (LOG) logStream.Write("[");
                         for (int n = i; n <= end; n++)
                         {
                             bbLiterals.AddByte(data[offset + n]);
-                            if (LOG) Console.Write($"{data[offset + n]:X2} ");
+                            if (LOG) logStream.Write($"{data[offset + n]:X2} ");
                         }
-                        if (LOG) Console.WriteLine("]");
+                        if (LOG) logStream.WriteLine("]");
 
                         i = end;
                     }
@@ -151,13 +169,14 @@ namespace SCI_Lib.Resources.Picture
                 {
                     WriteCode(bbRLE, 0, 1);
                     bbLiterals.AddByte(curr);
+                    if (LOG) logStream.WriteLine($"[{curr:X2} ]");
                 }
             }
         }
 
         private static void WriteCode(ByteBuilder bb, int code, int count)
         {
-            if (LOG) Console.Write($"{code} x{count} ");
+            if (LOG) logStream.Write($"[{bb.Position:X}] {code} x{count} ");
             while (count > 0x3f)
             {
                 bb.AddByte(0x40);

@@ -8,7 +8,8 @@ namespace SCI_Lib.Resources.Picture
 {
     public class PicVector
     {
-        public static bool LOG = false;
+        public static bool LOG_READ = false;
+        public static bool LOG_WRITE = false;
 
         private readonly List<PicCommand> _commands = new();
         private PicImage _img;
@@ -31,6 +32,7 @@ namespace SCI_Lib.Resources.Picture
             while (true)
             {
                 var b = stream.Peek();
+                if (LOG_READ) Console.WriteLine($"{stream.Position:X} Read op code {b:X2}");
                 if (b >= 0xf0)
                 {
                     opcode = (PicOpCode)b;
@@ -81,16 +83,11 @@ namespace SCI_Lib.Resources.Picture
 
         public void Write(ByteBuilder bb)
         {
-            PicOpCode prev = 0;
-
             foreach (var cmd in _commands)
             {
-                if (cmd.OpCode != prev || cmd.OpCode == PicOpCode.OPX)
-                    bb.AddByte((byte)cmd.OpCode);
-
+                if (LOG_WRITE) Console.WriteLine($"{bb.Position:X} Write op code {(byte)cmd.OpCode:X2}");
+                bb.AddByte((byte)cmd.OpCode);
                 cmd.Write(bb);
-
-                prev = cmd.OpCode;
             }
         }
 
@@ -98,9 +95,9 @@ namespace SCI_Lib.Resources.Picture
         {
             var start = stream.Position;
 
-            if (LOG) Console.WriteLine("---- Medium lines");
+            if (LOG_READ) Console.WriteLine("---- Medium lines");
             var p = stream.ReadPicAbsCoord();
-            if (LOG) Console.WriteLine($"{p.X} {p.Y}");
+            if (LOG_READ) Console.WriteLine($"  {p.X} {p.Y}");
 
             while (stream.Peek() < 0xf0)
             {
@@ -118,12 +115,12 @@ namespace SCI_Lib.Resources.Picture
                 t = stream.ReadB();
                 x = (ushort)(p.X + (sbyte)t);
 
-                if (LOG) Console.WriteLine($"{x} {y}");
+                if (LOG_READ) Console.WriteLine($"  {x} {y}");
                 p.X = x;
                 p.Y = y;
             }
 
-            if (LOG) Console.WriteLine();
+            if (LOG_READ) Console.WriteLine();
 
             var len = stream.Position - start;
             stream.Seek(start, SeekOrigin.Begin);
@@ -134,17 +131,17 @@ namespace SCI_Lib.Resources.Picture
         {
             var start = stream.Position;
 
-            if (LOG) Console.WriteLine("---- Long lines");
+            if (LOG_READ) Console.WriteLine("---- Long lines");
             var p = stream.ReadPicAbsCoord();
-            if (LOG) Console.WriteLine($"{p.X} {p.Y}");
+            if (LOG_READ) Console.WriteLine($"  {p.X} {p.Y}");
 
             while (stream.Peek() < 0xf0)
             {
                 p = stream.ReadPicAbsCoord();
-                if (LOG) Console.WriteLine($"{p.X} {p.Y}");
+                if (LOG_READ) Console.WriteLine($"  {p.X} {p.Y}");
             }
 
-            if (LOG) Console.WriteLine();
+            if (LOG_READ) Console.WriteLine();
 
             var len = stream.Position - start;
             stream.Seek(start, SeekOrigin.Begin);
@@ -155,17 +152,17 @@ namespace SCI_Lib.Resources.Picture
         {
             var start = stream.Position;
 
-            if (LOG) Console.WriteLine("-- Short lines");
+            if (LOG_READ) Console.WriteLine("-- Short lines");
             var p = stream.ReadPicAbsCoord();
-            if (LOG) Console.WriteLine($"{p.X} {p.Y}");
+            if (LOG_READ) Console.WriteLine($"  {p.X} {p.Y}");
 
             while (stream.Peek() < 0xf0)
             {
                 p = stream.ReadPicRelCoord(p);
-                if (LOG) Console.WriteLine($"{p.X} {p.Y}");
+                if (LOG_READ) Console.WriteLine($"  {p.X} {p.Y}");
             }
 
-            if (LOG) Console.WriteLine();
+            if (LOG_READ) Console.WriteLine();
 
             var len = stream.Position - start;
             stream.Seek(start, SeekOrigin.Begin);
