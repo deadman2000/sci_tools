@@ -98,6 +98,8 @@ namespace SCI_Lib.Resources.Scripts
 
         public override IScriptInstance GetInstance(string name) => Get<ClassSection>().FirstOrDefault(c => c.Name == name);
 
+        public override IScriptInstance GetInstance(string name, string superName) => Get<ClassSection>().FirstOrDefault(c => c.Name == name && c.SuperClass.Name == superName);
+
         public ClassSection GetClassSection(ushort id) => Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
 
         public Section CreateSection(SectionType type)

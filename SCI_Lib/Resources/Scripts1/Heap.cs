@@ -25,6 +25,8 @@ namespace SCI_Lib.Resources.Scripts1
 
         public override IScriptInstance GetInstance(string name) => Objects.FirstOrDefault(o => o.Name == name);
 
+        public override IScriptInstance GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
+
         public override IEnumerable<StringConst> AllStrings() => Strings;
 
         private void Read()

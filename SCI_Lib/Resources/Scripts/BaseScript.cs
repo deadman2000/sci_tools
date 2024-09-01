@@ -21,6 +21,8 @@ namespace SCI_Lib.Resources.Scripts
 
         public abstract IScriptInstance GetInstance(string name);
 
+        public abstract IScriptInstance GetInstance(string name, string superName);
+
         public abstract IEnumerable<StringConst> AllStrings();
 
         #region Elements
