@@ -22,6 +22,10 @@ namespace SCI_Lib.Resources.Picture
             Read(data);
         }
 
+        public override int Width => _cell.Width;
+
+        public override int Height => _cell.Height;
+
         private void Read(byte[] data)
         {
             using var stream = new MemoryStream(data);
@@ -100,6 +104,21 @@ namespace SCI_Lib.Resources.Picture
         public override void SetBackgroundIndexed(Bitmap bmp)
         {
             _cell.SetImageIndexed(bmp);
+        }
+
+        public override Color[] GetPalette()
+        {
+            return _palette.Colors;
+        }
+
+        public override byte[] GetPixels()
+        {
+            return _cell.Pixels;
+        }
+
+        public override void SetPixels(byte[] pixels)
+        {
+            _cell.Pixels = pixels;
         }
     }
 }

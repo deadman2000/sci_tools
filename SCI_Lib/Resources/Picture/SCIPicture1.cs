@@ -1,11 +1,9 @@
-﻿using SCI_Lib.Utils;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.Drawing.Imaging;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace SCI_Lib.Resources.Picture
 {
@@ -17,6 +15,9 @@ namespace SCI_Lib.Resources.Picture
 
         public byte[] ImageData => Image?.Image;
 
+        public override int Width => Image.Width;
+
+        public override int Height => Image.Height;
 
         public SCIPicture1(byte[] data)
         {
@@ -71,6 +72,21 @@ namespace SCI_Lib.Resources.Picture
             Marshal.Copy(scan0, Image.Image, 0, Image.Image.Length);
 
             bmp.UnlockBits(data);
+        }
+
+        public override Color[] GetPalette()
+        {
+            return Palette.Colors.Select(p => p.GetColor()).ToArray();
+        }
+
+        public override byte[] GetPixels()
+        {
+            return ImageData;
+        }
+
+        public override void SetPixels(byte[] pixels)
+        {
+            Image.Image = pixels;
         }
     }
 }
