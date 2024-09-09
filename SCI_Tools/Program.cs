@@ -19,7 +19,8 @@ namespace SCI_Tools
         typeof(PatchPQ2),
         typeof(PatchEQ),
         typeof(PatchEQCD),
-        typeof(PatchLongbow)
+        typeof(PatchLongbow),
+        typeof(PatchLarry5)
     )]
     partial class Program
     {

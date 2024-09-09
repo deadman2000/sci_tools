@@ -19,7 +19,6 @@ namespace SCI_Tools
             Patch153();
             Patch200();
             Patch996();
-            Save();
         }
 
 

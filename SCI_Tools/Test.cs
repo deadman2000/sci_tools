@@ -2,11 +2,14 @@
 using SCI_Lib;
 using SCI_Lib.Analyzer;
 using SCI_Lib.Resources;
+using SCI_Lib.Resources.Picture;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -205,7 +208,7 @@ namespace SCI_Tools
 
         private void Decompile(ushort num, string cl = null, string method = null)
         {
-            var res = translate.GetResource<ResScript>(num);
+            var res = (translate ?? package).GetResource<ResScript>(num);
             var script = res.GetScript() as Script;
 
             var analyzer = script.Analyze(cl, method);
@@ -283,6 +286,66 @@ namespace SCI_Tools
                     }
                 }
             }
+        }
+
+        static int ColorDiff(Color a, Color b)
+        {
+            return Math.Abs(a.R - b.R) + Math.Abs(a.G - b.G) + Math.Abs(a.B - b.B);
+        }
+
+        static byte GetNearestColor(Color[] pal, byte col, HashSet<byte> exclude)
+        {
+            var srcColor = pal[col];
+            byte best = 0;
+            var bestDiff = ColorDiff(pal[best], pal[col]);
+
+            for (int i = 1; i < pal.Length; i++)
+            {
+                if (i > 0xff) break;
+                byte colorInd = (byte)i;
+                if (exclude.Contains(colorInd)) continue;
+
+                var color = pal[colorInd];
+                var diff = ColorDiff(srcColor, color);
+                if (diff < bestDiff)
+                {
+                    best = colorInd;
+                    bestDiff = diff;
+                }
+            }
+
+            return best;
+        }
+
+        static void ReplaceColorMap(SCIPicture pic, string mapPath)
+        {
+            // Заменяет цвета в изображении по алгоритму:
+            // Если в карте цвет не чёрный и цвет пикселя изображения попадает в диапазон исключения, то цвет меняется на другой
+
+            var map = (Bitmap)Image.FromFile(mapPath);
+
+            HashSet<byte> exclude = new();
+            for (byte i = 240; i <= 254; i++) exclude.Add(i);
+            for (byte i = 24; i <= 31; i++) exclude.Add(i);
+
+            var pixels = pic.GetPixels();
+            var pal = pic.GetPalette();
+
+            for (int x = 0; x < pic.Width; x++)
+            {
+                for (int y = 0; y < pic.Height; y++)
+                {
+                    var pix = x + pic.Width * y;
+                    if (map.GetPixel(x, y).ToArgb() == Color.Black.ToArgb())
+                        continue;
+
+                    var c = pixels[pix];
+                    if (exclude.Contains(c))
+                        pixels[pix] = GetNearestColor(pal, c, exclude);
+                }
+            }
+
+            pic.SetPixels(pixels);
         }
 
         private static int ToInt(object obj)

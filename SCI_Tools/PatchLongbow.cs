@@ -1,7 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources;
-using SCI_Lib.Resources.Scripts.Elements;
-using System;
 
 namespace SCI_Tools
 {
@@ -14,8 +12,6 @@ namespace SCI_Tools
             Patch10();
             Patch97();
             Patch370();
-
-            Save();
         }
 
         private void Patch10()

@@ -29,7 +29,7 @@ namespace SCI_Tools
         {
             _translate = SCIPackage.Load(GameDir);
             Patch();
-
+            Save();
             return Task.CompletedTask;
         }
 
@@ -426,6 +426,35 @@ namespace SCI_Tools
             else throw new Exception();
 
             Changed(scr.Resource);
+        }
+
+        protected void SetLdi(BaseScript scr, ushort addr, int val)
+        {
+            var op = scr.GetOperator(addr);
+            if (op.Name != "ldi") throw new Exception();
+
+            if (op.Arguments[0] is ShortArg s)
+            {
+                if (s.Value == val) return;
+                s.Value = (short)val;
+            }
+            else if (op.Arguments[0] is ByteArg b)
+            {
+                if (b.Value == val) return;
+                b.Value = (byte)val;
+            }
+            else throw new Exception();
+
+            Changed(scr.Resource);
+        }
+
+        protected void SetProperty(BaseScript scr, IScriptInstance inst, string name, ushort value)
+        {
+            if (inst.GetProperty(name) != value)
+            {
+                inst.SetProperty(name, value);
+                Changed(scr.Resource);
+            }
         }
 
         #endregion

@@ -20,8 +20,6 @@ namespace SCI_Tools
             ReplaceToTransparent(364);
             ReplaceToTransparent(377);
             ReplaceToTransparent(442);
-
-            Save();
         }
 
         private void Parch140()

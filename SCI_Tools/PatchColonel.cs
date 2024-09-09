@@ -749,8 +749,6 @@ namespace SCI_Tools
             CBSkipButtonReplace(354);
 
             PatchScr781();
-
-            Save();
         }
 
         private void PatchScr781()

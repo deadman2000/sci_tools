@@ -19,8 +19,6 @@ namespace SCI_Tools
 
             //Pic360();
             //Font310();
-
-            Save();
         }
 
         private void Font310()

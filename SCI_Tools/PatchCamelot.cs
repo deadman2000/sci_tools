@@ -21,7 +21,6 @@ namespace SCI_Tools
             PatchScript92();
             PatchScript110();
             PatchScript133();
-            Save();
         }
 
         private void PatchScript3()
