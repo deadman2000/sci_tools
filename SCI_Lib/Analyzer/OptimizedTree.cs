@@ -83,7 +83,7 @@ public class OptimizedTree
                         throw new Exception();
                 }
 
-                Normalize(ex);
+                node.Expressions[i] = Normalize(ex);
             }
 
             if (node.Condition != null)
@@ -97,7 +97,7 @@ public class OptimizedTree
                     else
                         throw new Exception();
                 }
-                Normalize(node.Condition);
+                node.Condition = Normalize(node.Condition);
             }
         }
 
@@ -112,26 +112,36 @@ public class OptimizedTree
                 }
 
             if (node.Condition != null && HasLink(node.Condition))
-                throw new Exception();
+            {
+                Console.WriteLine($"Condition has link! {node.Condition}");
+                //throw new Exception();
+            }
         }
     }
 
-    private void Normalize(Expr ex)
+    private Expr Normalize(Expr ex)
     {
-        if (ex.Args == null) return;
+        if (ex is LinkExpr l)
+            return NormalizeLink(l);
+
+        if (ex.Args == null) return ex;
+
         for (int i = 0; i < ex.Args.Count; i++)
-        {
-            if (ex.Args[i] is LinkExpr l)
-            {
-                if (l.Variable != null)
-                    ex.Args[i] = l.Variable;
-                else if (l.Links.Count == 1)
-                    ex.Args[i] = l.Links[0].Expression;
-                else
-                    Console.WriteLine($"USED LINK WITHOUT VAR {ex}");
-            }
-            Normalize(ex.Args[i]);
-        }
+            ex.Args[i] = Normalize(ex.Args[i]);
+
+        return ex;
+    }
+
+    private Expr NormalizeLink(LinkExpr l)
+    {
+        if (l.Variable != null)
+            return Normalize(l.Variable);
+
+        if (l.Links.Count == 1)
+            return Normalize(l.Links[0].Expression);
+
+        Console.WriteLine($"USED LINK WITHOUT VAR {l}");
+        return l;
     }
 
     private void InvertNotCondition()

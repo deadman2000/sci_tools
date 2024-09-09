@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -51,7 +52,14 @@ public class TextUsageSearch
             {
                 //if (res.Number != 0) continue;
                 //Console.WriteLine(res.FileName);
-                FindUsage(res.GetScript() as Script);
+                try
+                {
+                    FindUsage(res.GetScript() as Script);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to find text usage in {res.FileName}");
+                }
             }
         }
 
