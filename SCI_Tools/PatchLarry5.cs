@@ -16,6 +16,7 @@ namespace SCI_Tools
             Patch120();
             Patch170();
             Patch205();
+            Patch415();
             Patch720();
         }
 
@@ -96,6 +97,17 @@ namespace SCI_Tools
             const int shift = 40;
             const int brunoX = 100 - shift;
             SetProperty(scr, bruno, "x", brunoX);
+        }
+
+        private void Patch415()
+        {
+            var res = _translate.GetResource<ResScript>(415);
+            var scr = res.GetScript();
+
+            var desmond = scr.GetInstance("Инспектор Десмонд", "Talker");
+            desmond ??= scr.GetInstance("Inspector Desmond", "Talker");
+
+            SetProperty(scr, desmond, "talkWidth", 160 + 20);
         }
 
         private void Patch720()
