@@ -1,7 +1,6 @@
 ﻿using SCI_Lib.Resources.Picture;
 using SCI_Lib.Utils;
 using System;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -77,9 +76,9 @@ namespace SCI_Lib.Resources.View
             return bmp;
         }
 
-        public void Write(ByteBuilder bbRLE, ByteBuilder bbLiterals)
+        public void WriteVGA(ByteBuilder bbRLE, ByteBuilder bbLiterals)
         {
-            ImageEncoder.WriteImage(bbRLE, bbLiterals, Pixels, Width, TransparentColor);
+            ImageEncoder.WriteImageVGA(bbRLE, bbLiterals, Pixels, Width, TransparentColor);
         }
 
         public void ReadEVGA(Stream stream, bool isVGA, int boneCount)
@@ -103,7 +102,10 @@ namespace SCI_Lib.Resources.View
             }
 
             Pixels = new byte[Width * Height];
-            ImageEncoder.ReadImage(stream, stream, Pixels, TransparentColor, isVGA);
+            if (isVGA)
+                ImageEncoder.ReadImageVGA(stream, stream, Pixels, TransparentColor);
+            else
+                ImageEncoder.ReadImageEGA(stream, Pixels);
         }
 
         public void WriteEVGA(ByteBuilder bb, bool isVGA)
@@ -114,10 +116,12 @@ namespace SCI_Lib.Resources.View
             bb.AddByte((byte)Y);
             bb.AddByte(TransparentColor);
 
-            if (isVGA)
-                bb.AddByte(0); // Unknown
+            bb.AddByte(0); // Unknown
 
-            ImageEncoder.WriteImage(bb, bb, Pixels, Width, TransparentColor);
+            if (isVGA)
+                ImageEncoder.WriteImageVGA(bb, bb, Pixels, Width, TransparentColor);
+            else
+                ImageEncoder.WriteImageEGA(bb, Pixels, Width);
         }
 
         public void ReadVGA11(byte[] data, int offset)
@@ -163,7 +167,7 @@ namespace SCI_Lib.Resources.View
                 using var msLiteral = new MemoryStream(data);
                 msLiteral.Seek(offsetLiteral, SeekOrigin.Begin);
                 Pixels = new byte[Width * Height];
-                ImageEncoder.ReadImage(ms, msLiteral, Pixels, TransparentColor, true);
+                ImageEncoder.ReadImageVGA(ms, msLiteral, Pixels, TransparentColor);
             }
         }
 
@@ -202,7 +206,7 @@ namespace SCI_Lib.Resources.View
                 var bbRLE = new ByteBuilder();
                 var bbLit = new ByteBuilder();
 
-                Write(bbRLE, bbLit);
+                WriteVGA(bbRLE, bbLit);
                 var rleData = bbRLE.GetArray();
                 var litData = bbLit.GetArray();
 

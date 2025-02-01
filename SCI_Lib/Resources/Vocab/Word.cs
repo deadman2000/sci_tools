@@ -26,11 +26,15 @@ namespace SCI_Lib.Resources.Vocab
         }
 
         public static int GetId(ushort gr, ushort cl) => gr | (cl << 12);
+        
         public static ushort GetGroup(int id) => (ushort)(id & 0xfff);
+        
         public static WordClass GetClass(int id) => (WordClass)(ushort)(id >> 12);
 
         public int Id { get; }
+        
         public WordClass Class { get; }
+
         public ushort Group { get; }
 
         public string Text { get; set; }
@@ -38,6 +42,8 @@ namespace SCI_Lib.Resources.Vocab
         public override string ToString() => Text;
 
         public bool IsEn => Text.All(c => c <= 'z');
+
+        public bool HasClass(WordClass cl) => Class.HasFlag(cl);
     }
 
     [Flags]

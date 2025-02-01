@@ -1,6 +1,7 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources;
 using System;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -46,7 +47,8 @@ namespace SCI_Tools
                     for (int c = 0; c < view.Loops[l].Cells.Count; c++)
                     {
                         var cell = view.Loops[l].Cells[c];
-                        cell.GetImage().Save(Path.Combine(OutDir, $"{v.Number}.{l}.{c}.png"));
+                        var img = cell.GetImage();
+                        img.Save(Path.Combine(OutDir, $"{v.Number}.{l}.{c}.png"), ImageFormat.Png);
                     }
                 }
             }

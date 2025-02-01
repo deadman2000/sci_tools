@@ -30,6 +30,7 @@ namespace SCI_Lib.SCI0
             {
                 case 1: return new DecompressorLZW0();
                 case 2: return new DecompressorHuffman();
+                //case 2: return new DecompressorLZW1();
                 default: throw new NotImplementedException();
             }
         }

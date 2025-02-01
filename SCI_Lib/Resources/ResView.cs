@@ -58,6 +58,7 @@ namespace SCI_Lib.Resources
             {
                 ViewFormat.VGA => _view.GetBytesVGA(),
                 ViewFormat.VGA1_1 => _view.GetBytesVGA11(),
+                ViewFormat.EGA => _view.GetBytesEGA(),
                 _ => throw new NotImplementedException($"Write view format {Package.ViewFormat} is not implemented"),
             };
         }

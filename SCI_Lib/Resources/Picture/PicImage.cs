@@ -27,7 +27,7 @@ namespace SCI_Lib.Resources.Picture
 
             Image = new byte[Width * Height];
 
-            ImageEncoder.ReadImage(stream, stream, Image, _transpCol, true);
+            ImageEncoder.ReadImageVGA(stream, stream, Image, _transpCol);
 
             var readSize = stream.Position - startPos;
 
@@ -46,7 +46,7 @@ namespace SCI_Lib.Resources.Picture
             bb.AddShortBE(0);
             bb.AddByte(_transpCol);
             bb.AddByte(0);
-            ImageEncoder.WriteImage(bb, bb, Image, Width, _transpCol);
+            ImageEncoder.WriteImageVGA(bb, bb, Image, Width, _transpCol);
 
             var endPos = bb.Position;
             var size = endPos - sizePos - 2;

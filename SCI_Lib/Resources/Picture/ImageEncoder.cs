@@ -13,7 +13,7 @@ namespace SCI_Lib.Resources.Picture
         private static bool WRITE_BY_ROW = true; // Построчная запись
         private static bool USE_ADD_COUNT = false;
 
-        public static void ReadImage(Stream rle, Stream literal, byte[] img, byte transpColor, bool isVGA)
+        public static void ReadImageVGA(Stream rle, Stream literal, byte[] img, byte transpColor)
         {
             if (LOG) logStream = new StreamWriter(new FileStream("decoder.log", FileMode.Create));
 
@@ -23,55 +23,45 @@ namespace SCI_Lib.Resources.Picture
             {
                 var d = rle.ReadB();
 
-                if (!isVGA)
+                var cnt = (d & 0x3f) + addCount; // 2 бита - код, 6 - количество
+                var code = d >> 6;
+                if (LOG) logStream.Write($"[{rle.Position - 1:X}] {code} x{cnt} ");
+
+                switch (code)
                 {
-                    byte c = (byte)(d & 0x0f);
-                    var cnt = (d & 0xf0) >> 4;
-                    for (var i = 0; i < cnt; i++)
-                        img[ind++] = c;
-                }
-                else
-                {
-                    var cnt = (d & 0x3f) + addCount; // 2 бита - код, 6 - количество
-                    var code = d >> 6;
-                    if (LOG) logStream.Write($"[{rle.Position-1:X}] {code} x{cnt} ");
+                    case 0: // Разные пиксели
+                        if (LOG) logStream.Write("[");
+                        for (var i = 0; i < cnt; i++)
+                        {
+                            img[ind + i] = literal.ReadB();
+                            if (LOG) logStream.Write($"{img[ind + i]:X2} ");
+                        }
+                        ind += cnt;
+                        addCount = 0;
+                        if (LOG) logStream.WriteLine("]");
+                        break;
 
-                    switch (code)
-                    {
-                        case 0: // Разные пиксели
-                            if (LOG) logStream.Write("[");
-                            for (var i = 0; i < cnt; i++)
-                            {
-                                img[ind + i] = literal.ReadB();
-                                if (LOG) logStream.Write($"{img[ind + i]:X2} ");
-                            }
-                            ind += cnt;
-                            addCount = 0;
-                            if (LOG) logStream.WriteLine("]");
-                            break;
+                    case 1: // Увеличиваем счетчик
+                        addCount += 64;
+                        if (LOG) logStream.WriteLine();
+                        break;
 
-                        case 1: // Увеличиваем счетчик
-                            addCount += 64;
-                            if (LOG) logStream.WriteLine();
-                            break;
+                    case 2: // Одинаковые пиксели подряд
+                        var c = literal.ReadB();
+                        if (LOG) logStream.WriteLine($"{c:X2}");
+                        for (var i = 0; i < cnt; i++)
+                            img[ind + i] = c;
+                        ind += cnt;
+                        addCount = 0;
+                        break;
 
-                        case 2: // Одинаковые пиксели подряд
-                            var c = literal.ReadB();
-                            if (LOG) logStream.WriteLine($"{c:X2}");
-                            for (var i = 0; i < cnt; i++)
-                                img[ind + i] = c;
-                            ind += cnt;
-                            addCount = 0;
-                            break;
-
-                        case 3: // Прозрачные пиксели подряд
-                            if (LOG) logStream.WriteLine("T");
-                            for (var i = 0; i < cnt; i++)
-                                img[ind + i] = transpColor;
-                            ind += cnt;
-                            addCount = 0;
-                            break;
-                    }
+                    case 3: // Прозрачные пиксели подряд
+                        if (LOG) logStream.WriteLine("T");
+                        for (var i = 0; i < cnt; i++)
+                            img[ind + i] = transpColor;
+                        ind += cnt;
+                        addCount = 0;
+                        break;
                 }
             }
 
@@ -82,7 +72,7 @@ namespace SCI_Lib.Resources.Picture
             }
         }
 
-        public static void WriteImage(ByteBuilder bbRLE, ByteBuilder bbLiterals, byte[] image, int width, byte transpCol)
+        public static void WriteImageVGA(ByteBuilder bbRLE, ByteBuilder bbLiterals, byte[] image, int width, byte transpCol)
         {
             if (LOG) logStream = new StreamWriter(new FileStream("encoder.log", FileMode.Create));
 
@@ -103,6 +93,49 @@ namespace SCI_Lib.Resources.Picture
             {
                 logStream.Flush();
                 logStream.Close();
+            }
+        }
+
+        public static void ReadImageEGA(Stream rle, byte[] img)
+        {
+            int ind = 0;
+            while (ind < img.Length)
+            {
+                var d = rle.ReadB();
+
+                byte c = (byte)(d & 0x0f);
+                var cnt = (d & 0xf0) >> 4;
+                for (var i = 0; i < cnt; i++)
+                    img[ind++] = c;
+            }
+        }
+
+        public static void WriteImageEGA(ByteBuilder rle, byte[] image, int width)
+        {
+            /*var rows = image.Length / width;
+            for (int y = 0; y < rows; y++)
+            {
+                WriteRowEGA(rle, image, y * width, width);
+            }*/
+
+            WriteRowEGA(rle, image, 0, image.Length);
+        }
+
+
+        private static void WriteRowEGA(ByteBuilder rle, byte[] image, int offset, int width)
+        {
+            int start = 0;
+            while (start < width)
+            {
+                byte color = image[offset + start];
+                int cnt = 1;
+                while (cnt < 15 && start + cnt + 1 < width && image[offset + start + cnt] == color)
+                    cnt++;
+
+                byte b = (byte)((cnt << 4) | color);
+                rle.AddByte(b);
+
+                start += cnt;
             }
         }
 

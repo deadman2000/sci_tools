@@ -67,6 +67,7 @@ namespace SCI_Lib.SCI0
             ResType.Font => "font",
             ResType.Cursor => "cursor",
             ResType.Patch => "patch",
+            ResType.Palette => "palette",
             _ => throw new NotImplementedException(),
         };
 

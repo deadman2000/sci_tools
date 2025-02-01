@@ -268,7 +268,7 @@ namespace SCI_Lib.Resources.View
                         var bbRLE = new ByteBuilder();
                         var bbLit = new ByteBuilder();
 
-                        cell.Write(bbRLE, bbLit);
+                        cell.WriteVGA(bbRLE, bbLit);
                         var rleData = bbRLE.GetArray();
                         var litData = bbLit.GetArray();
 
@@ -328,7 +328,7 @@ namespace SCI_Lib.Resources.View
             var hasBones = (flags & 0x20) != 0;
 
             var mirrorBits = ms.ReadUShortBE();
-            ms.Position += 2;
+            ms.ReadUShortBE(); // Unknown
             var palOffset = ms.ReadUShortBE();
 
             ushort[] loopOffsets = new ushort[loopsCount];
@@ -351,7 +351,8 @@ namespace SCI_Lib.Resources.View
 
                 ms.Position = loopOffsets[i];
                 var cellsCount = ms.ReadUShortBE();
-                ms.Position += 2; // Skip unknown
+                ms.ReadUShortBE(); // Skip unknown
+
                 ushort[] cellOffsets = new ushort[cellsCount];
                 for (int j = 0; j < cellsCount; j++)
                     cellOffsets[j] = ms.ReadUShortBE();
@@ -364,6 +365,52 @@ namespace SCI_Lib.Resources.View
                     loop.Cells.Add(cell);
                 }
             }
+        }
+
+        internal byte[] GetBytesEGA()
+        {
+            ByteBuilder bb = new();
+            bb.AddByte((byte)Loops.Count);
+            byte flags = 0;
+            if (Palette != Palette.EGA)
+                flags |= 0x80;
+            bb.AddByte(flags);
+
+            bb.AddUShortBE(0); // mirror bits
+            bb.AddUShortBE(0); // unknown
+            var palRef = bb.Position;
+            bb.AddUShortBE(0); // Palette offset
+            for (int i = 0; i < Loops.Count; i++)
+                bb.AddUShortBE(0); // Loop offsets
+
+            if (Palette != Palette.EGA)
+            {
+                bb.SetUShortBE(palRef, (ushort)bb.Position);
+                Palette.Write(bb);
+            }
+
+            for (int i = 0; i < Loops.Count; i++)
+            {
+                var loop = Loops[i];
+                bb.SetUShortBE(palRef + 2 + i * 2, (ushort)bb.Position);
+
+                bb.AddUShortBE((ushort)loop.Cells.Count);
+                bb.AddUShortBE(0); // Unknown
+
+                var cellRef = bb.Position;
+                for (int j = 0; j < loop.Cells.Count; j++)
+                    bb.AddUShortBE(0); // Cell offsets
+
+                for (int j = 0; j < loop.Cells.Count; j++)
+                {
+                    var cell = loop.Cells[j];
+                    bb.SetUShortBE(cellRef + j * 2, (ushort)bb.Position);
+
+                    cell.WriteEVGA(bb, false);
+                }
+            }
+
+            return bb.GetArray();
         }
     }
 }
