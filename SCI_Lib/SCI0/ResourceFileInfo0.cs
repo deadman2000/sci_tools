@@ -10,40 +10,32 @@ namespace SCI_Lib.SCI0
     {
         public ResourceFileInfo0(string path, int offset)
         {
-            using (FileStream fs = File.OpenRead(path))
-            {
-                fs.Position = offset;
-                var id = fs.ReadUShortBE();
-                ResT = (byte)(id >> 11);
-                ResNr = (ushort)(id & 0x7ff);
-                CompSize = fs.ReadUShortBE();
-                DecompSize = fs.ReadUShortBE();
-                Method = fs.ReadUShortBE();
-            }
+            using FileStream fs = File.OpenRead(path);
+            fs.Position = offset;
+            var id = fs.ReadUShortBE();
+            ResT = (byte)(id >> 11);
+            ResNr = (ushort)(id & 0x7ff);
+            CompSize = fs.ReadUShortBE();
+            DecompSize = fs.ReadUShortBE();
+            Method = fs.ReadUShortBE();
         }
 
         public override int HeadSize => 8;
 
-        public override Decompressor GetDecompressor()
+        public override Decompressor GetDecompressor() => Method switch
         {
-            switch (Method)
-            {
-                case 1: return new DecompressorLZW0();
-                case 2: return new DecompressorHuffman();
-                //case 2: return new DecompressorLZW1();
-                default: throw new NotImplementedException();
-            }
-        }
+            1 => new DecompressorLZW0(),
+            2 => new DecompressorHuffman(),
+            //2 => new DecompressorLZW1(),
+            _ => throw new NotImplementedException(),
+        };
 
-        public override Compressor GetCompressor()
+        public override Compressor GetCompressor() => Method switch
         {
-            switch (Method)
-            {
-                case 1: return new CompressorLZW0();
-                case 2: return new CompressorHuffman();
-                default: throw new NotImplementedException();
-            }
-        }
+            1 => new CompressorLZW0(),
+            2 => new CompressorHuffman(),
+            _ => throw new NotImplementedException(),
+        };
 
         public override void Write(Stream stream)
         {

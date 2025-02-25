@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Resources;
 using SCI_Lib.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -27,6 +28,19 @@ namespace SCI_Lib.SCI0
         // https://github.com/scummvm/scummvm/blob/master/engines/sci/resource.cpp#L1779
         protected override void ReadMap(FileStream fs)
         {
+            if (!ReadMap(fs, 26))
+            {
+                if (!ReadMap(fs, 28))
+                    throw new FormatException();
+            }
+        }
+
+        protected bool ReadMap(FileStream fs, int shift)
+        {
+            Resources.Clear();
+            fs.Seek(0, SeekOrigin.Begin);
+            HashSet<int> fileChecked = new();
+
             while (true)
             {
                 ushort typeNum = fs.ReadUShortBE();
@@ -35,13 +49,23 @@ namespace SCI_Lib.SCI0
 
                 var type = SCI0_ResMap[typeNum >> 11];
                 var num = (ushort)(typeNum & 0x7ff);
-                var resNum = (byte)(fnOffset >> 26);
+                var resNum = (byte)(fnOffset >> shift);
                 var offset = (int)(fnOffset & 0x3ffffff);
 
                 var res = CreateResource(type, num);
                 res.Init(this, type, num, resNum, offset);
+
+                if (!fileChecked.Contains(resNum))
+                {
+                    if (!File.Exists(Path.Combine(GameDirectory, $"resource.{resNum:D3}")))
+                        return false;
+                    fileChecked.Add(resNum);
+                }
+
                 Resources.Add(res);
             }
+
+            return true;
         }
 
         protected override void SaveMap(FileStream fs)
