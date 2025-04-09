@@ -117,5 +117,7 @@ namespace SCI_Lib.Resources.Scripts
             var code = (CodeSection)CreateSection(SectionType.Code);
             return code.AppendASM(asm);
         }
+
+        public override string ToString() => $"Script {Resource}";
     }
 }

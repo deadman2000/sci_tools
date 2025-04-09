@@ -61,7 +61,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
             return $"{_offset:x4}: {Type}";
         }
 
-        protected static ushort ReadShortBE(byte[] data, ref ushort offset)
+        protected static ushort ReadUShortBE(byte[] data, ref ushort offset)
         {
             return (ushort)(data[offset++] | (data[offset++] << 8));
         }

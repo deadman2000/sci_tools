@@ -111,7 +111,7 @@ public class ProcedureTree
                     case 0x32: // jmp
                     case 0x33:
                         jupms.Add(code.Next);
-                        var r = code.Arguments[0] as CodeRef;
+                        var r = code.Arguments[0] as BaseRef;
                         if (r.Reference is Code rc)
                         {
                             var addr = rc.Address;

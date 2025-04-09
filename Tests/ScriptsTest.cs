@@ -40,9 +40,9 @@ namespace Tests
             {
                 foreach (var r in rel.Refs)
                 {
-                    var descr = $"Res: {scr.Resource} Ref at {r.Address:x4} Target: {r.TargetOffset:x4} Source: {r.Source}";
+                    var descr = $"Res: {scr.Resource} Ref at {r.Address:x4} Target: {r.TargetOffset:x4}";
                     Assert.IsNotNull(r.Reference, descr);
-                    if (r.Reference is not RefToElement && r.Reference is not PropertyElement)
+                    if (r.Reference is not BaseRef && r.Reference is not PropertyElement)
                         Assert.Fail(descr);
                 }
             }
@@ -143,7 +143,7 @@ namespace Tests
 
                 foreach (var r in scr.AllRefs)
                 {
-                    var descr = $"{res} {r.Address:x4} {r.Source}";
+                    var descr = $"{res} {r.Address:x4}";
                     Assert.IsTrue(r.IsSetup, descr);
                     Assert.IsTrue(r.IsWrited, descr);
                     Assert.IsTrue(r.IsOffsetWrited, descr);

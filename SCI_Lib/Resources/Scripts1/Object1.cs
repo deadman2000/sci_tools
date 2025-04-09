@@ -99,7 +99,7 @@ namespace SCI_Lib.Resources.Scripts1
 
                 var pos = stream.Position;
                 var offset = stream.ReadUShortBE();
-                var r = new RefToElement(Script, (ushort)pos, offset);
+                var r = new GlobalRef(Script, (ushort)pos, offset);
                 Methods[i] = new Method(this, sel, offset, r);
             }
         }

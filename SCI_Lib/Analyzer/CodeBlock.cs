@@ -103,7 +103,7 @@ public class CodeBlock
 
         if (last.Name == "jmp")
         {
-            var r = last.Arguments[0] as CodeRef;
+            var r = last.Arguments[0] as BaseRef;
             NextA = (Code)r.Reference;
             return;
         }
@@ -113,7 +113,7 @@ public class CodeBlock
             case 0x2e: // bt
             case 0x2f:
                 {
-                    var r = last.Arguments[0] as CodeRef;
+                    var r = last.Arguments[0] as BaseRef;
                     NextA = (Code)r.Reference;
                     NextB = last.Next;
                 }
@@ -121,7 +121,7 @@ public class CodeBlock
             case 0x30: // bnt
             case 0x31:
                 {
-                    var r = last.Arguments[0] as CodeRef;
+                    var r = last.Arguments[0] as BaseRef;
                     NextB = (Code)r.Reference;
                     NextA = last.Next;
                 }
@@ -391,7 +391,7 @@ public class CodeBlock
             case 0x40: // call
             case 0x41:
                 {
-                    var cr = (CodeRef)code.Arguments[0];
+                    var cr = (BaseRef)code.Arguments[0];
                     var proc = $"localproc_{cr.TargetOffset:x4}";
                     var cnt = code.GetByte(1) / 2;
                     var args = PopArgs(cnt);
@@ -635,11 +635,11 @@ public class CodeBlock
                 break;
             case 0x72: // lofsa
             case 0x73:
-                SetAcc((RefToElement)code.Arguments[0]);
+                SetAcc((BaseRef)code.Arguments[0]);
                 break;
             case 0x74: // lofss
             case 0x75:
-                Push(GetExpr((RefToElement)code.Arguments[0]));
+                Push(GetExpr((BaseRef)code.Arguments[0]));
                 break;
             case 0x76: // push0
             case 0x77:
@@ -700,7 +700,7 @@ public class CodeBlock
         return new ParamExpr(cl.Properties[ind]);
     }
 
-    private static Expr GetExpr(RefToElement r)
+    private static Expr GetExpr(BaseRef r)
     {
         if (r.Reference is PropertyElement prop)
         {
@@ -780,7 +780,7 @@ public class CodeBlock
 
 
     private void SetAcc(short val) => SetAcc(new ConstExpr(val));
-    private void SetAcc(RefToElement r) => SetAcc(GetExpr(r));
+    private void SetAcc(BaseRef r) => SetAcc(GetExpr(r));
     private void SetAcc(CallExpr expr)
     {
         AddExpr(expr);

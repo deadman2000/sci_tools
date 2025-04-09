@@ -25,8 +25,8 @@ namespace SCI_Lib.SCI0
         public override Decompressor GetDecompressor() => Method switch
         {
             1 => new DecompressorLZW0(),
-            2 => new DecompressorHuffman(),
-            //2 => new DecompressorLZW1(),
+            //2 => new DecompressorHuffman(),
+            2 => new DecompressorLZW1(),
             _ => throw new NotImplementedException(),
         };
 

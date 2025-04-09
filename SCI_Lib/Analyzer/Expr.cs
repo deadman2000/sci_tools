@@ -146,7 +146,7 @@ public class SetExpr : Expr
 public class RefExpr : Expr
 {
     public BaseElement Ref { get; }
-    public RefExpr(RefToElement r) => Ref = r.Reference;
+    public RefExpr(BaseRef r) => Ref = r.Reference;
 
     public override string Label => Ref switch
     {

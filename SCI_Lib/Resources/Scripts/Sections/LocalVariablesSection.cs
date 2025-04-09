@@ -12,7 +12,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
             for (int i = 0; i < Vars.Length; i++)
             {
-                Vars[i] = ReadShortBE(data, ref offset);
+                Vars[i] = ReadUShortBE(data, ref offset);
             }
         }
 
@@ -23,7 +23,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
         public ushort this[int index] => Vars[index] switch
         {
             ushort us => us,
-            RefToElement r => r.Address,
+            BaseRef r => r.Address,
             _ => throw new Exception(),
         };
 
@@ -35,7 +35,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 var el = _script.GetElement(val);
                 if (el is StringConst || el is SaidExpression)
                 {
-                    var r = new RefToElement(_script, (ushort)(Address + i * 2), val) { Source = this };
+                    var r = new GlobalRef(_script, (ushort)(Address + i * 2), val);
                     r.SetupByOffset();
                     Vars[i] = r;
                 }
@@ -51,7 +51,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
                     case ushort s:
                         bb.AddUShortBE(s);
                         break;
-                    case RefToElement r:
+                    case BaseRef r:
                         r.Write(bb);
                         break;
                 }

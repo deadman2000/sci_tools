@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using SCI_Lib.Utils;
+﻿using SCI_Lib.Utils;
 
 namespace SCI_Lib.Decompression
 {

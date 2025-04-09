@@ -56,7 +56,7 @@ public class TextUsageSearch
                 {
                     FindUsage(res.GetScript() as Script);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Console.WriteLine($"Failed to find text usage in {res.FileName}");
                 }

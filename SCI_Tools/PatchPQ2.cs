@@ -89,7 +89,7 @@ namespace SCI_Tools
                 if (op.Name != "call") return;
                 op.Arguments.Clear();
                 short val = (short)(addr - op.Address - 4);
-                op.Arguments.Add(new CodeRef(op, (ushort)(op.Address + 1), (ushort)val, addr, 2));
+                op.Arguments.Add(new RelativeWordRef(scr, (ushort)(op.Address + 1), val, 3));
                 op.AddByte(2);
 
                 Changed(res);
@@ -121,7 +121,7 @@ namespace SCI_Tools
 
             var bnt = scr.GetOperator(0x5c5);
             if (bnt.Name != "bnt") throw new Exception();
-            var r = bnt.Arguments[0] as CodeRef;
+            var r = bnt.Arguments[0] as RelativeWordRef;
             if (r.Reference.Address != 0x62c)
             {
                 r.Reference = scr.GetOperator(0x62c);

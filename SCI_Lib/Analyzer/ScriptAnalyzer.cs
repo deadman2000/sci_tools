@@ -7,7 +7,6 @@ namespace SCI_Lib.Analyzer;
 
 public class ScriptAnalyzer
 {
-    private int _procId = 0;
     private readonly string _classFilter;
     private readonly string _methodFilter;
     private readonly HashSet<ushort> _usedCode = new();

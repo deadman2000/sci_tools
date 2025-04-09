@@ -14,10 +14,10 @@ namespace SCI_Lib.Resources.Scripts.Sections
             var end = offset + length;
             while (true)
             {
-                var wordA = ReadShortBE(data, ref offset);
+                var wordA = ReadUShortBE(data, ref offset);
                 if (wordA == 0xffff) break;
 
-                var wordB = ReadShortBE(data, ref offset);
+                var wordB = ReadUShortBE(data, ref offset);
                 if (offset >= end) throw new FormatException();
                 Synonyms.Add(new Synonym
                 {

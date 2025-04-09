@@ -6,6 +6,7 @@ using SCI_Lib.Resources.Picture;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Vocab;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,35 +25,17 @@ namespace SCI_Tools
         {
             try
             {
-                // said спроси мерлина о столе & / / 8bc
-                /*var said = translate.ParseSaid("/герб/щит");
-             
-                var parser = translate.GetParser();
-                parser.Verbose = true;
-                var result = parser.Tokenize("осмотри герб на щите");
-                if (result.IsValid)
+                //Console.WriteLine(new CompanionBuilder().Decompile((Script)package.GetResource<ResScript>(203).GetScript()));
+
+                foreach (var res in package.GetResources<ResScript>())
                 {
-                    var parseTree = parser.ParseGNF(result.Words);
-                    if (parseTree != null)
-                    {
-                        Console.WriteLine(parseTree.GetTree("parse-tree"));
-
-                        ParseTreeNode saidTree = parser.BuildSaidTree(said);
-                        Console.WriteLine(saidTree.GetTree("said-tree"));
-
-                        bool res = parser.Match(parseTree, saidTree);
-                        Console.WriteLine($"Result: {res}");
-                    }
-                    else
-                        Console.WriteLine("Parse error");
+                    var scr = res.GetScript();
+                    //var txt = new CompanionBuilder().Decompile((Script)scr);
+                    //File.WriteAllText($@"D:\Projects\TranslateWeb\out\{res.FileName}.txt", txt);
                 }
-                else
-                {
-                    var wrong = string.Join(", ",
-                        result.Words.Where(w => !w.IsValid).Select(w => $"'{w.Word}'"));
 
-                    Console.WriteLine($"Unknown words: {wrong}");
-                }*/
+                //Decompile(140);
+                // PrintAllVerbs();
 
                 //FindTextSaids();
                 //FindTextSaids(6);
@@ -61,58 +44,6 @@ namespace SCI_Tools
                 //Decompile(255, "DText");
                 //Decompile(24, "Room24", "handleEvent");
                 //Decompile(2, null, "handleEvent");
-
-                /*HashSet<string> words = new();
-                foreach (var res in translate.Scripts)
-                {
-                    var scr = res.GetScript() as Script;
-                    var strings = scr.AllStrings().ToList();
-                    foreach (var cs in scr.Get<CodeSection>())
-                    {
-                        foreach (var op in cs.Operators)
-                        {
-                            if (op.Name == "callb")
-                            {
-                                if ((byte)op.Arguments[0] == 0x19 && (byte)op.Arguments[1] == 2)
-                                {
-                                    var r = op.Prev.Prev.Arguments[0] as CodeRef;
-                                    var s = r.Reference as StringConst;
-                                    words.Add(s.Value);
-                                    var ind = strings.IndexOf(s);
-                                    Console.WriteLine($"{res.Number}:{ind}  {s.Value}");
-                                }
-                            }
-                        }
-                    }
-                }
-
-                foreach (var w in words.OrderBy(w => w))
-                    Console.WriteLine(w);*/
-
-                //var s = new SaidExtract(package);
-                //s.Process(223);
-
-                /*var resTxt = translate.GetResource<ResText>(208);
-                var strings = resTxt.GetStrings();
-                var result = new string[strings.Length];
-
-                var res = translate.GetResource<ResScript>(208);
-                var scr = res.GetScript() as Script;
-                var vars = scr.Get<LocalVariablesSection>()[0].Vars;
-
-                for (int verb = 0; verb <= 10; verb++)
-                {
-                    var from = (ushort)vars[150 + verb * 2];
-                    var to = from + (ushort)vars[150 + verb * 2 + 1];
-                    for (int noun = from; noun < to; noun++)
-                    {
-                        var txtRes = (ushort)vars[1 + noun * 2];
-                        var txtInd = (ushort)vars[1 + noun * 2 + 1];
-                        var v = ((SaidExpression)((RefToElement)vars[93 + verb]).Reference).Label.TrimEnd('>');
-                        Console.WriteLine($"{noun}  {v}{vars[104 + noun]}   {txtRes}:{txtInd}");
-                    }
-                }*/
-
 
                 //FindTextCall(374, 3);
 
@@ -124,54 +55,6 @@ namespace SCI_Tools
                 SetHeap(260, 14, "Пузатый");
                 SetHeap(1902, 0, "Рокко");
                 SetHeap(1903, 0, "Боб");*/
-
-                {
-                    /*var voc = package.GetResource<ResVocab>(0) as ResVocab000;
-                    var words = voc.GetWords();
-                    var groups = words.GroupBy(w => w.Group);
-                    foreach (var gr in groups.OrderBy(g => g.Key))
-                    {
-                        foreach (var clGr in gr.GroupBy(g => g.Class).OrderBy(g => g.Key))
-                        {
-                            var groupWords = string.Join(',', gr.Select(w => w.Text));
-                            Console.WriteLine($"{clGr.Key:X03} {gr.Key:X03} {groupWords}");
-                        }
-                    }*/
-                }
-
-                {
-                    /*var voc = translate.GetResource(ResType.Vocabulary, 1) as ResVocab001;
-                    var words = voc.GetWords();
-                    foreach (var w in words)
-                        Console.WriteLine($"{w.Class:X03} {w.Group:X03} {w}");*/
-
-                    /*voc.SetWords(new Word[] {
-                        new Word("осмотрись", 0x3E8, 0x800)
-                    });
-                    voc.SavePatch();*/
-                }
-
-                /*{
-                    File.Delete(@"D:\Dos\GAMES\Laura_Bow_RUS\vocab.001");
-                    var voc = translate.CreateResource(ResType.Vocabulary, 1) as ResVocab001;
-                    List<Word> words = new();
-
-                    var lines = File.ReadAllLines(@"d:\Projects\TranslateWeb\words.txt");
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split(' ');
-                        var id = int.Parse(parts[0], System.Globalization.NumberStyles.HexNumber);
-                        ushort cl = (ushort)(id >> 12);
-                        ushort gr = (ushort)(id & 0xfff);
-                        var wordsStr = parts[1].Split(',');
-                     
-                        foreach (var w in wordsStr)
-                            words.Add(new Word(w, cl, gr));
-                    }
-
-                    voc.SetWords(words.ToArray());
-                    voc.SavePatch();
-                }*/
 
                 /*CopyOriginalFont(0);
                 CopyOriginalFont(1);
@@ -193,6 +76,20 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
+        private void PrintAllVerbs()
+        {
+            var verbs = translate.GetWords()
+                .Where(w => (w.Class & WordClass.ImperativeVerb) != 0)
+                .Where(w => !w.IsEn)
+                .Select(w => w.Text.ToUpper())
+                .Order();
+
+            foreach (var w in verbs)
+            {
+                Console.WriteLine(w);
+            }
+        }
+
         private void FindTextSaids(ushort? scr = null)
         {
             var search = new TextUsageSearch(package, scr);
@@ -208,7 +105,8 @@ namespace SCI_Tools
 
         private void Decompile(ushort num, string cl = null, string method = null)
         {
-            var res = (translate ?? package).GetResource<ResScript>(num);
+            //var res = (translate ?? package).GetResource<ResScript>(num);
+            var res = package.GetResource<ResScript>(num);
             var script = res.GetScript() as Script;
 
             var analyzer = script.Analyze(cl, method);

@@ -1,4 +1,5 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,9 +38,9 @@ namespace SCI_Lib.Resources.Scripts
 
         public IEnumerable<BaseElement> AllElements => _elements.Values;
 
-        public IEnumerable<RefToElement> AllRefs => _elements.Values.OfType<RefToElement>();
+        public IEnumerable<BaseRef> AllRefs => _elements.Values.OfType<BaseRef>();
 
-        public BaseElement GetElement(ushort offset)
+        public virtual BaseElement GetElement(ushort offset)
         {
             if (_elements.TryGetValue(offset, out var el)) return el;
             return null;

@@ -15,7 +15,7 @@ namespace SCI_Lib.Resources.Scripts1
 
         public List<Code> Operators { get; private set; }
 
-        public RefToElement[] Exports { get; private set; }
+        public GlobalRef[] Exports { get; private set; }
 
         public BaseElement[] HeapPointers { get; private set; }
 
@@ -26,6 +26,8 @@ namespace SCI_Lib.Resources.Scripts1
             Read();
         }
 
+        public override string ToString() => $"Script {Resource}";
+
         public override IScriptInstance GetInstance(string name) => Objects.FirstOrDefault(o => o.Name == name);
 
         public override IScriptInstance GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
@@ -35,6 +37,15 @@ namespace SCI_Lib.Resources.Scripts1
         public List<Method> Procedures { get; } = new();
 
         public BaseScript CodeOwner => this;
+
+        public override BaseElement GetElement(ushort offset)
+        {
+            var element = base.GetElement(offset);
+            if (element != null)
+                return element;
+
+            return _heap.GetElement(offset);
+        }
 
         private void Read()
         {
@@ -50,13 +61,13 @@ namespace SCI_Lib.Resources.Scripts1
             _unknown = stream.ReadIntBE();
 
             var exportsCount = stream.ReadUShortBE();
-            Exports = new RefToElement[exportsCount];
+            Exports = new GlobalRef[exportsCount];
             for (int i = 0; i < exportsCount; i++)
             {
                 var address = (ushort)stream.Position;
                 var exportOffset = stream.ReadUShortBE();
                 if (exportOffset != 0)
-                    Exports[i] = new RefToElement(this, address, exportOffset);
+                    Exports[i] = new GlobalRef(this, address, exportOffset) { CanBeInvalid = true, Source = "EXPORT" };
             }
 
             foreach (var obj in _heap.Objects)
@@ -88,9 +99,7 @@ namespace SCI_Lib.Resources.Scripts1
                 if (offset != 0)
                 {
                     var el = GetElement(offset);
-                    if (el is RefToElement r)
-                        r.RefScript = _heap;
-                    HeapPointers[i] = new RefToElement(this, (ushort)pos, offset);
+                    HeapPointers[i] = new GlobalRef(this, (ushort)pos, offset) { Source = "HEAP" };
                 }
             }
 

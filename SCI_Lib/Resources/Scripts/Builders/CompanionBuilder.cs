@@ -58,7 +58,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
             ushort lookTo = 0; // Адрес переходов
             while (code != null)
             {
-                if (code.XRefs.Any(r => r is not FuncRef))
+                if (code.XRefs.Any(r => r is not GlobalRef))
                     sb.AppendLine($"        {code.Label}");
 
                 string args;
@@ -68,8 +68,8 @@ namespace SCI_Lib.Resources.Scripts.Builders
                     args = ArgsToString(code);
 
                 foreach (var arg in code.Arguments)
-                    if (arg is CodeRef cr)
-                        lookTo = Math.Max(lookTo, cr.TargetOffset);
+                    if (arg is BaseRef r)
+                        lookTo = Math.Max(lookTo, r.TargetOffset);
 
                 sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {args}");
 
@@ -194,8 +194,8 @@ namespace SCI_Lib.Resources.Scripts.Builders
                     case ushort _:
                         sb.Append($"{a:x4}");
                         break;
-                    case RefToElement r:
-                        sb.Append($"{r.Value:x4}");
+                    case BaseRef r:
+                        sb.Append($"{r.ToHex():x4}");
                         break;
                     default:
                         sb.Append(a.ToString());
@@ -219,7 +219,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
                     case ushort:
                         sb.Append($"{a:x}");
                         break;
-                    case RefToElement r:
+                    case BaseRef r:
                         if (r.Reference != null)
                             sb.Append(r.Reference.Label);
                         else
@@ -247,7 +247,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
                     case ushort s:
                         sb.Append(s);
                         break;
-                    case RefToElement r:
+                    case BaseRef r:
                         if (r.Reference != null)
                             sb.Append(r.Reference.Label);
                         else

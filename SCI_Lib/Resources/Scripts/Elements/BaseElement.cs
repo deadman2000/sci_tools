@@ -19,7 +19,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         public GameEncoding GameEncoding => Owner.Package.GameEncoding;
 
-        public List<RefToElement> XRefs { get; } = new List<RefToElement>();
+        public List<BaseElement> XRefs { get; } = new List<BaseElement>();
 
         public ushort Address => _address;
 
@@ -36,14 +36,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
         protected abstract void WriteData(ByteBuilder bb);
 
         public virtual void WriteOffset(ByteBuilder bb) { }
-
-        public void ReplaceBy(BaseElement el)
-        {
-            foreach (var r in XRefs)
-                r.Reference = el;
-
-            el.XRefs.AddRange(XRefs);
-        }
 
         public void ResetAddress()
         {

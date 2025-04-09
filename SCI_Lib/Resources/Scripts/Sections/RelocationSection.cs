@@ -8,11 +8,11 @@ namespace SCI_Lib.Resources.Scripts.Sections
     {
         private bool _additionalZero;
 
-        public RefToElement[] Refs { get; private set; }
+        public GlobalRef[] Refs { get; private set; }
 
         public override void Read(byte[] data, ushort offset, int length)
         {
-            int cnt = ReadShortBE(data, ref offset);
+            int cnt = ReadUShortBE(data, ref offset);
             if (length / 2 == cnt + 2)
                 _additionalZero = true;
             else if (length / 2 == cnt + 1)
@@ -20,15 +20,15 @@ namespace SCI_Lib.Resources.Scripts.Sections
             else
                 throw new FormatException();
 
-            Refs = new RefToElement[cnt];
+            Refs = new GlobalRef[cnt];
 
             if (_additionalZero)
                 offset += 2;
             for (int i = 0; i < cnt; i++)
             {
                 var addr = offset;
-                ushort val = ReadShortBE(data, ref offset);
-                var el = new RefToElement(_script, addr, val) { Source = this };
+                ushort val = ReadUShortBE(data, ref offset);
+                var el = new GlobalRef(_script, addr, val);
                 Refs[i] = el;
             }
         }

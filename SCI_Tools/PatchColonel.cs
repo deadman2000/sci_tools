@@ -775,7 +775,7 @@ namespace SCI_Tools
             var op = scr.GetOperator(0x4ad);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr14 failed");
 
-            var r = op.Arguments[0] as CodeRef;
+            var r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset == 0x4ce)
             {
                 r.TargetOffset = 0x4bb;
@@ -843,7 +843,7 @@ namespace SCI_Tools
             var op = scr.GetOperator(0x463);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr246 failed");
 
-            var r = op.Arguments[0] as CodeRef;
+            var r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x4de) return;
 
             r.TargetOffset = 0x4f6;
@@ -852,7 +852,7 @@ namespace SCI_Tools
             op = scr.GetOperator(0x4ce);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr246 failed");
 
-            r = op.Arguments[0] as CodeRef;
+            r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x529) return;
 
             r.TargetOffset = 0x4de;
@@ -870,7 +870,7 @@ namespace SCI_Tools
             var op = scr.GetOperator(0x4e0);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr277 failed");
 
-            var r = op.Arguments[0] as CodeRef;
+            var r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x5d0) return;
 
             r.TargetOffset = 0x5e5;
@@ -879,7 +879,7 @@ namespace SCI_Tools
             op = scr.GetOperator(0x563);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr277 failed");
 
-            r = op.Arguments[0] as CodeRef;
+            r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x5e5) return;
 
             r.TargetOffset = 0x5d0;
@@ -922,7 +922,7 @@ namespace SCI_Tools
             var op = scr.GetOperator(0x5d9);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr382 failed");
 
-            var r = op.Arguments[0] as CodeRef;
+            var r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x6b4) return;
 
             r.TargetOffset = 0x6c9;
@@ -931,7 +931,7 @@ namespace SCI_Tools
             op = scr.GetOperator(0x6a4);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr382 failed");
 
-            r = op.Arguments[0] as CodeRef;
+            r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x6c9) return;
 
             r.TargetOffset = 0x6b4;
@@ -949,7 +949,7 @@ namespace SCI_Tools
             var op = scr.GetOperator(0xe4);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr385 failed");
 
-            var r = op.Arguments[0] as CodeRef;
+            var r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x17a) return;
 
             r.TargetOffset = 0x18f;
@@ -958,7 +958,7 @@ namespace SCI_Tools
             op = scr.GetOperator(0x16a);
             if (op == null || op.Name != "bnt") throw new Exception("PatchScr385 failed");
 
-            r = op.Arguments[0] as CodeRef;
+            r = op.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset != 0x18f) throw new Exception("PatchScr385 failed");
 
             r.TargetOffset = 0x17a;

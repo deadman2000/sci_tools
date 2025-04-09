@@ -7,9 +7,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
     {
         public ClassSection Class { get; }
         public int Index { get; }
-
-        private int _address;
-
         public string Name { get; set; }
         public ushort Value { get; set; }
         public BaseElement Reference { get; set; }
@@ -28,7 +25,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
         protected override void WriteData(ByteBuilder bb)
         {
-            _address = bb.Position;
             bb.AddUShortBE(0);
         }
 
@@ -37,7 +33,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
             if (Reference != null)
                 Value = Reference.Address;
 
-            bb.SetUShortBE(_address, Value);
+            bb.SetUShortBE(Address, Value);
         }
 
         public override string ToString() => $"{Name} = ${Value:x}";

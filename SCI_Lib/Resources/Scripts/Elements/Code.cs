@@ -42,7 +42,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
         public void SetArguments(object[] args) => Arguments = args.Select(v => ToElement(this, v)).ToList();
 
 
-
         public Code Prev { get; private set; }
         public Code Next { get; private set; }
 
@@ -104,8 +103,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     case ShortArg s:
                         sb.Append($"{s.Value:x4}");
                         break;
-                    case RefToElement r:
-                        sb.Append(r.ToHex(Address + Size));
+                    case BaseRef r:
+                        sb.Append(r.ToHex());
                         break;
 
                     default:
@@ -210,8 +209,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     break;
 
                 // B
-                case 0x2f:
-                case 0x31:
                 case 0x35:
                 case 0x39:
                 case 0x3f:
@@ -230,14 +227,16 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x6f: // ipTos
                 case 0x71: // dpTos
                 case 0x73:
-                case 0x75:
                     AddByte(data, ref offset);
                     break;
 
-                case 0x33:
+                case 0x2f: // bt
+                case 0x31: // bnt
+                case 0x33: // jmp
+                case 0x75: // lofss
                     {
-                        var a1 = data[offset++];
-                        Arguments.Add(new RefToElement(Owner, addr, a1, (ushort)(offset + 1 + a1), 1) { Source = this });
+                        var a1 = ReadSByte(data, ref offset);
+                        Arguments.Add(new RelativeByteRef(Owner, addr, a1));
                     }
                     break;
 
@@ -254,7 +253,6 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x66:
                 case 0x6a:
                 case 0x6c:
-                case 0x74:
                     AddByte(data, ref offset);
                     AddByte(data, ref offset);
                     break;
@@ -266,10 +264,10 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     break;
 
                 // Relative offset
-                case 0x41: // call B
+                case 0x41: // call B B
                     {
-                        var a1 = data[offset++];
-                        Arguments.Add(new CodeRef(this, addr, a1, (ushort)(offset + a1), 1));
+                        var a1 = ReadSByte(data, ref offset);
+                        Arguments.Add(new RelativeByteRef(Owner, addr, a1, 2));
                         AddByte(data, ref offset);
                     }
                     break;
@@ -277,19 +275,17 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x2e: // bt
                 case 0x30: // bnt
                 case 0x32: // jmp
+                case 0x74: // lofss
                     {
-                        var a1 = ReadUShort(data, ref offset);
-                        Arguments.Add(new CodeRef(this, addr, a1, (ushort)(offset + a1), 2));
+                        var a1 = ReadShort(data, ref offset);
+                        Arguments.Add(new RelativeWordRef(Owner, addr, a1, 2));
                     }
                     break;
 
                 case 0x72: // lofsa
                     {
                         var a1 = ReadUShort(data, ref offset);
-                        if (Owner.Package.ViewFormat == ViewFormat.EGA)
-                            Arguments.Add(new RefToElement(Owner, addr, a1, (ushort)(offset + a1), 2) { Source = this });
-                        else
-                            Arguments.Add(new RefToElement(Owner, addr, a1) { Source = this });
+                        Arguments.Add(new GlobalRef(Owner, addr, a1));
                     }
                     break;
 
@@ -310,8 +306,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
                 case 0x40: // call W B
                     {
-                        var a1 = ReadUShort(data, ref offset);
-                        Arguments.Add(new CodeRef(this, addr, a1, (ushort)(offset + a1 + 1), 2));
+                        var a1 = ReadShort(data, ref offset);
+                        Arguments.Add(new RelativeWordRef(Owner, addr, a1, 3));
                         AddByte(data, ref offset);
                     }
                     break;
@@ -324,11 +320,9 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
                 // W W B
                 case 0x46: // calle
-                    {
-                        AddShort(data, ref offset);
-                        AddShort(data, ref offset);
-                        AddByte(data, ref offset);
-                    }
+                    AddShort(data, ref offset);
+                    AddShort(data, ref offset);
+                    AddByte(data, ref offset);
                     break;
 
                 case 0x4c:
@@ -345,6 +339,17 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
                 default: throw new NotImplementedException($"OpCode {Type:X02} '{Name}' arg's unknown");
             }
+
+            foreach (var arg in Arguments)
+            {
+                if (arg is BaseRef r)
+                    r.Source = this;
+            }
+        }
+
+        private sbyte ReadSByte(byte[] data, ref ushort offset)
+        {
+            return (sbyte)data[offset++];
         }
 
         private void AddByte(byte[] data, ref ushort offset)
@@ -359,6 +364,13 @@ namespace SCI_Lib.Resources.Scripts.Elements
             var l = data[offset++];
             var h = data[offset++];
             Arguments.Add(new ShortArg(this, address, (short)(l | (h << 8))));
+        }
+
+        static short ReadShort(byte[] data, ref ushort offset)
+        {
+            var l = data[offset++];
+            var h = data[offset++];
+            return (short)(l | (h << 8));
         }
 
         static ushort ReadUShort(byte[] data, ref ushort offset)

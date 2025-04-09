@@ -21,7 +21,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
         public ushort[] FuncNamesInd { get; private set; }
         public string[] FuncNames { get; private set; }
 
-        public FuncRef[] FuncCode { get; private set; }
+        public GlobalRef[] FuncCode { get; private set; }
 
         private ClassSection _superClass;
         private bool _prepared;
@@ -31,22 +31,22 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
         public override void Read(byte[] data, ushort offset, int length)
         {
-            var magic = ReadShortBE(data, ref offset);
+            var magic = ReadUShortBE(data, ref offset);
             if (magic != 0x1234)
                 throw new Exception("Wrong class magic");
 
-            var varOffset = ReadShortBE(data, ref offset);
+            var varOffset = ReadUShortBE(data, ref offset);
             if (varOffset != 0)
                 throw new Exception("Wrong class var offset");
 
-            funcList = ReadShortBE(data, ref offset);
-            int propsCount = ReadShortBE(data, ref offset);
+            funcList = ReadUShortBE(data, ref offset);
+            int propsCount = ReadUShortBE(data, ref offset);
 
             Properties = new PropertyElement[propsCount];
             for (int i = 0; i < propsCount; i++)
             {
                 var addr = offset;
-                var val = ReadShortBE(data, ref offset);
+                var val = ReadUShortBE(data, ref offset);
                 Properties[i] = new PropertyElement(this, i, addr, val);
             }
 
@@ -55,30 +55,30 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 _propNamesInd = new ushort[propsCount];
                 for (int i = 0; i < propsCount; i++)
                 {
-                    var selector = ReadShortBE(data, ref offset);
+                    var selector = ReadUShortBE(data, ref offset);
                     _propNamesInd[i] = selector;
                     Properties[i].Name = Package.GetName(selector);
                     Properties[i].NameSel = selector;
                 }
             }
 
-            int fs = ReadShortBE(data, ref offset);
+            int fs = ReadUShortBE(data, ref offset);
             FuncNamesInd = new ushort[fs];
             FuncNames = new string[fs];
             for (int i = 0; i < fs; i++)
             {
-                var ind = ReadShortBE(data, ref offset);
+                var ind = ReadUShortBE(data, ref offset);
                 FuncNamesInd[i] = ind;
                 FuncNames[i] = Package.GetName(ind);
             }
 
             offset += 2;
 
-            FuncCode = new FuncRef[fs];
+            FuncCode = new GlobalRef[fs];
             for (int i = 0; i < fs; i++)
             {
                 var addr = offset;
-                FuncCode[i] = new FuncRef(_script, addr, ReadShortBE(data, ref offset)) { Source = this };
+                FuncCode[i] = new GlobalRef(_script, addr, ReadUShortBE(data, ref offset));
             }
 
             //_script.Register(Selectors[0]);
@@ -158,7 +158,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
             bb.AddShortBE(0);
 
-            foreach (RefToElement r in FuncCode)
+            foreach (BaseRef r in FuncCode)
                 r.Write(bb);
         }
 

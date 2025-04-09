@@ -38,7 +38,7 @@ namespace SCI_Tools
             // Заменяем порядок проверок, чтобы работал запрос "спроси мага про послание розы"
             var bnt = scr.GetOperator(0xccb);
             if (bnt.Name != "bnt") throw new Exception();
-            var r = bnt.Arguments[0] as CodeRef;
+            var r = bnt.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset == 0x0cda)
             {
                 r.TargetOffset = 0x0d29;
@@ -48,7 +48,7 @@ namespace SCI_Tools
 
             bnt = scr.GetOperator(0x0ced);
             if (bnt.Name != "bnt") throw new Exception();
-            r = bnt.Arguments[0] as CodeRef;
+            r = bnt.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset == 0x0d29)
             {
                 r.TargetOffset = 0x0d40;
@@ -58,7 +58,7 @@ namespace SCI_Tools
 
             bnt = scr.GetOperator(0x0d31);
             if (bnt.Name != "bnt") throw new Exception();
-            r = bnt.Arguments[0] as CodeRef;
+            r = bnt.Arguments[0] as RelativeWordRef;
             if (r.TargetOffset == 0x0d40)
             {
                 r.TargetOffset = 0x0cda;
@@ -85,7 +85,7 @@ namespace SCI_Tools
             op.Type = 0x40;
             op.Arguments.Clear();
             short val = (short)(0x2b6 - op.Address - 4);
-            op.Arguments.Add(new CodeRef(op, (ushort)(op.Address + 1), (ushort)val, 0x2b6, 2));
+            op.Arguments.Add(new RelativeWordRef(scr, (ushort)(op.Address + 1), val, 2));
             op.AddByte(4);
 
             //var op2 = scr.GetOperator(0xf8f);

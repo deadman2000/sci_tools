@@ -197,7 +197,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
             for (int i = 0; i < rs.Refs.Length; i++)
             {
                 var r = rs.Refs[i];
-                sb.AppendLine($"pointer_{r.Address:x4} = {r.Value:x4}; {r}");
+                sb.AppendLine($"pointer_{r.Address:x4} = {r.ToHex()}; {r}");
             }
         }
 

@@ -10,10 +10,10 @@ namespace SCI_Lib.Resources.Scripts1
 
         public ushort Selector { get; }
         public ushort Address { get; set; }
-        public RefToElement Reference { get; }
+        public BaseRef Reference { get; }
         public BaseScript CodeOwner => _object.Script;
 
-        public Method(Object1 obj, ushort sel, ushort offset, RefToElement r)
+        public Method(Object1 obj, ushort sel, ushort offset, BaseRef r)
         {
             _object = obj;
             Selector = sel;
