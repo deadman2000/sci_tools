@@ -57,7 +57,7 @@ namespace SCI_Lib.SCI0
 
                 if (!fileChecked.Contains(resNum))
                 {
-                    if (!File.Exists(Path.Combine(GameDirectory, $"resource.{resNum:D3}")))
+                    if (!File.Exists(Path.Combine(GameDirectory, $"RESOURCE.{resNum:D3}")))
                         return false;
                     fileChecked.Add(resNum);
                 }
@@ -82,16 +82,16 @@ namespace SCI_Lib.SCI0
 
         private static string GetResName(ResType type) => type switch
         {
-            ResType.View => "view",
-            ResType.Picture => "pic",
-            ResType.Script => "script",
-            ResType.Text => "text",
-            ResType.Sound => "sound",
-            ResType.Vocabulary => "vocab",
-            ResType.Font => "font",
-            ResType.Cursor => "cursor",
-            ResType.Patch => "patch",
-            ResType.Palette => "palette",
+            ResType.View => "VIEW",
+            ResType.Picture => "PIC",
+            ResType.Script => "SCRIPT",
+            ResType.Text => "TEXT",
+            ResType.Sound => "SOUND",
+            ResType.Vocabulary => "VOCAB",
+            ResType.Font => "FONT",
+            ResType.Cursor => "CURSOR",
+            ResType.Patch => "PATCH",
+            ResType.Palette => "PALETTE",
             _ => throw new NotImplementedException(),
         };
 
@@ -106,15 +106,15 @@ namespace SCI_Lib.SCI0
 
         private static ResType GetResType(string name) => name.ToLower() switch
         {
-            "view" => ResType.View,
-            "pic" => ResType.Picture,
-            "script" => ResType.Script,
-            "text" => ResType.Text,
-            "sound" => ResType.Sound,
-            "vocab" => ResType.Vocabulary,
-            "font" => ResType.Font,
-            "cursor" => ResType.Cursor,
-            "patch" => ResType.Patch,
+            "VIEW" => ResType.View,
+            "PIC" => ResType.Picture,
+            "SCRIPT" => ResType.Script,
+            "TEXT" => ResType.Text,
+            "SOUND" => ResType.Sound,
+            "VOCAB" => ResType.Vocabulary,
+            "FONT" => ResType.Font,
+            "CURSOR" => ResType.Cursor,
+            "PATCH" => ResType.Patch,
             _ => throw new NotImplementedException(),
         };
     }
