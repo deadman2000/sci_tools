@@ -52,8 +52,8 @@ namespace SCI_Lib.SCI0
                 var resNum = (byte)(fnOffset >> shift);
                 var offset = (int)(fnOffset & 0x3ffffff);
 
-                var res = CreateResource(type, num);
-                res.Init(this, type, num, resNum, offset);
+                var res = AddResource(type, num);
+                res.SetupOffset(resNum, offset);
 
                 if (!fileChecked.Contains(resNum))
                 {
@@ -61,8 +61,6 @@ namespace SCI_Lib.SCI0
                         return false;
                     fileChecked.Add(resNum);
                 }
-
-                Resources.Add(res);
             }
 
             return true;
@@ -95,16 +93,22 @@ namespace SCI_Lib.SCI0
             _ => throw new NotImplementedException(),
         };
 
-        public override (ResType type, int number) FileNameToRes(string fileName)
+        public override bool TryFileNameToRes(string fileName, out ResType type, out ushort number)
         {
             var parts = fileName.Split('.');
-            if (parts.Length != 2) throw new FormatException($"Invalid file name '{fileName}'");
-            if (!int.TryParse(parts[1], out var num)) throw new FormatException($"Invalid file name '{fileName}'");
+            if (parts.Length == 2 && ushort.TryParse(parts[1], out number))
+            {
+                type = GetResType(parts[0]);
+                if (type != ResType.Unknown)
+                    return true;
+            }
 
-            return (GetResType(parts[0]), num);
+            type = default;
+            number = default;
+            return false;
         }
 
-        private static ResType GetResType(string name) => name.ToLower() switch
+        private static ResType GetResType(string name) => name.ToUpper() switch
         {
             "VIEW" => ResType.View,
             "PIC" => ResType.Picture,
@@ -115,7 +119,7 @@ namespace SCI_Lib.SCI0
             "FONT" => ResType.Font,
             "CURSOR" => ResType.Cursor,
             "PATCH" => ResType.Patch,
-            _ => throw new NotImplementedException(),
+            _ => ResType.Unknown,
         };
     }
 }

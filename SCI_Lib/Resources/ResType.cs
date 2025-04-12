@@ -28,6 +28,8 @@
         Audio36 = 0x2,
         Sync36 = 0x3,
         Translation = 0x4,
-        Rave = 0x5
+        Rave = 0x5,
+
+        Unknown = 0xFE,
     }
 }

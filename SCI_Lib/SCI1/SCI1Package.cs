@@ -94,9 +94,8 @@ namespace SCI_Lib.SCI1
                     }
                     else
                     {
-                        Resource res = CreateResource(offsets[i].Type, num);
-                        res.Init(this, offsets[i].Type, num, resNum, offset);
-                        Resources.Add(res);
+                        Resource res = AddResource(offsets[i].Type, num);
+                        res.SetupOffset(resNum, offset);
                     }
                 }
             }
@@ -127,9 +126,8 @@ namespace SCI_Lib.SCI1
                         }
 
                         var info = new ResourceFileInfo1((byte)rt, num, method);
-                        var res = CreateResource(rt, num);
-                        res.Init(this, rt, num, resNum, info);
-                        Resources.Add(res);
+                        var res = AddResource(rt, num);
+                        res.SetupOffset(resNum, info);
                     }
                 }
             }
@@ -259,13 +257,19 @@ namespace SCI_Lib.SCI1
             _ => throw new NotImplementedException(),
         };
 
-        public override (ResType type, int number) FileNameToRes(string fileName)
+        public override bool TryFileNameToRes(string fileName, out ResType type, out ushort number)
         {
             var parts = fileName.Split('.');
-            if (parts.Length != 2) throw new FormatException($"Invalid file name '{fileName}'");
-            if (!int.TryParse(parts[0], out var num)) throw new FormatException($"Invalid file name '{fileName}'");
+            if (parts.Length == 2 && ushort.TryParse(parts[0], out number))
+            {
+                type = GetResType(parts[1]);
+                if (type != ResType.Unknown)
+                    return true;
+            }
 
-            return (GetResType(parts[1]), num);
+            type = default;
+            number = default;
+            return false;
         }
 
         private static ResType GetResType(string extension) => extension.ToUpper() switch
@@ -288,7 +292,7 @@ namespace SCI_Lib.SCI1
             "MAP" => ResType.Map,
             "HEP" => ResType.Heap,
             //"PAT" => ResType.Patch,
-            _ => throw new NotImplementedException(),
+            _ => ResType.Unknown
         };
 
     }

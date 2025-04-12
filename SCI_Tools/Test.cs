@@ -25,15 +25,6 @@ namespace SCI_Tools
         {
             try
             {
-                //Console.WriteLine(new CompanionBuilder().Decompile((Script)package.GetResource<ResScript>(203).GetScript()));
-
-                foreach (var res in package.GetResources<ResScript>())
-                {
-                    var scr = res.GetScript();
-                    //var txt = new CompanionBuilder().Decompile((Script)scr);
-                    //File.WriteAllText($@"D:\Projects\TranslateWeb\out\{res.FileName}.txt", txt);
-                }
-
                 //Decompile(140);
                 // PrintAllVerbs();
 

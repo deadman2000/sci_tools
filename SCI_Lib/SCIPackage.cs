@@ -50,7 +50,7 @@ namespace SCI_Lib
 
         public abstract string GetResFileName(ResType type, int number);
 
-        public abstract (ResType type, int number) FileNameToRes(string fileName);
+        public abstract bool TryFileNameToRes(string fileName, out ResType type, out ushort number);
 
         public SCIPackage(string directory, Encoding enc)
         {
@@ -72,11 +72,31 @@ namespace SCI_Lib
                 ReadMap(messagesPath);
             }
 
+            AddExtraResources();
+
             Resources = Resources
                 .Distinct()
-                .OrderBy(r => r.Type).ThenBy(r => r.Number).ToList();
+                .OrderBy(r => r.Type).ThenBy(r => r.Number)
+                .ToList();
 
             SeparateHeapResources = Resources.Any(r => r.Type == ResType.Heap);
+        }
+
+        private void AddExtraResources()
+        {
+            var exists = Resources.Select(r => r.FileName).ToHashSet();
+
+            var files = Directory.GetFiles(GameDirectory)
+                .Select(f => Path.GetFileName(f).ToUpper())
+                .Where(f => !exists.Contains(f));
+
+            foreach (var file in files)
+            {
+                if (TryFileNameToRes(file, out var type, out var number))
+                {
+                    AddResource(type, number);
+                }
+            }
         }
 
         public abstract ResourceFileInfo LoadResourceInfo(string resourceFileName, int offset);
@@ -93,22 +113,26 @@ namespace SCI_Lib
 
         public Resource AddResource(string fileName)
         {
-            var (type, num) = FileNameToRes(fileName);
-            return AddResource(type, (ushort)num);
+            if (TryFileNameToRes(fileName, out var type, out var number))
+            {
+                return AddResource(type, number);
+            }
+
+            return null;
         }
 
-        public Resource AddResource(ResType type, ushort num)
+        public Resource AddResource(ResType type, ushort number)
         {
-            var res = CreateResource(type, num);
-            res.Init(this, type, num, 1, -1);
+            var res = CreateResource(type, number);
+            res.Init(this, type, number);
             Resources.Add(res);
             return res;
         }
 
-        protected virtual Resource CreateResource(ResType type, ushort num) => type switch
+        protected virtual Resource CreateResource(ResType type, ushort number) => type switch
         {
             ResType.Text => new ResText(),
-            ResType.Vocabulary => CreateVocab(num),
+            ResType.Vocabulary => CreateVocab(number),
             ResType.Script => new ResScript(),
             ResType.Font => new ResFont(),
             ResType.Message => new ResMessage(),
@@ -119,7 +143,7 @@ namespace SCI_Lib
             _ => new Resource(),
         };
 
-        private static Resource CreateVocab(ushort num) => num switch
+        private static Resource CreateVocab(ushort number) => number switch
         {
             0 => new ResVocab000(),
             1 => new ResVocab001(),
@@ -250,6 +274,9 @@ namespace SCI_Lib
         {
             var res = GetResource(fileName);
             res ??= AddResource(fileName);
+            if (res == null)
+                return null;
+
             res.SetPatch(data);
             return res;
         }

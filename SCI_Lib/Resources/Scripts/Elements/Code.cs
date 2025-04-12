@@ -275,17 +275,11 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x2e: // bt
                 case 0x30: // bnt
                 case 0x32: // jmp
+                case 0x72: // lofsa
                 case 0x74: // lofss
                     {
                         var a1 = ReadShort(data, ref offset);
                         Arguments.Add(new RelativeWordRef(Owner, addr, a1, 2));
-                    }
-                    break;
-
-                case 0x72: // lofsa
-                    {
-                        var a1 = ReadUShort(data, ref offset);
-                        Arguments.Add(new GlobalRef(Owner, addr, a1));
                     }
                     break;
 

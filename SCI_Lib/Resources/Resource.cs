@@ -13,27 +13,27 @@ namespace SCI_Lib.Resources
         private byte[] _contentOverride;
         byte[] _compressed = null;
 
-        public void Init(SCIPackage package, ResType type, ushort number, byte resNum, int offset)
+        public void Init(SCIPackage package, ResType type, ushort number)
         {
             Package = package;
             Type = type;
             Number = number;
+        }
 
+        public void SetupOffset(byte resNum, int offset)
+        {
             if (offset >= 0)
             {
-                if (type == ResType.Message && package.ExternalMessages)
+                if (Type == ResType.Message && Package.ExternalMessages)
                     Volumes.Add(new VolumeOffset(resNum, offset, "RESOURCE.MSG"));
                 else
                     Volumes.Add(new VolumeOffset(resNum, offset));
             }
         }
 
-        public void Init(SCIPackage package, ResType type, ushort number, byte resNum, ResourceFileInfo info)
+        public void SetupOffset(byte resNum, ResourceFileInfo info)
         {
-            Package = package;
-            Type = type;
-            Number = number;
-            if (type == ResType.Message && package.ExternalMessages)
+            if (Type == ResType.Message && Package.ExternalMessages)
                 Volumes.Add(new VolumeOffset(resNum, -1, "RESOURCE.MSG"));
             else
                 Volumes.Add(new VolumeOffset(resNum, -1));
