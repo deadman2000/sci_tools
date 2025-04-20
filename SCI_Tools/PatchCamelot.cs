@@ -85,7 +85,7 @@ namespace SCI_Tools
             op.Type = 0x40;
             op.Arguments.Clear();
             short val = (short)(0x2b6 - op.Address - 4);
-            op.Arguments.Add(new RelativeWordRef(scr, (ushort)(op.Address + 1), val, 2));
+            op.Arguments.Add(new RelativeWordRef(scr, (ushort)(op.Address + 1), val));
             op.AddByte(4);
 
             //var op2 = scr.GetOperator(0xf8f);

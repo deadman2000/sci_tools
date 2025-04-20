@@ -279,7 +279,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x74: // lofss
                     {
                         var a1 = ReadShort(data, ref offset);
-                        Arguments.Add(new RelativeWordRef(Owner, addr, a1, 2));
+                        Arguments.Add(new RelativeWordRef(Owner, addr, a1));
                     }
                     break;
 

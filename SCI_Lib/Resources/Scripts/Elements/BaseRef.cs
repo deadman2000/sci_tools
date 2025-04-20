@@ -114,7 +114,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
     public class RelativeWordRef : BaseRef
     {
-        public RelativeWordRef(BaseScript script, ushort addr, short value, short shift)
+        public RelativeWordRef(BaseScript script, ushort addr, short value, short shift = 2)
             : base(script, addr)
         {
             Value = value;
