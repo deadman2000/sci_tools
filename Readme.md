@@ -1,6 +1,6 @@
 ## SCI engine tools for resource editing and translating
 
-[![build](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml/badge.svg)](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml) [![SCI_Lib on fuget.org](https://www.fuget.org/packages/SCI_Lib/badge.svg)](https://www.fuget.org/packages/SCI_Lib)
+[![build](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml/badge.svg)](https://github.com/deadman2000/sci_tools/actions/workflows/build.yml) [![NuGet version](https://badge.fury.io/nu/SCI_Lib.svg)](https://badge.fury.io/nu/SCI_Lib)
 
 **SCI_Lib** - resource management library for SCI-games. 
 
@@ -18,21 +18,20 @@
 
 ## TODO
 
-### Декомпиляция
+### Ж’РµРєРѕРјРїРёР»СЏС†РёСЏ
 
-- перенос стека
+- РїРµСЂРµРЅРѕСЃ СЃС‚РµРєР°
 - return value
-- PQ2 this у процедуры вне методов
+- PQ2 this Сѓ РїСЂРѕС†РµРґСѓСЂС‹ РІРЅРµ РјРµС‚РѕРґРѕРІ
 
 ### C++
-- оптимизация
-- циклы:
+- РѕРїС‚РёРјРёР·Р°С†РёСЏ
+- С†РёРєР»С‹:
 - - while Camelot 959
 - - for Camelot 032
-- инклуды
+- РёРЅРєР»СѓРґС‹
  rest
 
 ### Messages
 
-* Voice
 * Lip Sync
