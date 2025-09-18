@@ -149,7 +149,7 @@ namespace SCI_Lib.Resources.Scripts1
                 return sc;
             }
 
-            throw new Exception();
+            return null;
         }
 
         public override ScriptAnalyzer Analyze(string cl = null, string method = null) => throw new NotImplementedException();
