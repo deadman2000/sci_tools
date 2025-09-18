@@ -96,9 +96,9 @@ namespace SCI_Lib.Resources.Scripts
 
         internal IEnumerable<T> Get<T>(SectionType type) where T : Section => Sections.OfType<T>().Where(s => s.Type == type);
 
-        public override IScriptInstance GetInstance(string name) => Get<ClassSection>().FirstOrDefault(c => c.Name == name);
+        public override IClass GetInstance(string name) => Get<ClassSection>().FirstOrDefault(c => c.Name == name);
 
-        public override IScriptInstance GetInstance(string name, string superName) => Get<ClassSection>().FirstOrDefault(c => c.Name == name && c.SuperClass.Name == superName);
+        public override IClass GetInstance(string name, string superName) => Get<ClassSection>().FirstOrDefault(c => c.Name == name && c.SuperClass.Name == superName);
 
         public ClassSection GetClassSection(ushort id) => Get<ClassSection>(SectionType.Class).FirstOrDefault(c => c.Id == id);
 
@@ -110,7 +110,7 @@ namespace SCI_Lib.Resources.Scripts
             return sec;
         }
 
-        public ScriptAnalyzer Analyze(string cl = null, string method = null) => new(this, cl, method);
+        public override ScriptAnalyzer Analyze(string cl = null, string method = null) => new(this, cl, method);
 
         public ushort AppendASM(string asm)
         {

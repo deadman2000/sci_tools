@@ -35,7 +35,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 var el = _script.GetElement(val);
                 if (el is StringConst || el is SaidExpression)
                 {
-                    var r = new GlobalRef(_script, (ushort)(Address + i * 2), val);
+                    var r = new GlobalRef(_script, (ushort)(Address + i * 2), false, val);
                     r.SetupByOffset();
                     Vars[i] = r;
                 }

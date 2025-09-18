@@ -1,6 +1,8 @@
 ﻿using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
+using System;
 using System.Collections.Generic;
 
 namespace SCI_Lib.Analyzer;
@@ -20,6 +22,13 @@ public class ScriptAnalyzer
         foreach (var s in script.Get<ClassSection>()) AnalyzeClass(s);
         foreach (var s in script.Get<ExportSection>()) AnalyzeExport(s);
         foreach (var s in script.Get<CodeSection>()) AnalyzeLocal(s);
+    }
+
+    public ScriptAnalyzer(Script1 script, string classFilter, string methodFilter)
+    {
+        _classFilter = classFilter;
+        _methodFilter = methodFilter;
+        foreach (var obj in script.Objects) AnalyzeObject(obj);
     }
 
     private void AnalyzeExport(ExportSection s)
@@ -73,10 +82,10 @@ public class ScriptAnalyzer
         for (int i = 0; i < s.FuncNames.Length; i++)
         {
             var addr = s.FuncCode[i].TargetOffset;
-            var method = s.FuncNames[i];
-            if (_methodFilter != null && method != _methodFilter) continue;
-            Code code = s.Script.GetElement(addr) as Code;
-            BuildProc(s, code, method);
+            var methodName = s.FuncNames[i];
+            if (_methodFilter != null && methodName != _methodFilter) continue;
+            Code code = s.Script.GetOperator(addr) as Code;
+            BuildProc(s, code, methodName);
         }
     }
 
@@ -88,6 +97,21 @@ public class ScriptAnalyzer
         proc.BuildMethod();
         _usedCode.Add(code.Address);
         return proc;
+    }
+
+    private void AnalyzeObject(Object1 obj)
+    {
+        if (_classFilter != null && obj.Name != _classFilter) return;
+        obj.Prepare();
+
+        foreach (var method in obj.Methods)
+        {
+            if (_methodFilter != null && method.Name != _methodFilter) continue;
+            var proc = new ProcedureTree(this, obj, method);
+            Procedures.Add(proc);
+            proc.BuildMethod();
+            _usedCode.Add(method.Address);
+        }
     }
 
     public void Optimize()

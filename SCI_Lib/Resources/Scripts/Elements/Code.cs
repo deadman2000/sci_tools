@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Utils;
+﻿using SCI_Lib.Resources.Scripts1;
+using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -236,7 +237,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x75: // lofss
                     {
                         var a1 = ReadSByte(data, ref offset);
-                        Arguments.Add(new RelativeByteRef(Owner, addr, a1));
+                        Arguments.Add(new RelativeByteRef(Owner, addr, true, a1));
                     }
                     break;
 
@@ -267,7 +268,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x41: // call B B
                     {
                         var a1 = ReadSByte(data, ref offset);
-                        Arguments.Add(new RelativeByteRef(Owner, addr, a1, 2));
+                        Arguments.Add(new RelativeByteRef(Owner, addr, true, a1, 2));
                         AddByte(data, ref offset);
                     }
                     break;
@@ -275,11 +276,23 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x2e: // bt
                 case 0x30: // bnt
                 case 0x32: // jmp
-                case 0x72: // lofsa
                 case 0x74: // lofss
                     {
                         var a1 = ReadShort(data, ref offset);
-                        Arguments.Add(new RelativeWordRef(Owner, addr, a1));
+                        Arguments.Add(new RelativeWordRef(Owner, addr, true, a1));
+                    }
+                    break;
+
+                case 0x72: // lofsa
+                    if (Owner is Script1)
+                    {
+                        var a1 = ReadUShort(data, ref offset);
+                        Arguments.Add(new GlobalRef(Owner, addr, false, a1));
+                    }
+                    else
+                    {
+                        var a1 = ReadShort(data, ref offset);
+                        Arguments.Add(new RelativeWordRef(Owner, addr, false, a1));
                     }
                     break;
 
@@ -301,7 +314,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                 case 0x40: // call W B
                     {
                         var a1 = ReadShort(data, ref offset);
-                        Arguments.Add(new RelativeWordRef(Owner, addr, a1, 3));
+                        Arguments.Add(new RelativeWordRef(Owner, addr, true, a1, 3));
                         AddByte(data, ref offset);
                     }
                     break;

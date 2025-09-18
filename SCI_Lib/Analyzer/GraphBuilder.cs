@@ -36,19 +36,15 @@ public class GraphBuilder
             .AppendLine("\tgraph [splines=ortho, nodesep=0.8]")
             .AppendLine($"\tnode[shape=box fontname=Courier fontsize=20 margin={mr}]");
 
-        foreach (var gr in _analyzer.Procedures.GroupBy(p => p.Class))
+        foreach (var gr in _analyzer.Procedures.GroupBy(p => p.ClassName))
         {
             var cl = gr.Key;
             if (cl != null)
             {
-                string id;
-                if (cl.Name != null)
-                    id = Expr.ToCppName(cl.Name);
-                else
-                    id = $"{cl.Id:x4}";
+                string id = Expr.ToCppName(cl);
 
                 sb.AppendLine($"\tsubgraph cluster_{id} {{");
-                sb.AppendLine($"\t\tlabel = \"{cl.Name}\"");
+                sb.AppendLine($"\t\tlabel = \"{cl}\"");
             }
 
             foreach (var proc in gr)

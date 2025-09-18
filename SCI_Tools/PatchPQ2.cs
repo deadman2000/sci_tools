@@ -89,7 +89,7 @@ namespace SCI_Tools
                 if (op.Name != "call") return;
                 op.Arguments.Clear();
                 short val = (short)(addr - op.Address - 4);
-                op.Arguments.Add(new RelativeWordRef(scr, (ushort)(op.Address + 1), val, 3));
+                op.Arguments.Add(new RelativeWordRef(scr, (ushort)(op.Address + 1), true, val, 3));
                 op.AddByte(2);
 
                 Changed(res);

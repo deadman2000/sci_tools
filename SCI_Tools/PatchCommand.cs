@@ -24,6 +24,7 @@ namespace SCI_Tools
         protected SCIPackage _translate;
         private HashSet<ushort> _groups;
         protected Dictionary<ushort, ushort[]> _wordsUsage;
+        private readonly Dictionary<int, string[]> _heapStrings = new();
 
         protected override Task Execute()
         {
@@ -38,12 +39,14 @@ namespace SCI_Tools
         protected void Changed(Resource res)
         {
             //if (res is ResScript && _translate.SeparateHeapResources)
-                //_changed.Add(_translate.GetResource<ResHeap>(res.Number));
+            //_changed.Add(_translate.GetResource<ResHeap>(res.Number));
             _changed.Add(res);
         }
 
         protected void Save()
         {
+            ApplyHeapPatches();
+
             foreach (var res in _changed)
             {
                 Console.WriteLine($"Changed: {res}");
@@ -448,12 +451,54 @@ namespace SCI_Tools
             Changed(scr.Resource);
         }
 
-        protected void SetProperty(BaseScript scr, IScriptInstance inst, string name, ushort value)
+        protected void SetProperty(BaseScript scr, IClass inst, string name, ushort value)
         {
             if (inst.GetProperty(name) != value)
             {
                 inst.SetProperty(name, value);
                 Changed(scr.Resource);
+            }
+        }
+
+        protected void SetHeap(ushort num, int ind, string value)
+        {
+            var resScript = _translate.GetResource<ResScript>(num);
+            var res = _translate.GetResource<ResHeap>(num);
+            var scr = resScript.GetScript() as Script1;
+
+            if (!_heapStrings.TryGetValue(num, out var strings))
+            {
+                strings = scr.Heap.Strings.Select(s => s.Value).ToArray();
+                _heapStrings[num] = strings;
+            }
+
+            if (strings[ind] != value)
+            {
+                strings[ind] = value;
+                Changed(res);
+                Changed(resScript);
+            }
+        }
+
+        private void ApplyHeapPatches()
+        {
+            foreach (var res in _changed.OfType<ResHeap>())
+            {
+                res.SetStrings(_heapStrings[res.Number]);
+            }
+        }
+
+        #endregion
+
+        #region Messages
+
+        protected void AddMessage(ResMessage res, byte noun, byte verb, byte cond, byte seq, byte talker)
+        {
+            var msgs = res.GetMessages();
+            if (!msgs.Any(m => m.Noun == noun && m.Verb == verb && m.Cond == cond && m.Seq == seq))
+            {
+                msgs.Add(new MessageRecordV4(noun, verb, cond, seq, talker, "text"));
+                Changed(res);
             }
         }
 

@@ -20,7 +20,10 @@ namespace SCI_Tools
         typeof(PatchLarry5),
         typeof(PatchLarry2),
         typeof(PatchLarry3),
-        typeof(PatchLarry3PnC)
+        typeof(PatchLarry3PnC),
+        typeof(PatchFreddyCD),
+        typeof(AudioExtract),
+        typeof(AudioReplace)
     )]
     partial class Program
     {

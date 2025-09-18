@@ -1,6 +1,8 @@
 ﻿using SCI_Lib.Resources;
+using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
-using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
+using SCI_Lib.SCI1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +26,14 @@ public class ProcedureTree
     public string Name { get; }
 
     public ScriptAnalyzer Decompiler { get; }
-    public ClassSection Class { get; }
+
+    public Object1 Object { get; }
+
+    public Method Method { get; }
+    
+    public IClass Class { get; }
+
+    public string ClassName => Class?.Name ?? Object?.Name ?? string.Empty;
 
     public IEnumerable<CodeBlock> Blocks => _blocksByAddress.Values;
     public IEnumerable<ParamExpr> Params => _params.Values;
@@ -45,13 +54,23 @@ public class ProcedureTree
         }
     }
 
-    public ProcedureTree(ScriptAnalyzer decompiler, ClassSection cl, Code code, string name)
+    public ProcedureTree(ScriptAnalyzer decompiler, IClass cl, Code code, string name)
     {
         _package = code.Owner.Package;
         Decompiler = decompiler;
         Class = cl;
         Begin = code;
         Name = Expr.ToCppName(name);
+    }
+
+    public ProcedureTree(ScriptAnalyzer decompiler, Object1 obj, Method method)
+    {
+        _package = method.CodeOwner.Package;
+        Decompiler = decompiler;
+        Object = obj;
+        Method = method;
+        Begin = method.Reference.Reference as Code;
+        Name = Expr.ToCppName(method.Name);
     }
 
     public override string ToString()
@@ -65,6 +84,13 @@ public class ProcedureTree
                 str = $"{Class.Id:x4}";
             str += "::";
         }
+
+        if (Object != null)
+        {
+            str = Expr.ToCppName(Object.Name);
+            str += "::";
+        }
+
         str += Define;
         return str;
     }
@@ -251,11 +277,21 @@ public class ProcedureTree
         _links.Add(link);
     }
 
-    internal ClassSection GetClass(ushort id)
+    internal ClassExpr GetClass(ushort id)
     {
-        var cl = _package.GetClass(id);
+        if (_package is SCI1Package)
+        {
+            var obj = _package.GetObject(id);
+            return new ClassExpr(Expr.ToCppName(obj.Name));
+        }
+
+        var cl = _package.GetClassSection(id);
         if (cl != null) Using(cl.Script.Resource);
-        return cl;
+
+        if (cl != null)
+            return new ClassExpr(Expr.ToCppName(cl));
+        else
+            return new ClassExpr($"Class_{id}");
     }
 
     internal void Using(Resource resource) => _usedScripts.Add(resource.Number);

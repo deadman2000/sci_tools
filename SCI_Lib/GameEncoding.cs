@@ -1,6 +1,4 @@
 ﻿using SCI_Lib.Utils;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace SCI_Lib
@@ -65,6 +63,8 @@ namespace SCI_Lib
             else
                 return def;
         }
+
+        public string PrintableString(byte[] data) => PrintableString(data, 0, data.Length);
 
         public string PrintableString(byte[] data, int offset, int len)
         {

@@ -2,7 +2,7 @@
 {
     public enum PicOpCode : byte
     {
-        SET_COLOR = 0xf0,
+        SET_VISUAL = 0xf0,
         DISABLE_VISUAL = 0xf1,
         SET_PRIORITY = 0xf2,
         DISABLE_PRIORITY = 0xf3,

@@ -47,7 +47,7 @@ namespace SCI_Lib.Resources
         }
     }
 
-    class MessageRecordV2 : MessageRecord
+    public class MessageRecordV2 : MessageRecord
     {
         public MessageRecordV2(MemoryStream stream)
         {
@@ -65,7 +65,7 @@ namespace SCI_Lib.Resources
         }
     }
 
-    class MessageRecordV3 : MessageRecord
+    public class MessageRecordV3 : MessageRecord
     {
         public int Unknown { get; set; }
 
@@ -95,7 +95,7 @@ namespace SCI_Lib.Resources
         }
     }
 
-    class MessageRecordV4 : MessageRecord
+    public class MessageRecordV4 : MessageRecord
     {
         public byte NounOfRef { get; set; }
 
@@ -106,6 +106,16 @@ namespace SCI_Lib.Resources
         public byte Unknown { get; set; }
 
         public override string ToString() => $"noun: {Noun} verb:{Verb} cond:{Cond} seq:{Seq} talker:{Talker} text: {Text}";
+
+        public MessageRecordV4(byte noun, byte verb, byte cond, byte seq, byte talker, string text)
+        {
+            Noun = noun;
+            Verb = verb;
+            Cond = cond;
+            Seq = seq;
+            Talker = talker;
+            Text = text;
+        }
 
         public MessageRecordV4(Stream stream)
         {

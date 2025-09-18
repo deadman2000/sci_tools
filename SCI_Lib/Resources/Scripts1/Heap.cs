@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Resources.Scripts;
+﻿using SCI_Lib.Analyzer;
+using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Utils;
 using System;
@@ -10,7 +11,8 @@ namespace SCI_Lib.Resources.Scripts1
 {
     public class Heap : BaseScript
     {
-        private ushort[] _stringOffsets;
+        private HashSet<ushort> _stringOffsets;
+        private readonly Dictionary<ushort, StringConst> _stringRefs = new();
 
         public List<Object1> Objects { get; } = new List<Object1>();
 
@@ -23,9 +25,9 @@ namespace SCI_Lib.Resources.Scripts1
             Read();
         }
 
-        public override IScriptInstance GetInstance(string name) => Objects.FirstOrDefault(o => o.Name == name);
+        public override IClass GetInstance(string name) => Objects.FirstOrDefault(o => o.Name == name);
 
-        public override IScriptInstance GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
+        public override IClass GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
 
         public override IEnumerable<StringConst> AllStrings() => Strings;
 
@@ -88,7 +90,7 @@ namespace SCI_Lib.Resources.Scripts1
             }
         }
 
-        private static ushort[] ReadOffsets(MemoryStream stream, ushort offset)
+        private static HashSet<ushort> ReadOffsets(MemoryStream stream, ushort offset)
         {
             var oldPos = stream.Position;
             stream.Seek(offset, SeekOrigin.Begin);
@@ -99,7 +101,7 @@ namespace SCI_Lib.Resources.Scripts1
                 offsets[i] = stream.ReadUShortBE();
 
             stream.Seek(oldPos, SeekOrigin.Begin);
-            return offsets;
+            return offsets.ToHashSet();
         }
 
         public override byte[] GetBytes()
@@ -122,9 +124,14 @@ namespace SCI_Lib.Resources.Scripts1
 
             // Write strings refs
             heap.SetUShortBE(0, (ushort)heap.Position);
-            heap.AddUShortBE((ushort)_stringOffsets.Length);
+            heap.AddUShortBE((ushort)_stringOffsets.Count);
             foreach (var addr in _stringOffsets)
                 heap.AddUShortBE(addr); // TODO replace by ref
+
+            foreach (var kv in _stringRefs)
+            {
+                heap.SetUShortBE(kv.Key, kv.Value.Address);
+            }
 
             return heap.GetArray();
         }
@@ -137,9 +144,14 @@ namespace SCI_Lib.Resources.Scripts1
             if (el != null)
             {
                 if (el is not StringConst sc) throw new Exception();
+
+                _stringRefs.Add(pos, sc);
                 return sc;
             }
-            return null;
+
+            throw new Exception();
         }
+
+        public override ScriptAnalyzer Analyze(string cl = null, string method = null) => throw new NotImplementedException();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using SCI_Lib.Utils;
 using System;
+using System.Linq;
 
 namespace SCI_Lib.Resources.Picture
 {
@@ -37,6 +38,8 @@ namespace SCI_Lib.Resources.Picture
             }
         }
 
-        public override string ToString() => OpCode.ToString();
+        private string ArgsStr => Args != null ? string.Join(", ", Args.Select(a => a.ToString())) : string.Empty;
+
+        public override string ToString() => $"{OpCode} {ArgsStr}";
     }
 }

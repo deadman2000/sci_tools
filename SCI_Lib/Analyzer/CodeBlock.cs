@@ -472,10 +472,7 @@ public class CodeBlock
                 {
                     var id = GetVal(code.Arguments[0]);
                     var cl = Procedure.GetClass((ushort)id);
-                    if (cl != null)
-                        SetAcc(new ClassExpr(cl));
-                    else
-                        SetAcc(new ClassExpr($"Class_{id}"));
+                    SetAcc(cl);
                 }
                 break;
             case 0x54: // self
@@ -491,7 +488,7 @@ public class CodeBlock
                         if (Procedure.Class == null)
                             name = "this." + name;
                         else
-                            isProp = Procedure.Class.IsProp((ushort)sel);
+                            isProp = Procedure.Class.HasProperty((ushort)sel);
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
 
@@ -527,15 +524,15 @@ public class CodeBlock
             case 0x57:
                 {
                     var sel = GetVal(code.Arguments[0]);
-                    var super = _package.GetClassSection((ushort)sel);
-                    var className = Expr.ToCppName(super);
+
+                    var super = Procedure.GetClass((ushort)sel);
                     var cnt = code.GetByte(1) / 2;
 
                     var frame = PopFrame(cnt);
                     for (int i = 0; i < cnt; i++)
                     {
                         var selector = frame[i];
-                        var name = className + "::" + GetName(selector.GetValue());
+                        var name = super.Name + "::" + GetName(selector.GetValue());
                         var argsExp = frame[++i];
                         var argsCnt = argsExp.GetValue();
 
@@ -689,15 +686,23 @@ public class CodeBlock
     private ParamExpr GetPropExpr(BaseElement val)
     {
         var ind = GetVal(val) / 2;
-        var cl = Procedure.Class;
-        if (cl == null)
+
+        if (Procedure.Class != null)
         {
-            Console.WriteLine("No class method");
-            return new ParamExpr($"prop{ind}");
+            var cl = Procedure.Class;
+            string name = cl.GetPropertyName(ind);
+            //if (ind >= cl.Properties.Length) return new ParamExpr($"prop{ind}");
+            return new ParamExpr(name);
         }
-        if (ind >= cl.Properties.Length)
-            return new ParamExpr($"prop{ind}");
-        return new ParamExpr(cl.Properties[ind]);
+
+        if (Procedure.Object != null)
+        {
+            var name = Procedure.Object.GetPropertyName(ind);
+            return new ParamExpr(name);
+        }
+
+        Console.WriteLine("No class method");
+        return new ParamExpr($"prop{ind}");
     }
 
     private static Expr GetExpr(BaseRef r)

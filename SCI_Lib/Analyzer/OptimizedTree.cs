@@ -259,7 +259,7 @@ public class OptimizedTree
     private void UnionOr()
     {
         // Последовательные проверки, true которых ведут к единому блоку, объединяем в ||
-        List<CodeNode> orBlocks = new();
+        List<CodeNode> blocks = new();
         foreach (var node1 in Nodes.ToList())
         {
             if (node1.Condition != null && node1.NextB != null)
@@ -269,25 +269,25 @@ public class OptimizedTree
                 {
                     if (n.Condition != null && n.Expressions.Count == 0 && n.NextA == node1.NextA)
                     {
-                        orBlocks.Add(n);
+                        blocks.Add(n);
                         if (n.NextB == null) break;
                         n = n.NextB;
                     }
                     else
                         break;
                 }
-                if (orBlocks.Count > 0)
+                if (blocks.Count > 0)
                 {
-                    var falseBranch = orBlocks[^1].NextB;
+                    var falseBranch = blocks[^1].NextB;
                     Expr ex = node1.Condition;
-                    foreach (var node in orBlocks)
+                    foreach (var node in blocks)
                     {
                         ex = new Math2Expr(ex, "||", node.Condition);
                         RemoveNode(node);
                     }
                     node1.Condition = ex;
                     node1.NextB = falseBranch;
-                    orBlocks.Clear();
+                    blocks.Clear();
                     _optimized = true;
                 }
             }
@@ -297,35 +297,37 @@ public class OptimizedTree
     private void UnionAnd()
     {
         // Последовательные проверки, false которых ведут к единому блоку, объединяем в &&
-        List<CodeNode> orBlocks = new();
+        List<CodeNode> blocks = new();
         foreach (var node1 in Nodes.ToList())
         {
-            if (node1.Condition != null && node1.NextA != null)
+            if (node1.Condition != null && node1.NextA != null && node1.NextA != node1)
             {
                 var n = node1.NextA;
                 while (true)
                 {
                     if (n.Condition != null && n.Expressions.Count == 0 && n.NextB == node1.NextB)
                     {
-                        orBlocks.Add(n);
+                        if (blocks.Count > 1000) throw new Exception();
+                        blocks.Add(n);
                         if (n.NextA == null) break;
                         n = n.NextA;
                     }
                     else
                         break;
                 }
-                if (orBlocks.Count > 0)
+
+                if (blocks.Count > 0)
                 {
-                    var trueBranch = orBlocks[^1].NextA;
+                    var trueBranch = blocks[^1].NextA;
                     Expr ex = node1.Condition;
-                    foreach (var node in orBlocks)
+                    foreach (var node in blocks)
                     {
                         ex = new Math2Expr(ex, "&&", node.Condition);
                         RemoveNode(node);
                     }
                     node1.Condition = ex;
                     node1.NextA = trueBranch;
-                    orBlocks.Clear();
+                    blocks.Clear();
                     _optimized = true;
                 }
             }

@@ -25,7 +25,15 @@ namespace SCI_Tools
         {
             try
             {
-                //Decompile(140);
+                /*var res = translate.GetResource<ResHeap>(625);
+                var heap = res.GetHeap();
+                for (int i = 0; i < heap.Strings.Count; i++)
+                {
+                    Console.WriteLine($"{i} : {heap.Strings[i].Value}");
+                }*/
+
+                //new ImageContextExtractor(package).ExtractAll(@"D:\Projects\TranslateWeb\Freddy\imgs");
+
                 // PrintAllVerbs();
 
                 //FindTextSaids();
@@ -67,6 +75,27 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
+        private void MissingMessages()
+        {
+            var floppy = SCIPackage.Load(@"D:\Dos\GAMES\FREDDY\");
+            foreach (var flRes in floppy.GetResources<ResMessage>())
+            {
+                var flMessages = flRes.GetMessages();
+
+                var cdRes = package.GetResource<ResMessage>(flRes.Number);
+                if (cdRes == null) continue;
+                var cdMessages = cdRes.GetMessages();
+
+                foreach (var flMsg in flMessages.OrderBy(m => m.Noun).ThenBy(m => m.Verb).ThenBy(m => m.Cond).ThenBy(m => m.Seq))
+                {
+                    if (!cdMessages.Any(m => m.Noun == flMsg.Noun && m.Verb == flMsg.Verb && m.Cond == flMsg.Cond && m.Seq == flMsg.Seq))
+                    {
+                        Console.WriteLine($"{flRes.Number}  [{flMsg.Noun} {flMsg.Verb} {flMsg.Cond} {flMsg.Seq}]");
+                    }
+                }
+            }
+        }
+
         private void PrintAllVerbs()
         {
             var verbs = translate.GetWords()
@@ -98,7 +127,7 @@ namespace SCI_Tools
         {
             //var res = (translate ?? package).GetResource<ResScript>(num);
             var res = package.GetResource<ResScript>(num);
-            var script = res.GetScript() as Script;
+            var script = res.GetScript();
 
             var analyzer = script.Analyze(cl, method);
             var graph = new GraphBuilder(analyzer);
@@ -110,8 +139,11 @@ namespace SCI_Tools
             analyzer.Optimize();
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP_OPT);
 
-            var h_path = @$"d:\Projects\TranslateWeb\out\scr{num}.h";
-            File.WriteAllText(h_path, new CppBuilder(cl, method).Decompile(script));
+            if (script is Script script0)
+            {
+                var h_path = @$"d:\Projects\TranslateWeb\out\scr{num}.h";
+                File.WriteAllText(h_path, new CppBuilder(cl, method).Decompile(script0));
+            }
         }
 
         private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts1
 {
-    public class Object1 : BaseElement, IScriptInstance
+    public class Object1 : BaseElement, IClass
     {
         private ushort _propOffset;
         private ushort _methodsOffset;
@@ -26,7 +26,7 @@ namespace SCI_Lib.Resources.Scripts1
 
         public Script1 Script { get; set; }
 
-        public ushort ClassId => Properties[5].Value;
+        public ushort Id => Properties[5].Value;
 
         private Object1 _super;
 
@@ -43,7 +43,7 @@ namespace SCI_Lib.Resources.Scripts1
             }
         }
 
-        public string Name => Properties[8].StringValue.Value;
+        public string Name => Properties[8].StringValue?.Value;
 
         public override string ToString() => Name;
 
@@ -67,7 +67,7 @@ namespace SCI_Lib.Resources.Scripts1
                 ushort pos = (ushort)heap.Position;
                 var val = heap.ReadUShortBE();
 
-                StringConst str = Heap.GetStringByOffset(pos, val);
+                var str = Heap.GetStringByOffset(pos, val);
                 Properties[i] = new Property { Value = val, StringValue = str };
             }
         }
@@ -99,7 +99,7 @@ namespace SCI_Lib.Resources.Scripts1
 
                 var pos = stream.Position;
                 var offset = stream.ReadUShortBE();
-                var r = new GlobalRef(Script, (ushort)pos, offset);
+                var r = new GlobalRef(Script, (ushort)pos, true, offset);
                 Methods[i] = new Method(this, sel, offset, r);
             }
         }
@@ -113,7 +113,17 @@ namespace SCI_Lib.Resources.Scripts1
             bb.AddShortBE(0); // always zero
 
             for (int i = 5; i < Properties.Length; i++)
-                bb.AddUShortBE(Properties[i].Value);
+            {
+                var prop = Properties[i];
+                if (prop.StringValue != null)
+                {
+                    bb.AddUShortBE(prop.StringValue.Address);
+                }
+                else
+                {
+                    bb.AddUShortBE(prop.Value);
+                }
+            }
         }
 
         public void WriteScriptHead(ByteBuilder bb)
@@ -144,22 +154,34 @@ namespace SCI_Lib.Resources.Scripts1
 
         public void Prepare()
         {
-            if (ClassId != 0xffff) return;
+            if (Id != 0xffff) return;
 
-            if (Properties.Any(p => p.Name == null))
+            for (int i = 0; i < Properties.Length; i++)
             {
-                for (int i = 0; i < Properties.Length; i++)
-                {
-                    Properties[i].Name = Super.Properties[i].Name;
-                }
+                Properties[i].Name = Super.Properties[i].Name;
             }
         }
 
         public ushort GetProperty(string name) => GetPropertyByName(name).Value;
+        
+        public short GetPropertySigned(string name) => (short)GetPropertyByName(name).Value;
 
-        public void SetProperty(string name, ushort value)
+        public void SetProperty(string name, ushort value) => GetPropertyByName(name).Value = value;
+
+        public string GetPropertyName(int index)
         {
-            GetPropertyByName(name).Value = value;
+            Prepare();
+            return Properties[index].Name;
         }
+
+        public bool HasProperty(string name)
+        {
+            Prepare();
+            return Properties.Any(p => p.Name == name);
+        }
+
+        public bool HasProperty(ushort selector) => Properties.Any(p => p.Selector == selector);
+
+        public Method GetMethod(string name) => Methods.FirstOrDefault(m => m.Name == name);
     }
 }

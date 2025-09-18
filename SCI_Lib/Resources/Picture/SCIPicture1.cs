@@ -9,7 +9,6 @@ namespace SCI_Lib.Resources.Picture
 {
     public class SCIPicture1 : SCIPicture
     {
-        private readonly PicVector _vector;
         private PicImage Image => _vector.Image;
         private PicPalette Palette => _vector.Palette;
 

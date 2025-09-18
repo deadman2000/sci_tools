@@ -170,7 +170,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
                 sb.AppendLine($"    (method ({pack.GetName(s.FuncNamesInd[i])}) // method_{addr:x4}");
 
-                Code code = s.Script.GetElement(addr) as Code;
+                var code = s.Script.GetOperator(addr);
                 WriteCode(code);
 
                 sb.AppendLine("    )");

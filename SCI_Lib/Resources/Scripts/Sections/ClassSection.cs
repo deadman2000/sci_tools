@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SCI_Lib.Resources.Scripts.Sections
 {
-    public class ClassSection : Section, IScriptInstance
+    public class ClassSection : Section, IClass
     {
         public ushort Id => Properties[0].Value;
 
@@ -78,7 +78,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
             for (int i = 0; i < fs; i++)
             {
                 var addr = offset;
-                FuncCode[i] = new GlobalRef(_script, addr, ReadUShortBE(data, ref offset));
+                FuncCode[i] = new GlobalRef(_script, addr, true, ReadUShortBE(data, ref offset));
             }
 
             //_script.Register(Selectors[0]);
@@ -162,13 +162,13 @@ namespace SCI_Lib.Resources.Scripts.Sections
                 r.Write(bb);
         }
 
-        public bool IsProp(string name)
+        public bool HasProperty(string name)
         {
             Prepare();
             return Properties.Any(p => p.Name == name);
         }
 
-        public bool IsProp(ushort sel) => Properties.Any(p => p.NameSel == sel);
+        public bool HasProperty(ushort selector) => Properties.Any(p => p.NameSel == selector);
 
         public ushort GetProperty(string name)
         {
@@ -180,6 +180,12 @@ namespace SCI_Lib.Resources.Scripts.Sections
         {
             var prop = Properties.FirstOrDefault(p => p.Name == name) ?? throw new Exception();
             prop.Value = value;
+        }
+
+        public string GetPropertyName(int index)
+        {
+            Prepare();
+            return Properties[index].Name;
         }
     }
 }

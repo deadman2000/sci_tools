@@ -5,13 +5,6 @@ namespace SCI_Translator.ResView
 {
     class MsgView : ResViewer
     {
-        private DataGridViewTextBoxColumn colTexID;
-        private DataGridViewTextBoxColumn colNoun;
-        private DataGridViewTextBoxColumn colVerb;
-        private DataGridViewTextBoxColumn colCond;
-        private DataGridViewTextBoxColumn colSeq;
-        private DataGridViewTextBoxColumn colTalker;
-        private DataGridViewTextBoxColumn colText;
         private System.Windows.Forms.DataGridView dgvText;
 
         public MsgView()
@@ -51,130 +44,125 @@ namespace SCI_Translator.ResView
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.dgvText = new System.Windows.Forms.DataGridView();
-            this.colTexID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colNoun = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colVerb = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colCond = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colSeq = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTalker = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colText = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvText)).BeginInit();
-            this.SuspendLayout();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            dgvText = new DataGridView();
+            colTexID = new DataGridViewTextBoxColumn();
+            colNoun = new DataGridViewTextBoxColumn();
+            colVerb = new DataGridViewTextBoxColumn();
+            colCond = new DataGridViewTextBoxColumn();
+            colSeq = new DataGridViewTextBoxColumn();
+            colTalker = new DataGridViewTextBoxColumn();
+            colText = new DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)dgvText).BeginInit();
+            SuspendLayout();
             // 
             // dgvText
             // 
-            this.dgvText.AllowUserToAddRows = false;
-            this.dgvText.AllowUserToDeleteRows = false;
-            this.dgvText.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-            this.dgvText.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.dgvText.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvText.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colTexID,
-            this.colNoun,
-            this.colVerb,
-            this.colCond,
-            this.colSeq,
-            this.colTalker,
-            this.colText});
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dgvText.AllowUserToAddRows = false;
+            dgvText.AllowUserToDeleteRows = false;
+            dgvText.AllowUserToOrderColumns = true;
+            dgvText.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgvText.BorderStyle = BorderStyle.Fixed3D;
+            dgvText.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvText.Columns.AddRange(new DataGridViewColumn[] { colTexID, colNoun, colVerb, colCond, colSeq, colTalker, colText });
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvText.DefaultCellStyle = dataGridViewCellStyle3;
-            this.dgvText.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvText.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
-            this.dgvText.Location = new System.Drawing.Point(0, 0);
-            this.dgvText.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.dgvText.MultiSelect = false;
-            this.dgvText.Name = "dgvText";
-            this.dgvText.RowHeadersVisible = false;
-            this.dgvText.RowHeadersWidth = 51;
-            this.dgvText.Size = new System.Drawing.Size(1357, 1205);
-            this.dgvText.TabIndex = 1;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            dgvText.DefaultCellStyle = dataGridViewCellStyle3;
+            dgvText.Dock = DockStyle.Fill;
+            dgvText.EditMode = DataGridViewEditMode.EditOnEnter;
+            dgvText.Location = new System.Drawing.Point(0, 0);
+            dgvText.Margin = new Padding(4, 5, 4, 5);
+            dgvText.MultiSelect = false;
+            dgvText.Name = "dgvText";
+            dgvText.RowHeadersVisible = false;
+            dgvText.RowHeadersWidth = 51;
+            dgvText.Size = new System.Drawing.Size(1829, 1135);
+            dgvText.TabIndex = 1;
             // 
             // colTexID
             // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            this.colTexID.DefaultCellStyle = dataGridViewCellStyle1;
-            this.colTexID.HeaderText = "TextID";
-            this.colTexID.MinimumWidth = 6;
-            this.colTexID.Name = "colTexID";
-            this.colTexID.ReadOnly = true;
-            this.colTexID.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colTexID.Width = 50;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleRight;
+            colTexID.DefaultCellStyle = dataGridViewCellStyle1;
+            colTexID.HeaderText = "TextID";
+            colTexID.MinimumWidth = 6;
+            colTexID.Name = "colTexID";
+            colTexID.ReadOnly = true;
+            colTexID.Width = 50;
             // 
             // colNoun
             // 
-            this.colNoun.HeaderText = "Noun";
-            this.colNoun.MinimumWidth = 6;
-            this.colNoun.Name = "colNoun";
-            this.colNoun.ReadOnly = true;
-            this.colNoun.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colNoun.Width = 50;
+            colNoun.HeaderText = "Noun";
+            colNoun.MinimumWidth = 6;
+            colNoun.Name = "colNoun";
+            colNoun.ReadOnly = true;
+            colNoun.Width = 50;
             // 
             // colVerb
             // 
-            this.colVerb.HeaderText = "Verb";
-            this.colVerb.MinimumWidth = 6;
-            this.colVerb.Name = "colVerb";
-            this.colVerb.ReadOnly = true;
-            this.colVerb.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colVerb.Width = 50;
+            colVerb.HeaderText = "Verb";
+            colVerb.MinimumWidth = 6;
+            colVerb.Name = "colVerb";
+            colVerb.ReadOnly = true;
+            colVerb.Width = 50;
             // 
             // colCond
             // 
-            this.colCond.HeaderText = "Cond";
-            this.colCond.MinimumWidth = 6;
-            this.colCond.Name = "colCond";
-            this.colCond.ReadOnly = true;
-            this.colCond.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colCond.Width = 50;
+            colCond.HeaderText = "Cond";
+            colCond.MinimumWidth = 6;
+            colCond.Name = "colCond";
+            colCond.ReadOnly = true;
+            colCond.Width = 50;
             // 
             // colSeq
             // 
-            this.colSeq.HeaderText = "Seq";
-            this.colSeq.MinimumWidth = 6;
-            this.colSeq.Name = "colSeq";
-            this.colSeq.ReadOnly = true;
-            this.colSeq.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colSeq.Width = 50;
+            colSeq.HeaderText = "Seq";
+            colSeq.MinimumWidth = 6;
+            colSeq.Name = "colSeq";
+            colSeq.ReadOnly = true;
+            colSeq.Width = 50;
             // 
             // colTalker
             // 
-            this.colTalker.HeaderText = "Talker";
-            this.colTalker.MinimumWidth = 6;
-            this.colTalker.Name = "colTalker";
-            this.colTalker.ReadOnly = true;
-            this.colTalker.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colTalker.Width = 50;
+            colTalker.HeaderText = "Talker";
+            colTalker.MinimumWidth = 6;
+            colTalker.Name = "colTalker";
+            colTalker.ReadOnly = true;
+            colTalker.Width = 50;
             // 
             // colText
             // 
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.colText.DefaultCellStyle = dataGridViewCellStyle2;
-            this.colText.HeaderText = "Text";
-            this.colText.MinimumWidth = 6;
-            this.colText.Name = "colText";
-            this.colText.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.colText.Width = 600;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            colText.DefaultCellStyle = dataGridViewCellStyle2;
+            colText.HeaderText = "Text";
+            colText.MinimumWidth = 6;
+            colText.Name = "colText";
+            colText.SortMode = DataGridViewColumnSortMode.NotSortable;
+            colText.Width = 600;
             // 
             // MsgView
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.Controls.Add(this.dgvText);
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Name = "MsgView";
-            this.Size = new System.Drawing.Size(1357, 1205);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvText)).EndInit();
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            Controls.Add(dgvText);
+            Margin = new Padding(4, 5, 4, 5);
+            Name = "MsgView";
+            Size = new System.Drawing.Size(1829, 1135);
+            ((System.ComponentModel.ISupportInitialize)dgvText).EndInit();
+            ResumeLayout(false);
 
         }
+        private DataGridViewTextBoxColumn colTexID;
+        private DataGridViewTextBoxColumn colNoun;
+        private DataGridViewTextBoxColumn colVerb;
+        private DataGridViewTextBoxColumn colCond;
+        private DataGridViewTextBoxColumn colSeq;
+        private DataGridViewTextBoxColumn colTalker;
+        private DataGridViewTextBoxColumn colText;
     }
 }

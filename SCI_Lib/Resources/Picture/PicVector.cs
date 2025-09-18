@@ -19,6 +19,8 @@ namespace SCI_Lib.Resources.Picture
 
         public PicPalette Palette => _palette;
 
+        public List<PicCommand> Commands => _commands;
+
         public static PicVector Read(MemoryStream stream)
         {
             PicVector v = new();
@@ -47,7 +49,7 @@ namespace SCI_Lib.Resources.Picture
                         _commands.Add(new PicCommand(opcode));
                         break;
 
-                    case PicOpCode.SET_COLOR:
+                    case PicOpCode.SET_VISUAL:
                     case PicOpCode.SET_CONTROL:
                     case PicOpCode.SET_PRIORITY:
                     case PicOpCode.SET_PATTERN:
@@ -180,6 +182,5 @@ namespace SCI_Lib.Resources.Picture
                 default: throw new FormatException($"Unknown extcode {extcode:X2}");
             }
         }
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SCI_Lib.Resources;
+using SCI_Lib.Resources.Audio;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
@@ -140,6 +141,7 @@ namespace SCI_Lib
             ResType.View => new ResView(),
             ResType.Palette => new ResPalette(),
             ResType.Heap => new ResHeap(),
+            ResType.Map => new ResMap(),
             _ => new Resource(),
         };
 
@@ -155,8 +157,8 @@ namespace SCI_Lib
             _ => new ResVocab()
         };
 
-        private IEnumerable<BaseScript> _scriptsCache;
-        private IEnumerable<BaseScript> ScriptsCache => _scriptsCache ??= Scripts.Select(r => r.GetScript());
+        private BaseScript[] _scriptsCache;
+        private BaseScript[] ScriptsCache => _scriptsCache ??= Scripts.Select(r => r.GetScript()).ToArray();
 
         public ClassSection GetClassSection(ushort id)
         {
@@ -164,8 +166,6 @@ namespace SCI_Lib
 
             if (classes.Length == 0)
                 return null;
-            if (classes.Length == 1)
-                return classes[0];
             return classes[0];
         }
 
@@ -304,7 +304,11 @@ namespace SCI_Lib
             return _funcNames[ind];
         }
 
-        private string[] LoadFuncs() => GetResource<ResVocab999>(999)?.GetText();
+        private string[] LoadFuncs()
+        {
+            var res = GetResource<ResVocab999>(999);
+            return res?.GetText() ?? KernelFunctions.Names;
+        }
 
         private string[] _names;
 
@@ -317,18 +321,6 @@ namespace SCI_Lib
         }
 
         private string[] LoadNames() => GetResource<ResVocab997>(997)?.GetVocabNames();
-
-        public ClassSection GetClass(ushort id)
-        {
-            foreach (var res in Scripts)
-            {
-                var scr = res.GetScript() as Script;
-                foreach (var cl in scr.Get<ClassSection>())
-                    if (cl.Type == SectionType.Class && cl.Id == id)
-                        return cl;
-            }
-            return null;
-        }
 
         public IEnumerable<Resource> GetTextResources()
         {
@@ -486,5 +478,7 @@ namespace SCI_Lib
             if (GetResource<ResVocab>(901) is not ResVocab901 voc) return null;
             return voc.GetSuffixes();
         }
+
+        public AudioManager CreateAudioManager() => new(this);
     }
 }

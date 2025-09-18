@@ -32,7 +32,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
 
                 if (val != 0)
                 {
-                    Exports[i] = new GlobalRef(_script, addr, val) { CanBeInvalid = true };
+                    Exports[i] = new GlobalRef(_script, addr, false, val) { CanBeInvalid = true };
                 }
             }
         }

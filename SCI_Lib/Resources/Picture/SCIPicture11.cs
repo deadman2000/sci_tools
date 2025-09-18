@@ -12,7 +12,6 @@ namespace SCI_Lib.Resources.Picture
         private ushort[] _priBars;
         private Palette _palette;
         private Cell _cell;
-        private PicVector _vector;
 
         public SCIPackage Package { get; }
 

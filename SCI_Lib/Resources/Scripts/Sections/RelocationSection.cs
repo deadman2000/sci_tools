@@ -28,7 +28,7 @@ namespace SCI_Lib.Resources.Scripts.Sections
             {
                 var addr = offset;
                 ushort val = ReadUShortBE(data, ref offset);
-                var el = new GlobalRef(_script, addr, val);
+                var el = new GlobalRef(_script, addr, false, val);
                 Refs[i] = el;
             }
         }

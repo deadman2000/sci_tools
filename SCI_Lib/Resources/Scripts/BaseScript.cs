@@ -1,5 +1,5 @@
-﻿using SCI_Lib.Resources.Scripts.Elements;
-using System;
+﻿using SCI_Lib.Analyzer;
+using SCI_Lib.Resources.Scripts.Elements;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,9 +20,9 @@ namespace SCI_Lib.Resources.Scripts
 
         public abstract byte[] GetBytes();
 
-        public abstract IScriptInstance GetInstance(string name);
+        public abstract IClass GetInstance(string name);
 
-        public abstract IScriptInstance GetInstance(string name, string superName);
+        public abstract IClass GetInstance(string name, string superName);
 
         public abstract IEnumerable<StringConst> AllStrings();
 
@@ -31,7 +31,8 @@ namespace SCI_Lib.Resources.Scripts
         public void Register(BaseElement el)
         {
             if (el is StringPart) return;
-            _elements[el.Address] = el;
+            if (!_elements.ContainsKey(el.Address))
+                _elements[el.Address] = el;
         }
 
         public void Unregister(BaseElement el) => _elements.Remove(el.Address);
@@ -57,5 +58,6 @@ namespace SCI_Lib.Resources.Scripts
 
         public string GetOpCodeName(byte type) => Package.GetOpCodeName(type);
 
+        public abstract ScriptAnalyzer Analyze(string cl = null, string method = null);
     }
 }

@@ -1,4 +1,5 @@
-﻿using SCI_Lib.Resources.Scripts;
+﻿using SCI_Lib.Analyzer;
+using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Utils;
 using System;
@@ -28,9 +29,9 @@ namespace SCI_Lib.Resources.Scripts1
 
         public override string ToString() => $"Script {Resource}";
 
-        public override IScriptInstance GetInstance(string name) => Objects.FirstOrDefault(o => o.Name == name);
+        public override IClass GetInstance(string name) => Objects.FirstOrDefault(o => o.Name == name);
 
-        public override IScriptInstance GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
+        public override IClass GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
 
         public override IEnumerable<StringConst> AllStrings() => Array.Empty<StringConst>();
 
@@ -38,13 +39,21 @@ namespace SCI_Lib.Resources.Scripts1
 
         public BaseScript CodeOwner => this;
 
+        public Heap Heap => _heap;
+
         public override BaseElement GetElement(ushort offset)
         {
-            var element = base.GetElement(offset);
-            if (element != null)
-                return element;
+            var element = _heap.GetElement(offset);
 
-            return _heap.GetElement(offset);
+            if (element == null)
+            {
+                // TODO нужно чёткое разграничение на ссылки на код и ссылки на объекты, строки и пр.
+                Console.WriteLine("CHECK ME");
+            }
+
+            element ??= base.GetElement(offset);
+
+            return element;
         }
 
         private void Read()
@@ -67,7 +76,7 @@ namespace SCI_Lib.Resources.Scripts1
                 var address = (ushort)stream.Position;
                 var exportOffset = stream.ReadUShortBE();
                 if (exportOffset != 0)
-                    Exports[i] = new GlobalRef(this, address, exportOffset) { CanBeInvalid = true, Source = "EXPORT" };
+                    Exports[i] = new GlobalRef(this, address, true, exportOffset) { CanBeInvalid = true, Source = "EXPORT" };
             }
 
             foreach (var obj in _heap.Objects)
@@ -98,8 +107,7 @@ namespace SCI_Lib.Resources.Scripts1
                 var offset = stream.ReadUShortBE();
                 if (offset != 0)
                 {
-                    var el = GetElement(offset);
-                    HeapPointers[i] = new GlobalRef(this, (ushort)pos, offset) { Source = "HEAP" };
+                    HeapPointers[i] = new GlobalRef(this, (ushort)pos, true, offset) { Source = "HEAP" };
                 }
             }
 
@@ -149,8 +157,12 @@ namespace SCI_Lib.Resources.Scripts1
         public Object1 GetObject(ushort id)
         {
             foreach (var obj in Objects)
-                if (obj.ClassId == id) return obj;
+                if (obj.Id == id) return obj;
             return null;
         }
+
+        public Object1 GetObject(string name) => Objects.FirstOrDefault(o => o.Name == name);
+
+        public override ScriptAnalyzer Analyze(string cl = null, string method = null) => new(this, cl, method);
     }
 }

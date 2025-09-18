@@ -13,6 +13,7 @@
     <PackageReference Include="Elasticsearch.Net" Version="7.6.1" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.6.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="NEST" Version="7.6.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />

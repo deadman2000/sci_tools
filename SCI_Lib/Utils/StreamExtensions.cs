@@ -22,6 +22,12 @@ namespace SCI_Lib.Utils
             stream.WriteByte((byte)(val >> 8));
         }
 
+        public static void WriteShortBE(this Stream stream, short val)
+        {
+            stream.WriteByte((byte)val);
+            stream.WriteByte((byte)(val >> 8));
+        }
+
         public static ushort ReadUShortLE(this Stream stream)
         {
             return (ushort)((stream.ReadByte() << 8) | stream.ReadByte());
@@ -41,6 +47,20 @@ namespace SCI_Lib.Utils
         public static int Read3ByteLE(this Stream stream)
         {
             return (stream.ReadByte() << 16) | (stream.ReadByte() << 8) | stream.ReadByte();
+        }
+
+        public static void Write3ByteBE(this Stream stream, int val)
+        {
+            stream.WriteByte((byte)val);
+            stream.WriteByte((byte)(val >> 8));
+            stream.WriteByte((byte)(val >> 16));
+        }
+
+        public static void Write3ByteLE(this Stream stream, int val)
+        {
+            stream.WriteByte((byte)(val >> 16));
+            stream.WriteByte((byte)(val >> 8));
+            stream.WriteByte((byte)val);
         }
 
         public static int ReadIntBE(this Stream stream)
@@ -67,6 +87,14 @@ namespace SCI_Lib.Utils
             stream.WriteByte((byte)(val >> 8));
             stream.WriteByte((byte)(val >> 16));
             stream.WriteByte((byte)(val >> 24));
+        }
+
+        public static void WriteUIntLE(this Stream stream, uint val)
+        {
+            stream.WriteByte((byte)(val >> 24));
+            stream.WriteByte((byte)(val >> 16));
+            stream.WriteByte((byte)(val >> 8));
+            stream.WriteByte((byte)val);
         }
 
         public static void Write(this Stream stream, byte[] buffer)

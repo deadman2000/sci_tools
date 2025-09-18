@@ -1,5 +1,6 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,6 +153,7 @@ public class RefExpr : Expr
     {
         SaidExpression s => $"\"{s.Label}\"",
         StringConst str => $"\"{str.ValueSlashEsc}\"",
+        Object1 obj => obj.Name,
         _ => throw new NotImplementedException()
     };
 }
@@ -193,13 +195,7 @@ public class CallExpr : Expr
 
 public class ClassExpr : Expr
 {
-    public ClassSection Class { get; }
     public string Name { get; }
-    public ClassExpr(ClassSection cl)
-    {
-        Class = cl;
-        Name = ToCppName(cl);
-    }
     public ClassExpr(string name) => Name = name;
     public override string Label => Name;
 }

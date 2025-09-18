@@ -4,9 +4,10 @@ namespace SCI_Lib.Resources.Scripts.Elements
 {
     public abstract class BaseRef : BaseElement
     {
-        public BaseRef(BaseScript script, ushort addr)
+        public BaseRef(BaseScript script, ushort addr, bool isCode)
             : base(script, addr)
         {
+            IsCode = isCode;
         }
 
         /// <summary>
@@ -28,6 +29,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
         public bool CanBeInvalid { get; set; }
 
         public object Source { get; set; }
+
+        public bool IsCode { get; }
 
         public override string ToString()
         {
@@ -70,7 +73,10 @@ namespace SCI_Lib.Resources.Scripts.Elements
         {
             IsSetup = true;
             Reference?.XRefs.Remove(this);
-            Reference = Owner.GetElement(TargetOffset);
+            if (IsCode)
+                Reference = Owner.GetOperator(TargetOffset);
+            else
+                Reference = Owner.GetElement(TargetOffset);
             Reference?.XRefs.Add(this);
         }
 
@@ -79,8 +85,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
     public class RelativeByteRef : BaseRef
     {
-        public RelativeByteRef(BaseScript script, ushort addr, sbyte value, short shift = 1)
-            : base(script, addr)
+        public RelativeByteRef(BaseScript script, ushort addr, bool isCode, sbyte value, short shift = 1)
+            : base(script, addr, isCode)
         {
             Value = value;
             Shift = shift;
@@ -114,8 +120,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
     public class RelativeWordRef : BaseRef
     {
-        public RelativeWordRef(BaseScript script, ushort addr, short value, short shift = 2)
-            : base(script, addr)
+        public RelativeWordRef(BaseScript script, ushort addr, bool isCode, short value, short shift = 2)
+            : base(script, addr, isCode)
         {
             Value = value;
             Shift = shift;
@@ -148,8 +154,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
 
     public class GlobalRef : BaseRef
     {
-        public GlobalRef(BaseScript script, ushort addr, ushort target)
-            : base(script, addr)
+        public GlobalRef(BaseScript script, ushort addr, bool isCode, ushort target)
+            : base(script, addr, isCode)
         {
             TargetOffset = target;
         }
