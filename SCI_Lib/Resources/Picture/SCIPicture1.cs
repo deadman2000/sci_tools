@@ -57,6 +57,18 @@ namespace SCI_Lib.Resources.Picture
                     Image.Image[x + y * Image.Width] = Palette.GetColorIndex(bmp.GetPixel(x, y));
         }
 
+        public override void SetBackground(Bitmap bmp, int[] excludeColors)
+        {
+            if (bmp.Width != Image.Width || bmp.Height != Image.Height)
+                throw new ArgumentException("Different image size");
+
+            var pal = Palette.ExcludeColors(excludeColors);
+
+            for (int x = 0; x < bmp.Width; x++)
+                for (int y = 0; y < bmp.Height; y++)
+                    Image.Image[x + y * Image.Width] = pal.GetColorIndex(bmp.GetPixel(x, y));
+        }
+
         public override void SetBackgroundIndexed(Bitmap bmp)
         {
             if (bmp.Width != Image.Width || bmp.Height != Image.Height)

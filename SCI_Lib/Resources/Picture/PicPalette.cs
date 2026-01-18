@@ -11,6 +11,10 @@ namespace SCI_Lib.Resources.Picture
         private int ts;
         public PalColor[] Colors { get; set; }
 
+        private PicPalette() : base(0x02)
+        {
+        }
+
         public PicPalette(Stream stream) : base(0x02)
         {
             mapping = new byte[256];
@@ -21,14 +25,11 @@ namespace SCI_Lib.Resources.Picture
 
             for (int i = 0; i < 256; i++)
             {
-                var c = new PalColor
-                {
-                    Used = stream.ReadB(),
-                    R = stream.ReadB(),
-                    G = stream.ReadB(),
-                    B = stream.ReadB()
-                };
-                Colors[i] = c;
+                var used = stream.ReadB();
+                var r = stream.ReadB();
+                var g = stream.ReadB();
+                var b = stream.ReadB();
+                Colors[i] = new PalColor(used, r, g, b);
 
                 // Console.WriteLine($"{i}: {c.Used} [ {c.R:X2} {c.G:X2} {c.B:X2} ]");
             }
@@ -48,6 +49,25 @@ namespace SCI_Lib.Resources.Picture
             }
         }
 
+        public PicPalette ExcludeColors(int[] indexes)
+        {
+            var colors = new PalColor[Colors.Length];
+            Array.Copy(Colors, colors, Colors.Length);
+
+            foreach (var ind in indexes)
+            {
+                colors[ind] = colors[ind] with
+                {
+                    Used = 0
+                };
+            }
+
+            return new PicPalette
+            {
+                Colors = colors
+            };
+        }
+
         public byte GetColorIndex(Color color)
         {
             int bestDiff = 0;
@@ -55,6 +75,8 @@ namespace SCI_Lib.Resources.Picture
 
             for (int i = 0; i < Colors.Length; i++)
             {
+                if (Colors[i].Used == 0) continue;
+
                 var c = Colors[i].GetColor();
                 if (c == color) return (byte)i;
 
@@ -70,13 +92,8 @@ namespace SCI_Lib.Resources.Picture
         }
     }
 
-    public class PalColor
+    public record struct PalColor(byte Used, byte R, byte G, byte B)
     {
-        public byte Used;
-        public byte R;
-        public byte G;
-        public byte B;
-
         public Color GetColor()
         {
             return Color.FromArgb(R, G, B);

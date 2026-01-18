@@ -22,6 +22,7 @@ namespace SCI_Tools
             var res = package.GetResource<ResPicture>(Picture);
             var pic = res.GetPicture();
             pic.SetBackground(bmp);
+            //pic.SetBackground(bmp, new int[] { 228, 229, 230, 231, 232, 233 });
             res.SetPicture(pic);
             res.SavePatch();
 

@@ -243,6 +243,15 @@ namespace SCI_Lib.Resources.View
                     Pixels[x + y * Width] = Palette.GetColorIndex(bitmap.GetPixel(x, y));
         }
 
+        public void SetImage(Bitmap bitmap, int[] excludeColors)
+        {
+            var pal = Palette.ExcludeColors(excludeColors);
+
+            for (int x = 0; x < bitmap.Width; x++)
+                for (int y = 0; y < bitmap.Height; y++)
+                    Pixels[x + y * Width] = pal.GetColorIndex(bitmap.GetPixel(x, y));
+        }
+
         public void SetImageIndexed(Bitmap bmp)
         {
             if (bmp.Width != Width || bmp.Height != Height)

@@ -198,6 +198,9 @@ namespace SCI_Lib.Resources.View
             for (int i = 0; i < Colors.Length; i++)
             {
                 var c = Colors[i];
+                if (c.A == 0)
+                    continue;
+
                 if (c == color) return (byte)i;
 
                 var d = Math.Abs(c.R - color.R) + Math.Abs(c.G - color.G) + Math.Abs(c.B - color.B);
@@ -209,6 +212,22 @@ namespace SCI_Lib.Resources.View
             }
 
             return best;
+        }
+
+        public Palette ExcludeColors(int[] indexes)
+        {
+            var colors = new Color[Colors.Length];
+            Array.Copy(Colors, colors, Colors.Length);
+
+            foreach (var ind in indexes)
+            {
+                colors[ind] = Color.Transparent;
+            }
+
+            return new Palette
+            {
+                Colors = colors
+            };
         }
     }
 }

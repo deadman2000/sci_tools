@@ -18,6 +18,8 @@ namespace SCI_Lib.Resources.Picture
 
         public abstract void SetBackground(Bitmap bmp);
 
+        public abstract void SetBackground(Bitmap bmp, int[] excludeColors);
+
         public abstract void SetBackgroundIndexed(Bitmap bmp);
 
         public abstract Color[] GetPalette();

@@ -100,6 +100,11 @@ namespace SCI_Lib.Resources.Picture
             _cell.SetImage(bmp);
         }
 
+        public override void SetBackground(Bitmap bmp, int[] excludeColors)
+        {
+            _cell.SetImage(bmp, excludeColors);
+        }
+
         public override void SetBackgroundIndexed(Bitmap bmp)
         {
             _cell.SetImageIndexed(bmp);
