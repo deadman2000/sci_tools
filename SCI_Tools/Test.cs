@@ -25,6 +25,55 @@ namespace SCI_Tools
         {
             try
             {
+                //Decompile(24);
+
+                /*var lines = File.ReadAllLines(@"D:\Projects\TranslateWeb\jupyter\text.csv");
+                StringBuilder sb = new();
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(';');
+                    var tupleStr = parts[0].Replace(".wav", "");
+                    var tuple = tupleStr.Split('.');
+                    var number = ushort.Parse(tuple[0]);
+                    var noun = byte.Parse(tuple[1]);
+                    var verb = byte.Parse(tuple[2]);
+                    var cond = byte.Parse(tuple[3]);
+                    var seq = byte.Parse(tuple[4]);
+
+                    var res = package.GetResource<ResMessage>(number);
+                    var msg = res.GetMessages()
+                        .FirstOrDefault(m => m.Noun == noun && m.Verb == verb && m.Cond == cond && m.Seq == seq);
+
+                    sb.AppendLine(tupleStr);
+                    sb.AppendLine(parts[1]);
+                    if (msg != null)
+                        sb.AppendLine(msg.Text);
+                    else
+                        sb.AppendLine("!!! NOT FOUND");
+                    sb.AppendLine();
+                }
+                File.WriteAllText(@"D:\Projects\TranslateWeb\merged.txt", sb.ToString());*/
+
+                /*foreach (var res in translate.GetResources<ResMessage>())
+                {
+                    var messages = res.GetMessages();
+                    var groups = messages.GroupBy(m => (m.Noun, m.Verb, m.Cond));
+                    foreach (var gr in groups)
+                    {
+                        var sequence = gr.Select(m => m.Seq).Order().ToArray();
+                        for (int i = 0; i < sequence.Length - 1; i++)
+                        {
+                            if (sequence[i + 1] != sequence[i] + 1)
+                            {
+                                var index = messages.IndexOf(gr.First());
+
+                                Console.WriteLine($"https://quests-translate.ru/projects/freddy_pharkas_cd/volumes/{res.Number}_msg#t{index}");
+                                break;
+                            }
+                        }
+                    }
+                }*/
+
                 /*var res = translate.GetResource<ResHeap>(625);
                 var heap = res.GetHeap();
                 for (int i = 0; i < heap.Strings.Count; i++)
@@ -75,6 +124,23 @@ namespace SCI_Tools
             return Task.CompletedTask;
         }
 
+        private void CheckNewLinesInEnd()
+        {
+            foreach (var res in translate.GetResources<ResMessage>())
+            {
+                var strings = res.GetStrings();
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    var str = strings[i];
+                    if (str.EndsWith("\r") || str.EndsWith("\n"))
+                    {
+                        Console.WriteLine($"https://quests-translate.ru/projects/freddy_pharkas_cd/volumes/{res.Number}_msg#t{i}");
+                        Console.WriteLine(str);
+                    }
+                }
+            }
+        }
+
         private void MissingMessages()
         {
             var floppy = SCIPackage.Load(@"D:\Dos\GAMES\FREDDY\");
@@ -123,10 +189,26 @@ namespace SCI_Tools
             }
         }
 
+        private void DecompileAll()
+        {
+            foreach (var res in package.GetResources<ResScript>())
+            {
+                Console.WriteLine(res);
+                try
+                {
+                    Decompile(res.Number);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
         private void Decompile(ushort num, string cl = null, string method = null)
         {
             //var res = (translate ?? package).GetResource<ResScript>(num);
-            var res = package.GetResource<ResScript>(num);
+            var res = translate.GetResource<ResScript>(num);
             var script = res.GetScript();
 
             var analyzer = script.Analyze(cl, method);
@@ -165,18 +247,6 @@ namespace SCI_Tools
         private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             Console.WriteLine(e.Data);
-        }
-
-        private void DecompileAll()
-        {
-            foreach (var res in package.GetResources<ResScript>())
-            {
-                Console.WriteLine(res);
-                var script = res.GetScript() as Script;
-                var analyzer = script.Analyze();
-                var graph = new GraphBuilder(analyzer);
-                graph.GetGraph(GraphBuilder.CodeType.CPP);
-            }
         }
 
         private void FindTextCall(int text, int index)

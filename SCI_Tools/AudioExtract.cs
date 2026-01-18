@@ -1,8 +1,8 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using Elasticsearch.Net;
+using McMaster.Extensions.CommandLineUtils;
 using NAudio.Wave;
 using SCI_Lib.Resources.Audio;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,7 +19,6 @@ namespace SCI_Tools
         [Option(Description = "Output folder", LongName = "output")]
         public string Output { get; set; }
 
-        [Required]
         [Option(Description = "Resource ('sfx' or number of map)", LongName = "resource")]
         public string Resource { get; set; }
 
@@ -35,7 +34,11 @@ namespace SCI_Tools
 
             _audio = package.CreateAudioManager();
 
-            if (Resource == "sfx")
+            if (Resource == null)
+            {
+                ExtractMaps();
+            }
+            else if (Resource == "sfx")
             {
                 ExtractSFX();
             }
@@ -72,6 +75,20 @@ namespace SCI_Tools
             }
         }
 
+        private void ExtractMaps()
+        {
+            _audio = package.CreateAudioManager();
+            foreach (var number in _audio.GetMaps())
+            {
+                var map = _audio.ReadMap(number);
+                foreach (var sample in map.Samples)
+                {
+                    Console.WriteLine($"Extract {number}.MAP {sample.Number}...");
+                    ExtractAudio(sample, $"{number}.{sample.Message}");
+                }
+            }
+        }
+
         private void ExtractMap(int number)
         {
             _audio = package.CreateAudioManager();
@@ -79,7 +96,7 @@ namespace SCI_Tools
             foreach (var sample in map.Samples)
             {
                 Console.WriteLine($"Extract {number}.MAP {sample.Number}...");
-                ExtractAudio(sample, $"{number}.{SplitTuple(sample.Number)}");
+                ExtractAudio(sample, $"{number}.{sample.Message}");
             }
         }
 
@@ -88,11 +105,8 @@ namespace SCI_Tools
             _audio = package.CreateAudioManager();
             var map = _audio.ReadMap(number);
             var sample = map.Samples.First(o => o.Number == tuple);
-            ExtractAudio(sample, $"{number}.{SplitTuple(sample.Number)}");
+            ExtractAudio(sample, $"{number}.{sample.Message}");
         }
-
-        private static string SplitTuple(uint tuple)
-            => $"{tuple >> 24}.{(tuple >> 16) & 0xff}.{(tuple >> 8) & 0xff}.{tuple & 0xff}";
 
         private WaveStream GetWave(AudioSample audio)
         {

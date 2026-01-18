@@ -414,6 +414,7 @@ namespace SCI_Tools
         protected void SetPushi(BaseScript scr, ushort addr, int val)
         {
             var op = scr.GetOperator(addr);
+            if (op == null) return;
             if (op.Name != "pushi") throw new Exception();
 
             if (op.Arguments[0] is ShortArg s)
@@ -424,7 +425,15 @@ namespace SCI_Tools
             else if (op.Arguments[0] is ByteArg b)
             {
                 if (b.Value == val) return;
-                b.Value = (byte)val;
+
+                if (val > 127)
+                {
+                    op.Type = 0x38; // pushi W
+                    op.Arguments[0] = new ShortArg(op, 0, (short)val);
+                    Console.WriteLine($"Address shift in {scr.Resource.Number}.scr!");
+                }
+                else
+                    b.Value = (byte)val;
             }
             else throw new Exception();
 
@@ -444,6 +453,16 @@ namespace SCI_Tools
             else if (op.Arguments[0] is ByteArg b)
             {
                 if (b.Value == val) return;
+
+                if (val > 127)
+                {
+                    op.Type = 0x34; // ldi W
+                    op.Arguments[0] = new ShortArg(op, 0, (short)val);
+                    Console.WriteLine($"Address shift in {scr.Resource.Number}.scr!");
+                }
+                else
+                    b.Value = (byte)val;
+
                 b.Value = (byte)val;
             }
             else throw new Exception();
@@ -480,11 +499,38 @@ namespace SCI_Tools
             }
         }
 
+        protected void PrintHeap(ushort num)
+        {
+            var resScript = _translate.GetResource<ResScript>(num);
+            var res = _translate.GetResource<ResHeap>(num);
+
+            var strings = res.GetStrings();
+            for (int i = 0; i < strings.Length; i++)
+            {
+                Console.WriteLine($"SetHeap({num}, {i}, \"\"); // {strings[i]}");
+            }
+        }
+
         private void ApplyHeapPatches()
         {
             foreach (var res in _changed.OfType<ResHeap>())
             {
-                res.SetStrings(_heapStrings[res.Number]);
+                if (_heapStrings.TryGetValue(res.Number, out var strings))
+                    res.SetStrings(strings);
+            }
+        }
+
+        protected void PatchLocalVars(Script1 scr, int offset, ushort[] values)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                var newValue = values[i];
+                var v = scr.Heap.LocalVars[offset + i];
+                if (v.Value != newValue)
+                {
+                    v.Value = newValue;
+                    Changed(scr.Heap.Resource);
+                }
             }
         }
 

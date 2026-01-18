@@ -21,7 +21,10 @@ namespace SCI_Tools
         typeof(PatchLarry2),
         typeof(PatchLarry3),
         typeof(PatchLarry3PnC),
+        typeof(PatchFreddy),
+        typeof(PatchFreddyDemo),
         typeof(PatchFreddyCD),
+        typeof(PatchFreddyDemoCD),
         typeof(AudioExtract),
         typeof(AudioReplace)
     )]
