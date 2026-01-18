@@ -20,6 +20,7 @@ namespace SCI_Lib.Resources.Audio
 
                 short value = (short)Clip(s, -32768, 32767);
                 ms.WriteShortBE(value);
+                s = value;
             }
 
             ms.Seek(0, SeekOrigin.Begin);

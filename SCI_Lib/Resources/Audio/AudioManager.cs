@@ -18,8 +18,12 @@ namespace SCI_Lib.Resources.Audio
         {
             _package = package;
 
-            _audDir = Path.Combine(package.GameDirectory, "AUDIO");
+            if (File.Exists(Path.Combine(package.GameDirectory, "AUDIO", "RESOURCE.AUD")))
+                _audDir = Path.Combine(package.GameDirectory, "AUDIO");
+            else if (File.Exists(Path.Combine(package.GameDirectory, "RESOURCE.AUD")))
+                _audDir = Path.Combine(package.GameDirectory);
             _audPath = Path.Combine(_audDir, "RESOURCE.AUD");
+
             _sfxPath = Path.Combine(package.GameDirectory, "RESOURCE.SFX");
         }
 
@@ -37,9 +41,15 @@ namespace SCI_Lib.Resources.Audio
 
         public int[] GetMaps()
         {
+            var packedMaps = _package.GetResources<ResMap>()
+                .Select(r => (int)r.Number)
+                .Where(i => i != 65535);
+
             var maps = Directory.GetFiles(_audDir, "*.MAP");
             return maps.Select(p => Path.GetFileNameWithoutExtension(p))
+                .Where(n => int.TryParse(n, out int _))
                 .Select(n => int.Parse(n))
+                .Union(packedMaps)
                 .OrderBy(i => i)
                 .ToArray();
         }
@@ -48,7 +58,7 @@ namespace SCI_Lib.Resources.Audio
         {
             _audStream ??= File.OpenRead(_audPath);
 
-            AudioMap map = new(mapNumber, _audDir);
+            AudioMap map = new(_package, mapNumber, _audDir);
             map.Read(_audStream);
             return map;
         }

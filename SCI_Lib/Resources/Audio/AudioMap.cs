@@ -8,19 +8,32 @@ namespace SCI_Lib.Resources.Audio
     {
         private readonly string _mapPath;
 
-        public AudioMap(int number, string folder)
+        public AudioMap(SCIPackage package, int number, string folder)
         {
+            Package = package;
             Number = number;
             _mapPath = Path.Combine(folder, $"{number}.MAP");
         }
+
+        public SCIPackage Package { get; }
 
         public int Number { get; }
 
         public List<AudioSample> Samples { get; set; }
 
+        protected byte[] ReadMap()
+        {
+            if (File.Exists(_mapPath))
+            {
+                return File.ReadAllBytes(_mapPath);
+            }
+
+            return Package.GetResource<ResMap>((ushort)Number).GetContent();
+        }
+
         public void Read(Stream audStream)
         {
-            var data = File.ReadAllBytes(_mapPath);
+            var data = ReadMap();
 
             int recordSize = 0;
             for (int i = data.Length - 1; i > 0; i--)
@@ -33,7 +46,10 @@ namespace SCI_Lib.Resources.Audio
 
             Samples = new();
             MemoryStream ms = new(data);
-            ms.Seek(2, SeekOrigin.Begin);
+            if (data[0] == 0x90)
+            {
+                ms.Seek(2, SeekOrigin.Begin);
+            }
             var offset = ms.ReadIntBE();
             while (true)
             {
@@ -46,20 +62,12 @@ namespace SCI_Lib.Resources.Audio
 
         public void Write(Stream audStream)
         {
-            if (Number == 230)
-            {
-                System.Console.WriteLine();
-            }
             foreach (var sample in Samples)
             {
                 var newOffset = audStream.Position;
                 var data = sample.GetRaw();
                 audStream.Write(data);
                 sample.Offset = newOffset;
-                if (Number == 230)
-                {
-                    System.Console.WriteLine($"{sample.Number} {sample.Offset}   {data.Length}");
-                }
             }
         }
 

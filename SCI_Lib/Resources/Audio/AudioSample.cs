@@ -17,6 +17,7 @@ namespace SCI_Lib.Resources.Audio
             Format = AudioFormat.Unread;
             Offset = offset;
             Number = number;
+            Message = $"{number >> 24}.{(number >> 16) & 0xff}.{(number >> 8) & 0xff}.{number & 0xff}";
         }
 
         public byte Type { get; private set; }
@@ -27,7 +28,10 @@ namespace SCI_Lib.Resources.Audio
         public int Rate { get; private set; }
         public SolFlags Flags { get; private set; }
 
-        public override string ToString() => $"{Offset}..{Offset + Size} #{Number:x08}";
+        public string Message { get; }
+
+
+        public override string ToString() => $"{Offset}..{Offset + Size} {Message}";
 
         public byte[] GetRaw()
         {
@@ -92,6 +96,7 @@ namespace SCI_Lib.Resources.Audio
             ms.WriteUShortBE(22050); // Rate
             ms.WriteByte((byte)(SolFlags.Compressed | SolFlags.Is16Bit | SolFlags.IsSigned));
             ms.WriteIntBE(data.Length);
+            ms.WriteByte(0);
             ms.Write(data);
             var size = ms.Position;
             ms.Seek(0, SeekOrigin.Begin);
