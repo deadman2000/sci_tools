@@ -55,7 +55,7 @@ namespace SCI_Tools
 
             CreateWord("по", WordClass.Proposition);
 
-            CreateWord("смаж", WordClass.ImperativeVerb);
+            CreateWord("смаж,смажь", WordClass.ImperativeVerb);
             CreateWord("позвони", WordClass.ImperativeVerb);
             CreateWord("качайся", WordClass.ImperativeVerb);
             CreateWord("включи", WordClass.ImperativeVerb);

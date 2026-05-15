@@ -182,5 +182,30 @@ namespace SCI_Lib.Pictures
                     (_pixelMap[x, y], _pixelMap[x2, y]) = (_pixelMap[x2, y], _pixelMap[x, y]);
                 }
         }
+
+        public void TrimDown()
+        {
+            int newHeight = Height;
+            for (int y = Height - 1; y > 0; y--)
+            {
+                if (!IsEmptyRow(y))
+                    break;
+
+                newHeight = y;
+            }
+
+            Resize(Width, newHeight);
+        }
+
+        private bool IsEmptyRow(int y)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                if (_pixelMap[x, y] != 0)
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

@@ -25,6 +25,19 @@ namespace SCI_Tools
         {
             try
             {
+                /*var res = translate.GetResource<ResFont>(0);
+                var fnt = res.GetFont();
+                for (int i = 0x80; i < fnt.Frames.Count; i++)
+                {
+                    var f = fnt.Frames[i];
+                    if (f.Width == 1) continue;
+                    f.TrimDown();
+                    f.ShiftLeft();
+                }
+
+                res.SetFont(fnt);
+                res.SavePatch();*/
+
                 //Decompile(24);
 
                 /*var lines = File.ReadAllLines(@"D:\Projects\TranslateWeb\jupyter\text.csv");
@@ -398,6 +411,9 @@ namespace SCI_Tools
             var trRes = translate.GetResource<ResFont>(num);
             var font = srcRes.GetFont();
             var trFont = trRes.GetFont();
+
+            trFont.FontHeight = font.FontHeight;
+
             int ind = Math.Min(128, font.Frames.Count);
 
             for (int i = 0; i < ind; i++)

@@ -14,6 +14,7 @@ namespace SCI_Tools
         typeof(ExtractView),
         typeof(Pack),
         typeof(MapFont),
+        typeof(PatchColonel),
         typeof(PatchEQ),
         typeof(PatchEQCD),
         typeof(PatchLongbow),
