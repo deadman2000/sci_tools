@@ -3,6 +3,7 @@ using SCI_Lib;
 using SCI_Lib.Resources;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Tests
 {
@@ -27,7 +28,7 @@ namespace Tests
             package = Utils.LoadConquest();
             var packed = SCIPackage.Load(tmp);
 
-            foreach (var r in package.Resources)
+            Parallel.ForEach(package.Resources, r =>
             {
                 var r2 = packed.GetResource(r.FileName);
                 Assert.IsNotNull(r2);
@@ -59,7 +60,7 @@ namespace Tests
                         }
                     }
                 }
-            }
+            });
         }
 
         [TearDown]
