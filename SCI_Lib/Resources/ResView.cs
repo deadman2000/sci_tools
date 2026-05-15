@@ -1,5 +1,4 @@
 ﻿using SCI_Lib.Resources.View;
-using SCI_Lib.SCI0;
 using System;
 using System.IO;
 

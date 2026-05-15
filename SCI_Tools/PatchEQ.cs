@@ -1,6 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources;
-using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Sections;
 using System.Drawing;
 

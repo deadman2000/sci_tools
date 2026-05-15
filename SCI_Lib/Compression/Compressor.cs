@@ -1,5 +1,4 @@
-﻿using SCI_Lib.Resources;
-using System.IO;
+﻿using System.IO;
 
 namespace SCI_Lib.Compression
 {

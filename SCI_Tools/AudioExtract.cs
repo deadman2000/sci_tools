@@ -1,5 +1,4 @@
-﻿using Elasticsearch.Net;
-using McMaster.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using NAudio.Wave;
 using SCI_Lib.Resources.Audio;
 using System;

@@ -2,7 +2,6 @@
 using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Scripts1;
-using System;
 using System.Collections.Generic;
 
 namespace SCI_Lib.Analyzer;

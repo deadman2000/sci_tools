@@ -1,7 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts1;
-using System;
 
 namespace SCI_Tools
 {
