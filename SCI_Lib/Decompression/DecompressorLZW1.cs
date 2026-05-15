@@ -8,16 +8,16 @@ namespace SCI_Lib.Decompression
     class DecompressorLZW1 : Decompressor
     {
         private readonly Stack<byte> stack = new();
-        private readonly LZWToken[] tokens = new LZWToken[0x1004];
+        private readonly LZWToken[] tokens = new LZWToken[LZWConstants.MaxTokenIndex];
 
         protected override void GoUnpack()
         {
             var reader = new BitReaderMSB(_stream);
             BitReaderMSB.DEBUG = DEBUG;
 
-            ushort numbits = 9;
-            ushort curtoken = 0x102;
-            ushort endtoken = 0x1ff;
+            byte numbits = LZWConstants.InitialBits;
+            ushort curtoken = LZWConstants.FirstCode;
+            ushort endtoken = LZWConstants.InitialEndToken;
 
             byte lastchar = 0;
             ushort lastbits = 0;
@@ -32,18 +32,18 @@ namespace SCI_Lib.Decompression
 
                 bitstring = (ushort)reader.GetBits(numbits);
 
-                if (bitstring == 0x101) // found end-of-data signal
+                if (bitstring == LZWConstants.EndCode) // found end-of-data signal
                 {
                     if (DEBUG) Console.WriteLine("End");
                     return;
                 }
 
-                if (bitstring == 0x100) // start-over signal
+                if (bitstring == LZWConstants.ClearCode) // start-over signal
                 {
                     if (DEBUG) Console.WriteLine("Reset");
-                    numbits = 9;
-                    curtoken = 0x102;
-                    endtoken = 0x1ff;
+                    numbits = LZWConstants.InitialBits;
+                    curtoken = LZWConstants.FirstCode;
+                    endtoken = LZWConstants.InitialEndToken;
                     firstChar = true;
                     continue;
                 }

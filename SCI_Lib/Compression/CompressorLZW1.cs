@@ -1,5 +1,4 @@
-﻿using SCI_Lib.Decompression;
-using SCI_Lib.Utils;
+﻿using SCI_Lib.Utils;
 using System;
 using System.Collections.Generic;
 
@@ -8,14 +7,14 @@ namespace SCI_Lib.Compression
     class CompressorLZW1 : Compressor
     {
         BitWriterMSB writer;
-        ushort numbits = 9;
         ushort lastBits = 0;
         byte lastVal = 0;
 
-        LZWToken[] tokens = new LZWToken[0x1004];
+        readonly LZWToken[] tokens = new LZWToken[LZWConstants.MaxTokenIndex];
         int pos = 0;
-        ushort curtoken = 0x102;
-        ushort endtoken = 0x1ff;
+        ushort curtoken = LZWConstants.FirstCode;
+        ushort endtoken = LZWConstants.InitialEndToken;
+        byte numbits = LZWConstants.InitialBits;
         bool isFirst = true;
 
         protected override void GoPack()
@@ -25,10 +24,9 @@ namespace SCI_Lib.Compression
 
             while (pos < _data.Length)
             {
-                if (curtoken == endtoken && numbits < 12)
+                if (ShouldIncreaseBits())
                 {
-                    numbits++;
-                    endtoken = (ushort)((endtoken << 1) + 1);
+                    IncreaseBits();
                     if (DEBUG) Console.WriteLine($"New endtoken = {endtoken:X4} numbits = {numbits}");
                 }
 
@@ -47,7 +45,7 @@ namespace SCI_Lib.Compression
 
                 var bestToken = FindToken(pos - 1);
 
-                if (curtoken < endtoken && lastVal == val && IsToken(lastBits))
+                if (CanAddToken() && lastVal == val && IsToken(lastBits))
                 {
                     var data = GetTokenStack(lastBits);
                     if (IsNextBytes(data))
@@ -74,12 +72,12 @@ namespace SCI_Lib.Compression
                 }
                 else
                 {
-                    if (curtoken >= endtoken)
+                    if (!CanAddToken())
                     {
                         Reset();
                     }
 
-                    if (curtoken < endtoken && val == lastBits && pos < _data.Length && _data[pos] == val)
+                    if (CanAddToken() && val == lastBits && pos < _data.Length && _data[pos] == val)
                     {
                         if (DEBUG) Console.WriteLine($"Repeat last char. Skip 1");
                         var token = curtoken;
@@ -96,7 +94,7 @@ namespace SCI_Lib.Compression
 
                 lastVal = val;
             }
-            WriteBits(0x101);
+            WriteBits(LZWConstants.EndCode);
             writer.Flush();
         }
 
@@ -110,10 +108,10 @@ namespace SCI_Lib.Compression
         private void Reset()
         {
             if (DEBUG) Console.WriteLine("Reset");
-            WriteBits(0x100);
-            numbits = 9;
-            curtoken = 0x102;
-            endtoken = 0x1ff;
+            WriteBits(LZWConstants.ClearCode);
+            numbits = LZWConstants.InitialBits;
+            curtoken = LZWConstants.FirstCode;
+            endtoken = LZWConstants.InitialEndToken;
             isFirst = true;
         }
 
@@ -159,7 +157,7 @@ namespace SCI_Lib.Compression
             var next = _data[p + 1];
             FindResult best = null;
 
-            for (ushort t = 0x102; t < curtoken; t++)
+            for (ushort t = LZWConstants.FirstCode; t < curtoken; t++)
             {
                 //if (pos == 454 && t == 0x263) Debugger.Break();
 
@@ -187,7 +185,7 @@ namespace SCI_Lib.Compression
             var curr = _data[p];
             FindResult best = null;
 
-            for (ushort t = 0x102; t < curtoken; t++)
+            for (ushort t = LZWConstants.FirstCode; t < curtoken; t++)
             {
                 if (tokens[t].next == next && tokens[t].data == curr)
                 {
@@ -208,18 +206,14 @@ namespace SCI_Lib.Compression
 
         private bool IsToken(ushort val)
         {
-            return (val > 0xff) && (val < 0x1004);
+            return (val > 0xff) && (val < LZWConstants.MaxTokenIndex);
         }
 
         void AddToken(byte data, ushort next)
         {
             if (next == curtoken) throw new InvalidOperationException();
-            if (curtoken > endtoken) return;
-
-            tokens[curtoken].data = data;
-            tokens[curtoken].next = next;
-            if (DEBUG) Console.WriteLine($"tokens[{curtoken:X4}] = {tokens[curtoken]}");
-            curtoken++;
+            AddTokenInternal(data, next);
+            if (DEBUG) Console.WriteLine($"tokens[{curtoken - 1:X4}] = {tokens[curtoken - 1]}");
         }
 
         byte ReadByte()
