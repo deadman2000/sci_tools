@@ -82,16 +82,6 @@ namespace SCI_Lib.Resources.Scripts
             return bb.GetArray();
         }
 
-        public StringPart GetStringPart(ushort value)
-        {
-            if (_strings == null) return null;
-
-            foreach (var s in _strings.Strings)
-                if (s.Address < value && value < s.Address + s.Bytes.Length)
-                    return new StringPart(s, s.Address - value);
-            return null;
-        }
-
         public IEnumerable<T> Get<T>() where T : Section => Sections.OfType<T>();
 
         internal IEnumerable<T> Get<T>(SectionType type) where T : Section => Sections.OfType<T>().Where(s => s.Type == type);

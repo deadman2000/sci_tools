@@ -7,6 +7,7 @@ using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Scripts1;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Tests
 {
@@ -19,7 +20,7 @@ namespace Tests
 
         private static void CheckPackage(SCIPackage package)
         {
-            foreach (var res in package.Scripts)
+            Parallel.ForEach(package.Scripts, res =>
             {
                 var scr = res.GetScript();
                 Assert.IsNotNull(scr);
@@ -30,13 +31,13 @@ namespace Tests
                     CheckScriptValid(s1);
                 else
                     throw new NotImplementedException();
-            }
+            });
         }
 
         private static void CheckScriptValid(Script scr)
         {
             // Проверка ссылок на ссылки
-            foreach (var rel in scr.Sections.OfType<RelocationSection>())
+            Parallel.ForEach(scr.Sections.OfType<RelocationSection>(), rel =>
             {
                 foreach (var r in rel.Refs)
                 {
@@ -45,18 +46,18 @@ namespace Tests
                     if (r.Reference is not BaseRef && r.Reference is not PropertyElement)
                         Assert.Fail(descr);
                 }
-            }
+            });
         }
 
         private static void CheckScriptValid(Script1 scr)
         {
-            foreach (var obj in scr.Objects)
+            Parallel.ForEach(scr.Objects, obj =>
             {
                 foreach (var m in obj.Methods)
                 {
                     Assert.NotNull(m.Reference.Reference, $"Wrong method reference in {scr.Resource.Number} {m.Name}");
                 }
-            }
+            });
         }
 
         [Test]
@@ -88,17 +89,17 @@ namespace Tests
 
         private static void ParseAndBack(SCIPackage package)
         {
-            foreach (var res in package.Scripts)
+            Parallel.ForEach(package.Scripts, res =>
             {
                 var bytes = res.GetContent();
                 var newbytes = res.GetScript().GetBytes();
                 CollectionAssert.AreEqual(bytes, newbytes, $"Problem in {res.Number}");
-            }
+            });
         }
 
         private static void ParseAndBack1(SCIPackage package)
         {
-            foreach (var res in package.Scripts)
+            Parallel.ForEach(package.Scripts, res =>
             {
                 var resHeap = package.GetResource<ResHeap>(res.Number);
 
@@ -110,7 +111,7 @@ namespace Tests
 
                 CollectionAssert.AreEqual(bytes, newbytes, $"Problem in script {res.Number}");
                 CollectionAssert.AreEqual(bytesH, newbytesH, $"Problem in heap {res.Number}");
-            }
+            });
         }
 
         [Test]
@@ -118,7 +119,7 @@ namespace Tests
         {
             SCIPackage package = Utils.LoadConquest();
 
-            foreach (var r in package.Scripts)
+            Parallel.ForEach(package.Scripts, r =>
             {
                 var scr = r.GetScript() as Script;
                 foreach (var e in scr.AllElements)
@@ -128,7 +129,7 @@ namespace Tests
 
                 foreach (var e in scr.AllElements)
                     Assert.IsTrue(e.Address != 0, $"{e} is not set address");
-            }
+            });
         }
 
         [Test]
@@ -136,7 +137,7 @@ namespace Tests
         {
             SCIPackage package = Utils.LoadConquest();
 
-            foreach (var res in package.Scripts)
+            Parallel.ForEach(package.Scripts, res =>
             {
                 var scr = res.GetScript() as Script;
                 scr.GetBytes();
@@ -148,7 +149,7 @@ namespace Tests
                     Assert.IsTrue(r.IsWrited, descr);
                     Assert.IsTrue(r.IsOffsetWrited, descr);
                 }
-            }
+            });
         }
 
         [Test]

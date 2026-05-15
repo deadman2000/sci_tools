@@ -3,17 +3,18 @@ using SCI_Lib;
 using SCI_Lib.Resources;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Tests
 {
     public class DecompressTest
     {
-        protected async Task CheckDecompress(SCIPackage package, string uncompDir, Func<Resource, bool> match = null)
+        protected Task CheckDecompress(SCIPackage package, string uncompDir, Func<Resource, bool> match = null)
         {
-            foreach (var r in package.Resources)
+            return Task.WhenAll(package.Resources.Select(async r =>
             {
-                if (match != null && !match(r)) continue;
+                if (match != null && !match(r)) return;
 
                 var unpack = r.GetContent();
 
@@ -23,7 +24,7 @@ namespace Tests
                     filePath = Path.Combine(uncompDir, r.FileName.ToLower());
 
                 if (!File.Exists(filePath))
-                    continue;
+                    return;
 
                 var target = await File.ReadAllBytesAsync(filePath);
 
@@ -34,7 +35,7 @@ namespace Tests
                 Array.Copy(target, 2 + offset, trimmed, 0, trimmed.Length);
 
                 Assert.AreEqual(trimmed, unpack, $"Decompress error in {r.FileName}");
-            }
+            }));
         }
 
         [Test]

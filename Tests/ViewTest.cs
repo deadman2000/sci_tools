@@ -1,8 +1,10 @@
 ﻿using NUnit.Framework;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.View;
+using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Tests
 {
@@ -13,13 +15,14 @@ namespace Tests
         {
             var package = Utils.LoadConquest();
 
+            var resources = package.GetResources<ResView>().Take(10);
             //var r = package.GetResource("95.p56");
-            foreach (var r in package.GetResources<ResView>().Take(10))
+            Parallel.ForEach(resources, r =>
             {
-                if (r.Number == 460) continue; // Skip broken view in Conquest
+                if (r.Number == 460) return; // Skip broken view in Conquest
                 var info = r.GetInfo();
 
-                if (info.Method != 3) continue;
+                if (info.Method != 3) return;
 
                 var comp = info.GetCompressor();
                 var decomp = info.GetDecompressor();
@@ -59,7 +62,7 @@ namespace Tests
                         Assert.AreEqual(oc.TransparentColor, rc.TransparentColor);
                     }
                 }
-            }
+            });
         }
 
         [Test]
@@ -67,7 +70,9 @@ namespace Tests
         {
             var package = Utils.LoadEQ();
 
-            foreach (var r in package.GetResources<ResView>())
+            var resources = package.GetResources<ResView>().ToList();
+
+            Parallel.ForEach(resources, r =>
             {
                 var view = r.GetView();
 
@@ -94,10 +99,12 @@ namespace Tests
                         Assert.AreEqual(oc.X, rc.X);
                         Assert.AreEqual(oc.Y, rc.Y);
                         Assert.AreEqual(oc.TransparentColor, rc.TransparentColor);
-                        CollectionAssert.AreEqual(oc.Pixels, rc.Pixels);
+
+                        Assert.That(oc.Pixels.AsSpan().SequenceEqual(rc.Pixels.AsSpan()),
+                            $"Pixels mismatch in resource {r.Number}, loop {i}, cell {j}");
                     }
                 }
-            }
+            });
         }
     }
 }

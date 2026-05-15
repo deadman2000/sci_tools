@@ -428,6 +428,7 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     // 2 bytes
                     case 0x2f:
                     case 0x31:
+                    case 0x33:
                     case 0x35:
                     case 0x39:
                     case 0x3f:
@@ -445,13 +446,16 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     case 0x6d:
                     case 0x73:
                     case 0x75:
-                    case 0x33:
                         return 2;
 
                     // 3 bytes
                     case 0x2e:
+                    case 0x30:
+                    case 0x32:
                     case 0x34:
+                    case 0x38:
                     case 0x3e:
+                    case 0x41:
                     case 0x43:
                     case 0x45:
                     case 0x50:
@@ -463,12 +467,8 @@ namespace SCI_Lib.Resources.Scripts.Elements
                     case 0x66:
                     case 0x6a:
                     case 0x6c:
-                    case 0x74:
-                    case 0x38:
-                    case 0x41:
-                    case 0x30:
-                    case 0x32:
                     case 0x72:
+                    case 0x74:
                         return 3;
 
                     // 4 bytes
