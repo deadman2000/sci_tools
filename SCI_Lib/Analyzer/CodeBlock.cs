@@ -30,6 +30,8 @@ public class CodeBlock
     private short _rest;
     private bool _mainUsed;
 
+    public Expr ReturnValue { get; private set; }
+
     public List<CodeBlock> Parents { get; } = new();
 
     public Code NextA { get; set; }
@@ -431,6 +433,9 @@ public class CodeBlock
                 }
                 break;
             case 0x48: // ret
+                if (code != Code[^1]) throw new Exception();
+                ReturnValue = Acc;
+                break;
             case 0x49:
                 if (code != Code[^1]) throw new Exception();
                 break;

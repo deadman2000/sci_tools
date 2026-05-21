@@ -6,6 +6,7 @@ using SCI_Lib.Resources.Picture;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
 using SCI_Lib.Resources.Vocab;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,8 @@ namespace SCI_Tools
         {
             try
             {
+                Decompile(0);
+
                 /*var res = translate.GetResource<ResFont>(0);
                 var fnt = res.GetFont();
                 for (int i = 0x80; i < fnt.Frames.Count; i++)
@@ -220,8 +223,10 @@ namespace SCI_Tools
 
         private void Decompile(ushort num, string cl = null, string method = null)
         {
+            var target = translate ?? package;
+
             //var res = (translate ?? package).GetResource<ResScript>(num);
-            var res = translate.GetResource<ResScript>(num);
+            var res = target.GetResource<ResScript>(num);
             var script = res.GetScript();
 
             var analyzer = script.Analyze(cl, method);
@@ -234,11 +239,21 @@ namespace SCI_Tools
             analyzer.Optimize();
             CreateGraph(res.Number, graph, GraphBuilder.CodeType.CPP_OPT);
 
+            ScriptDecompiler decompiler;
+
             if (script is Script script0)
             {
-                var h_path = @$"d:\Projects\TranslateWeb\out\scr{num}.h";
-                File.WriteAllText(h_path, new CppBuilder(cl, method).Decompile(script0));
+                //var h_path = @$"d:\Projects\TranslateWeb\out\scr{num}.h";
+                //File.WriteAllText(h_path, new CppBuilder(cl, method).Decompile(script0));
+                decompiler = new ScriptDecompiler(script0);
+
             }
+            else if (script is Script1 script1)
+                decompiler = new ScriptDecompiler(script1);
+            else
+                throw new NotImplementedException();
+
+            Console.WriteLine(decompiler.Decompile());
         }
 
         private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)
