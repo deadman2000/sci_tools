@@ -9,7 +9,11 @@ public class CodeNode
     private CodeNode _nextB;
 
     public List<Expr> Expressions { get; set; }
+    
     public Expr Condition { get; set; }
+
+    public Expr ReturnValue { get; set; }
+
     public CodeNode NextA
     {
         get => _nextA;

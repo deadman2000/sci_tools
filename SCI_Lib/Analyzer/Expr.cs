@@ -44,12 +44,17 @@ public abstract class Expr
         Used = true;
     }
 
-    public static string ToCppName(string name) => name
-        .Replace('-', '_')
-        .Replace('\'', '_')
-        .Replace(' ', '_')
-        .Replace('.', '_')
-        .Replace('!', '_');
+    public static string ToCppName(string name)
+    {
+        if (name == null)
+            return "unknown";
+        return name
+            .Replace('-', '_')
+            .Replace('\'', '_')
+            .Replace(' ', '_')
+            .Replace('.', '_')
+            .Replace('!', '_');
+    }
 
     public static string ToCppName(ClassSection cl)
     {

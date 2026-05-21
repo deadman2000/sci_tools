@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts1;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -114,10 +115,16 @@ public class ScriptDecompiler
             foreach (var expr in node.Expressions)
             {
                 if (expr != null)
-                {
                     sb.AppendLine($"{indent}{FormatExpression(expr)};");
-                }
             }
+        }
+
+        // Если у этого узла есть ReturnValue — выводим return здесь
+        if (node.ReturnValue != null)
+        {
+            Debug.Assert(node.Condition == null);
+            sb.AppendLine($"{indent}return {FormatExpression(node.ReturnValue)};");
+            return;
         }
 
         // Обработка условия
@@ -127,11 +134,8 @@ public class ScriptDecompiler
         }
         else
         {
-            // Безусловный переход
             if (node.NextA != null)
-            {
                 DecompileNode(node.NextA, sb, indentLevel);
-            }
         }
     }
 

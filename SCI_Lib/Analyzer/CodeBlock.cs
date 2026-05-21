@@ -1,6 +1,7 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SCI_Lib.Analyzer;
@@ -434,6 +435,7 @@ public class CodeBlock
                 break;
             case 0x48: // ret
                 if (code != Code[^1]) throw new Exception();
+                Debug.Assert(ReturnValue == null);
                 ReturnValue = Acc;
                 break;
             case 0x49:

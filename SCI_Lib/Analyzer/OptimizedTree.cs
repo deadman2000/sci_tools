@@ -363,6 +363,8 @@ public class OptimizedTree
         node.Expressions = bl.Expressions;
         node.Condition = bl.Condition;
         node.Address = bl.AddrBegin;
+        node.ReturnValue = bl.ReturnValue;
+
         _nodesByAddr.Add(bl.AddrBegin, node);
         Nodes.Add(node);
 
