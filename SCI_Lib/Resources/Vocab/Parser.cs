@@ -1,4 +1,6 @@
-﻿using SCI_Lib.Resources.Scripts.Elements;
+﻿using SCI_Lib;
+using SCI_Lib.Resources;
+using SCI_Lib.Resources.Scripts.Elements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +28,7 @@ public class Parser
     const ushort WORD_ANY = 0xfff;
 
     private readonly SCIPackage _package;
-    private readonly Word[] _words;
+    private Word[] _words;
     private readonly List<ParseTreeBranch> _branches;
     private readonly ParseRuleList _parserRules;
     private readonly Suffix[] _suffixes;
@@ -36,18 +38,14 @@ public class Parser
     private SaidData CurrToken => _saidToken < _saidTokens.Length ? _saidTokens[_saidToken] : TerminalToken;
     private static readonly SaidData TerminalToken = new(0xff);
 
+    private bool Op(string letter) => CurrToken.IsOperator && CurrToken.Letter == letter;
+
 
     public Parser(SCIPackage package)
     {
         _package = package;
 
-        var voc000 = (ResVocab000)package.GetResource<ResVocab>(0);
-        IEnumerable<Word> words = voc000.GetWords();
-
-        if (package.GetResource(ResType.Vocabulary, 1) is ResVocab001 vocTr)
-            words = words.Union(vocTr.GetWords());
-
-        _words = words.ToArray();
+        _words = (package.GetWords() ?? Enumerable.Empty<Word>()).ToArray();
 
         var voc900 = (ResVocab900)package.GetResource<ResVocab>(900);
         _branches = voc900.GetBranches();
@@ -61,13 +59,14 @@ public class Parser
     {
         TokenizeResult result = new();
 
-        var reg = new Regex("([\\w\\d]+)");
+        var reg = new Regex(@"([\w\d]+)", RegexOptions.CultureInvariant);
         var matches = reg.Matches(text);
         foreach (var match in matches.Cast<Match>())
         {
-            LookupResult lup = new() { Word = match.Value };
+            var word = match.Value.ToLowerInvariant();
+            LookupResult lup = new() { Word = word };
             List<ParsedWord> list = new();
-            LookupWord(list, match.Value.ToLower());
+            LookupWord(list, word);
             if (list.Count > 0)
                 lup.Ids = list;
             result.Words.Add(lup);
@@ -492,12 +491,12 @@ public class Parser
             return true;
         }
 
-        if (CurrToken.Letter == "[")
+        if (Op("["))
         {
             _saidToken++;
             if (ParsePart2(newNode, out nonempty))
             {
-                if (CurrToken.Letter == "]")
+                if (Op("]"))
                 {
                     _saidToken++;
                     parentNode.AttachSubtree(0x152, 0x142, newNode);
@@ -506,7 +505,7 @@ public class Parser
             }
         }
 
-        if (CurrToken.Letter == "/")
+        if (Op("/"))
         {
             _saidToken++;
             nonempty = false;
@@ -534,12 +533,12 @@ public class Parser
             return true;
         }
 
-        if (CurrToken.Letter == "[")
+        if (Op("["))
         {
             _saidToken++;
             if (ParsePart3(newNode, out nonempty))
             {
-                if (CurrToken.Letter == "]")
+                if (Op("]"))
                 {
                     _saidToken++;
                     parentNode.AttachSubtree(0x152, 0x143, newNode);
@@ -548,7 +547,7 @@ public class Parser
             }
         }
 
-        if (CurrToken.Letter == "/")
+        if (Op("/"))
         {
             _saidToken++;
             nonempty = false;
@@ -567,7 +566,7 @@ public class Parser
         int curToken = _saidToken;
         var oldRight = parentNode.Right;
 
-        if (CurrToken.Letter == "/")
+        if (Op("/"))
         {
             _saidToken++;
             if (ParseExpr(parentNode))
@@ -589,7 +588,7 @@ public class Parser
         var newNode = ParseTreeNode.CreateBranch(null, null);
         var newParent = parentNode;
 
-        if (CurrToken.Letter == "<")
+        if (Op("<"))
         {
             _saidToken++;
             if (ParseList(newNode))
@@ -606,12 +605,12 @@ public class Parser
         }
 
 
-        if (CurrToken.Letter == "[")
+        if (Op("["))
         {
             _saidToken++;
             if (ParseRef(newNode))
             {
-                if (CurrToken.Letter == "]")
+                if (Op("]"))
                 {
                     _saidToken++;
                     parentNode.AttachSubtree(0x152, 0x144, newNode);
@@ -632,7 +631,7 @@ public class Parser
         int curToken = _saidToken;
         var oldRight = parentNode.Right;
 
-        if (CurrToken.Letter == ",")
+        if (Op(","))
         {
             _saidToken++;
             if (ParseList(parentNode))
@@ -653,12 +652,12 @@ public class Parser
 
         var newNode = ParseTreeNode.CreateBranch(null, null);
 
-        if (CurrToken.Letter == "[")
+        if (Op("["))
         {
             _saidToken++;
             if (ParseExpr(newNode))
             {
-                if (CurrToken.Letter == "]")
+                if (Op("]"))
                 {
                     _saidToken++;
                     parentNode.AttachSubtree(0x152, 0x14c, newNode);
@@ -666,12 +665,12 @@ public class Parser
                 }
             }
         }
-        else if (CurrToken.Letter == "(")
+        else if (Op("("))
         {
             _saidToken++;
             if (ParseExpr(newNode))
             {
-                if (CurrToken.Letter == ")")
+                if (Op(")"))
                 {
                     _saidToken++;
                     parentNode.AttachSubtree(0x141, 0x14c, newNode);
@@ -767,7 +766,7 @@ public class Parser
             }
         }
 
-        if (CurrToken.Letter == ">")
+        if (Op(">"))
         {
             _saidToken++;
             newNode = ParseTreeNode.CreateBranch(null, ParseTreeNode.CreateLeaf(0xf9));
@@ -804,6 +803,52 @@ public class Parser
     public bool Match(ParseTreeNode parseTree, ParseTreeNode saidTree)
     {
         return MatchTrees(parseTree, saidTree) == 1;
+    }
+
+    /// <summary>
+    /// Токенизировать фразу игрока, разобрать грамматикой vocab.900 и сопоставить с Said-спекой.
+    /// </summary>
+    public bool MatchSaid(string input, string saidExpression)
+    {
+        if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(saidExpression))
+            return false;
+        var said = _package.ParseSaid(saidExpression);
+        return MatchSaid(input, said);
+    }
+
+    public bool MatchSaid(string input, SaidData[] said)
+    {
+        if (string.IsNullOrWhiteSpace(input) || said == null || said.Length == 0)
+            return false;
+        var tokens = Tokenize(input);
+        if (!tokens.IsValid)
+            return false;
+        ParseTreeNode parseTree;
+        try
+        {
+            parseTree = ParseGNF(tokens.Words);
+        }
+        catch
+        {
+            return false;
+        }
+        if (parseTree == null)
+            return false;
+        var saidTree = BuildSaidTree(said);
+        if (saidTree == null)
+            return false;
+        return Match(parseTree, saidTree);
+    }
+
+    /// <summary>
+    /// Добавить синоним в рабочий словарь парсера (для русских форм без записи vocab.001).
+    /// </summary>
+    public void AddWord(string text, ushort group, WordClass wordClass)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return;
+        var word = new Word(text.ToLowerInvariant(), wordClass, group);
+        _words = _words.Concat(new[] { word }).ToArray();
     }
 
     private int MatchTrees(ParseTreeNode parseTree, ParseTreeNode saidTree)

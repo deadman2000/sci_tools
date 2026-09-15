@@ -400,8 +400,21 @@ namespace SCI_Lib
 
         public ushort[] GetWordId(string word)
         {
+            if (word == null) return null;
             if (GetWordIds().TryGetValue(word, out var id)) return id;
+            if (GetWordIds().TryGetValue(word.ToLowerInvariant(), out id)) return id;
             return null;
+        }
+
+        /// <summary>
+        /// Добавить слова в кэш vocab (русские синонимы той же группы). GetParser() после этого нужно создать заново.
+        /// </summary>
+        public void AddWords(params Word[] extra)
+        {
+            _words = GetWords().Concat(extra).ToArray();
+            _idToWord = null;
+            _wordId = null;
+            _txtToWord = null;
         }
 
         public void ResetWords()
@@ -439,7 +452,7 @@ namespace SCI_Lib
                 var c = expression[i];
                 if (char.IsWhiteSpace(c)) continue;
                 if (char.IsLetterOrDigit(c) || c == '*' || c == '!' || c == '.')
-                    buff.Add(c);
+                    buff.Add(char.ToLowerInvariant(c));
                 else
                 {
                     if (buff.Count > 0)

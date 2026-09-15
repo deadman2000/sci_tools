@@ -27,6 +27,7 @@ namespace SCI_Tools
             try
             {
                 Decompile(0);
+                //DecompileAll();
 
                 /*var res = translate.GetResource<ResFont>(0);
                 var fnt = res.GetFont();
@@ -253,7 +254,10 @@ namespace SCI_Tools
             else
                 throw new NotImplementedException();
 
-            Console.WriteLine(decompiler.Decompile());
+            decompiler.Optimize();
+
+            //Console.WriteLine(decompiler.Decompile());
+            File.WriteAllText(@$"d:\Projects\TranslateWeb\out\{num}.cpp", decompiler.Decompile());
         }
 
         private void CreateGraph(ushort number, GraphBuilder graph, GraphBuilder.CodeType type)
