@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -23,8 +26,19 @@ jobs:
         dotnet build --no-restore Tests
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Pack
+      if: github.ref == 'refs/heads/master'
+      run: dotnet pack SCI_Lib -o out
+    - name: NuGet login (OIDC → temp API key)
+      if: github.ref == 'refs/heads/master'
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: dead_man
     - name: Publish
       if: github.ref == 'refs/heads/master'
-      run: |
-          dotnet pack SCI_Lib -o out
-          dotnet nuget push "out/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: >
+        dotnet nuget push "out/*.nupkg"
+        --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
+        --source https://api.nuget.org/v3/index.json
+        --skip-duplicate
