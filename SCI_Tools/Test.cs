@@ -4,7 +4,6 @@ using SCI_Lib.Analyzer;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Picture;
 using SCI_Lib.Resources.Scripts;
-using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Scripts1;
 using SCI_Lib.Resources.Vocab;
@@ -26,7 +25,7 @@ namespace SCI_Tools
         {
             try
             {
-                Decompile(package, 0);
+                Decompile(translate, 0);
                 //DecompileAll();
 
                 /*var res = translate.GetResource<ResFont>(0);

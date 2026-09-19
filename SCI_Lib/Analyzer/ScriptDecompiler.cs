@@ -94,7 +94,7 @@ public class ScriptDecompiler
         // Тело функции
         if (opt.Node != null)
         {
-            DecompileNode(opt.Node, sb, 1);
+            DecompileNode(opt.Node, sb, 1, new Dictionary<CodeNode, string>());
         }
 
         sb.AppendLine("}");
@@ -103,11 +103,22 @@ public class ScriptDecompiler
     /// <summary>
     /// Рекурсивная декомпиляция узла дерева
     /// </summary>
-    private void DecompileNode(CodeNode node, StringBuilder sb, int indentLevel)
+    private void DecompileNode(CodeNode node, StringBuilder sb, int indentLevel, Dictionary<CodeNode, string> labels)
     {
         if (node == null) return;
 
         string indent = new string(' ', indentLevel * 4);
+
+        // The control-flow graph can contain loops and shared branch targets.
+        // Emit each block once and preserve subsequent edges as jumps.
+        if (labels.TryGetValue(node, out var label))
+        {
+            sb.AppendLine($"{indent}goto {label};");
+            return;
+        }
+        label = $"block_{labels.Count}";
+        labels.Add(node, label);
+        sb.AppendLine($"{indent}{label}:;");
 
         // Выводим выражения
         if (node.Expressions != null)
@@ -130,25 +141,25 @@ public class ScriptDecompiler
         // Обработка условия
         if (node.Condition != null)
         {
-            DecompileCondition(node, sb, indentLevel, indent);
+            DecompileCondition(node, sb, indentLevel, indent, labels);
         }
         else
         {
             if (node.NextA != null)
-                DecompileNode(node.NextA, sb, indentLevel);
+                DecompileNode(node.NextA, sb, indentLevel, labels);
         }
     }
 
     /// <summary>
     /// Декомпиляция условного блока
     /// </summary>
-    private void DecompileCondition(CodeNode node, StringBuilder sb, int indentLevel, string indent)
+    private void DecompileCondition(CodeNode node, StringBuilder sb, int indentLevel, string indent, Dictionary<CodeNode, string> labels)
     {
         string conditionStr = FormatExpression(node.Condition);
 
         // Проверяем, является ли это if-else конструкцией
-        bool hasTrueBranch = node.NextA != null && !IsEmptyBlock(node.NextA);
-        bool hasFalseBranch = node.NextB != null && !IsEmptyBlock(node.NextB);
+        bool hasTrueBranch = node.NextA != null;
+        bool hasFalseBranch = node.NextB != null;
 
         if (hasTrueBranch || hasFalseBranch)
         {
@@ -157,7 +168,7 @@ public class ScriptDecompiler
 
             if (hasTrueBranch)
             {
-                DecompileNode(node.NextA, sb, indentLevel + 1);
+                DecompileNode(node.NextA, sb, indentLevel + 1, labels);
             }
 
             sb.AppendLine($"{indent}}}");
@@ -166,7 +177,7 @@ public class ScriptDecompiler
             {
                 sb.AppendLine($"{indent}else");
                 sb.AppendLine($"{indent}{{");
-                DecompileNode(node.NextB, sb, indentLevel + 1);
+                DecompileNode(node.NextB, sb, indentLevel + 1, labels);
                 sb.AppendLine($"{indent}}}");
             }
         }
@@ -175,22 +186,7 @@ public class ScriptDecompiler
             // Простое условие без тела (может быть оптимизировано)
             sb.AppendLine($"{indent}// Condition: {conditionStr}");
 
-            if (node.NextA != null)
-                DecompileNode(node.NextA, sb, indentLevel);
-            else if (node.NextB != null)
-                DecompileNode(node.NextB, sb, indentLevel);
         }
-    }
-
-    /// <summary>
-    /// Проверка, является ли блок пустым
-    /// </summary>
-    private bool IsEmptyBlock(CodeNode node)
-    {
-        if (node == null) return true;
-        if (node.Expressions != null && node.Expressions.Count > 0) return false;
-        if (node.Condition != null) return false;
-        return true;
     }
 
     /// <summary>

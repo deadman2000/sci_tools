@@ -514,7 +514,7 @@ public class CodeBlock
                                 Set(new ParamExpr(name), args[0], true);
                             }
                             else
-                                AddExpr(new CallExpr(name, args));
+                                SetAcc(new CallExpr(name, args));
                         }
                         else
                         {
