@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib.Utils;
 using System.IO;
 
@@ -13,7 +14,7 @@ namespace Tests
             var mem = new MemoryStream(buff);
             BitReaderMSB reader = new BitReaderMSB(mem);
             var val = reader.GetBits(1);
-            Assert.AreEqual(1, val);
+            ClassicAssert.AreEqual(1, val);
         }
 
         [Test]
@@ -24,7 +25,7 @@ namespace Tests
             BitWriterMSB writer = new BitWriterMSB(mem);
             writer.WriteBits(1, 1);
             writer.Flush();
-            Assert.AreEqual(0x80, buff[0]);
+            ClassicAssert.AreEqual(0x80, buff[0]);
         }
 
 
@@ -37,7 +38,7 @@ namespace Tests
             BitReaderMSB reader = new BitReaderMSB(mem);
             reader.GetBits(1);
             var val = reader.GetBits(1);
-            Assert.AreEqual(1, val);
+            ClassicAssert.AreEqual(1, val);
         }
 
         [Test]
@@ -49,7 +50,7 @@ namespace Tests
             writer.WriteBits(0, 1);
             writer.WriteBits(1, 1);
             writer.Flush();
-            Assert.AreEqual(0x40, buff[0]);
+            ClassicAssert.AreEqual(0x40, buff[0]);
         }
 
 
@@ -60,7 +61,7 @@ namespace Tests
             var mem = new MemoryStream(buff);
             BitReaderMSB reader = new BitReaderMSB(mem);
             var val = reader.GetBits(9);
-            Assert.AreEqual(1, val);
+            ClassicAssert.AreEqual(1, val);
         }
 
         [Test]
@@ -70,7 +71,7 @@ namespace Tests
             var mem = new MemoryStream(buff);
             BitReaderLSB reader = new BitReaderLSB(mem);
             var val = reader.GetBits(1);
-            Assert.AreEqual(1, val);
+            ClassicAssert.AreEqual(1, val);
         }
 
         [Test]
@@ -81,7 +82,7 @@ namespace Tests
             BitWriterLSB writer = new BitWriterLSB(mem);
             writer.WriteBits(1, 1);
             writer.Flush();
-            Assert.AreEqual(1, buff[0]);
+            ClassicAssert.AreEqual(1, buff[0]);
         }
 
         [Test]
@@ -102,7 +103,7 @@ namespace Tests
             for (int i = 0; i <= 0x1ff; i++)
             {
                 var val = reader.GetBits(9);
-                Assert.AreEqual(i, val);
+                ClassicAssert.AreEqual(i, val);
             }
         }
 
@@ -128,7 +129,7 @@ namespace Tests
                 for (int i = 0; i <= max; i++)
                 {
                     var val = reader.GetBits((ushort)n);
-                    Assert.AreEqual(i, val);
+                    ClassicAssert.AreEqual(i, val);
                 }
             }
         }

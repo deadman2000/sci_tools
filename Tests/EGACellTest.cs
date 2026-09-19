@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib.Resources.View;
 using SCI_Lib.Utils;
 using System.IO;
@@ -16,7 +17,7 @@ namespace Tests
             Cell cell2 = new(null, Palette.EGA);
             cell2.ReadEVGA(new MemoryStream(bytes), false, 0);
 
-            Assert.AreEqual(cell2.Pixels, cell.Pixels);
+            ClassicAssert.AreEqual(cell2.Pixels, cell.Pixels);
         }
 
         [Test]

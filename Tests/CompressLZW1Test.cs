@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.IO;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Tests
                 var ms = new MemoryStream(compressed);
                 var uncompressed = decomp.Unpack(ms, compressed.Length, unpack.Length);
 
-                Assert.AreEqual(unpack, uncompressed, $"Decompress error in {r.FileName}");
+                ClassicAssert.AreEqual(unpack, uncompressed, $"Decompress error in {r.FileName}");
             }
         }
 
@@ -51,10 +52,10 @@ namespace Tests
                 info.GetCompressor().Pack(r.GetContent(), mem);
                 var compressed = mem.ToArray();
 
-                Assert.IsTrue(compressed.Length <= orig.Length, $"Decompress error in {r.FileName}");
+                ClassicAssert.IsTrue(compressed.Length <= orig.Length, $"Decompress error in {r.FileName}");
                 Array.Resize(ref orig, compressed.Length);
 
-                Assert.AreEqual(orig, compressed, $"Decompress error in {r.FileName}");
+                ClassicAssert.AreEqual(orig, compressed, $"Decompress error in {r.FileName}");
             }
         }
     }

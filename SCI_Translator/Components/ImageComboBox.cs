@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -11,6 +12,7 @@ namespace SCI_Translator.Components
             DrawMode = DrawMode.OwnerDrawFixed;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ImageList Images { get; set; }
 
         protected override void OnDrawItem(DrawItemEventArgs e)

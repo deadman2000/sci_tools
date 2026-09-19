@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib;
 using SCI_Lib.Resources;
 using System;
@@ -34,7 +35,7 @@ namespace Tests
                 var trimmed = new byte[target.Length - 2 - offset];
                 Array.Copy(target, 2 + offset, trimmed, 0, trimmed.Length);
 
-                Assert.AreEqual(trimmed, unpack, $"Decompress error in {r.FileName}");
+                ClassicAssert.AreEqual(trimmed, unpack, $"Decompress error in {r.FileName}");
             }));
         }
 

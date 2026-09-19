@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.View;
 using System;
@@ -33,33 +34,33 @@ namespace Tests
                 var ms = new MemoryStream(compressed);
                 var uncompressed = decomp.Unpack(ms, compressed.Length, unpack.Length);
 
-                //Assert.AreEqual(unpack, uncompressed, $"Decompress error in {r.FileName}");
+                //ClassicAssert.AreEqual(unpack, uncompressed, $"Decompress error in {r.FileName}");
 
                 var originalView = new SCIView(package);
                 originalView.ReadVGA(unpack);
                 var reorderView = new SCIView(package);
                 reorderView.ReadVGA(uncompressed);
 
-                Assert.AreEqual(originalView.Palette.Colors[3..], reorderView.Palette.Colors[3..]);
+                ClassicAssert.AreEqual(originalView.Palette.Colors[3..], reorderView.Palette.Colors[3..]);
 
-                Assert.AreEqual(originalView.Loops.Count, reorderView.Loops.Count);
+                ClassicAssert.AreEqual(originalView.Loops.Count, reorderView.Loops.Count);
 
                 for (int i = 0; i < originalView.Loops.Count; i++)
                 {
                     var ol = originalView.Loops[i];
                     var rl = reorderView.Loops[i];
-                    Assert.AreEqual(ol.Cells.Count, rl.Cells.Count);
+                    ClassicAssert.AreEqual(ol.Cells.Count, rl.Cells.Count);
 
                     for (int j = 0; j < ol.Cells.Count; j++)
                     {
                         var oc = ol.Cells[j];
                         var rc = rl.Cells[j];
 
-                        Assert.AreEqual(oc.Width, rc.Width);
-                        Assert.AreEqual(oc.Height, rc.Height);
-                        Assert.AreEqual(oc.X, rc.X);
-                        Assert.AreEqual(oc.Y, rc.Y);
-                        Assert.AreEqual(oc.TransparentColor, rc.TransparentColor);
+                        ClassicAssert.AreEqual(oc.Width, rc.Width);
+                        ClassicAssert.AreEqual(oc.Height, rc.Height);
+                        ClassicAssert.AreEqual(oc.X, rc.X);
+                        ClassicAssert.AreEqual(oc.Y, rc.Y);
+                        ClassicAssert.AreEqual(oc.TransparentColor, rc.TransparentColor);
                     }
                 }
             });
@@ -82,23 +83,23 @@ namespace Tests
 
                 CollectionAssert.AreEqual(view.Palette.Colors, view2.Palette.Colors);
 
-                Assert.AreEqual(view.Loops.Count, view2.Loops.Count);
+                ClassicAssert.AreEqual(view.Loops.Count, view2.Loops.Count);
                 for (int i = 0; i < view.Loops.Count; i++)
                 {
                     var ol = view.Loops[i];
                     var rl = view2.Loops[i];
-                    Assert.AreEqual(ol.Cells.Count, rl.Cells.Count);
+                    ClassicAssert.AreEqual(ol.Cells.Count, rl.Cells.Count);
 
                     for (int j = 0; j < ol.Cells.Count; j++)
                     {
                         var oc = ol.Cells[j];
                         var rc = rl.Cells[j];
 
-                        Assert.AreEqual(oc.Width, rc.Width);
-                        Assert.AreEqual(oc.Height, rc.Height);
-                        Assert.AreEqual(oc.X, rc.X);
-                        Assert.AreEqual(oc.Y, rc.Y);
-                        Assert.AreEqual(oc.TransparentColor, rc.TransparentColor);
+                        ClassicAssert.AreEqual(oc.Width, rc.Width);
+                        ClassicAssert.AreEqual(oc.Height, rc.Height);
+                        ClassicAssert.AreEqual(oc.X, rc.X);
+                        ClassicAssert.AreEqual(oc.Y, rc.Y);
+                        ClassicAssert.AreEqual(oc.TransparentColor, rc.TransparentColor);
 
                         Assert.That(oc.Pixels.AsSpan().SequenceEqual(rc.Pixels.AsSpan()),
                             $"Pixels mismatch in resource {r.Number}, loop {i}, cell {j}");

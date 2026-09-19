@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
@@ -23,7 +24,7 @@ namespace Tests
             Parallel.ForEach(package.Scripts, res =>
             {
                 var scr = res.GetScript();
-                Assert.IsNotNull(scr);
+                ClassicAssert.IsNotNull(scr);
 
                 if (scr is Script s0)
                     CheckScriptValid(s0);
@@ -36,13 +37,13 @@ namespace Tests
 
         private static void CheckScriptValid(Script scr)
         {
-            // Проверка ссылок на ссылки
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             Parallel.ForEach(scr.Sections.OfType<RelocationSection>(), rel =>
             {
                 foreach (var r in rel.Refs)
                 {
                     var descr = $"Res: {scr.Resource} Ref at {r.Address:x4} Target: {r.TargetOffset:x4}";
-                    Assert.IsNotNull(r.Reference, descr);
+                    ClassicAssert.IsNotNull(r.Reference, descr);
                     if (r.Reference is not BaseRef && r.Reference is not PropertyElement)
                         Assert.Fail(descr);
                 }
@@ -55,7 +56,7 @@ namespace Tests
             {
                 foreach (var m in obj.Methods)
                 {
-                    Assert.NotNull(m.Reference.Reference, $"Wrong method reference in {scr.Resource.Number} {m.Name}");
+                    ClassicAssert.NotNull(m.Reference.Reference, $"Wrong method reference in {scr.Resource.Number} {m.Name}");
                 }
             });
         }
@@ -128,7 +129,7 @@ namespace Tests
                 scr.GetBytes();
 
                 foreach (var e in scr.AllElements)
-                    Assert.IsTrue(e.Address != 0, $"{e} is not set address");
+                    ClassicAssert.IsTrue(e.Address != 0, $"{e} is not set address");
             });
         }
 
@@ -145,9 +146,9 @@ namespace Tests
                 foreach (var r in scr.AllRefs)
                 {
                     var descr = $"{res} {r.Address:x4}";
-                    Assert.IsTrue(r.IsSetup, descr);
-                    Assert.IsTrue(r.IsWrited, descr);
-                    Assert.IsTrue(r.IsOffsetWrited, descr);
+                    ClassicAssert.IsTrue(r.IsSetup, descr);
+                    ClassicAssert.IsTrue(r.IsWrited, descr);
+                    ClassicAssert.IsTrue(r.IsOffsetWrited, descr);
                 }
             });
         }
@@ -155,15 +156,15 @@ namespace Tests
         [Test]
         public void StringsRefs()
         {
-            // Проверяем, теряются ли имена классов при сдвиге адресов строк
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             SCIPackage package = Utils.LoadConquest();
             var res = package.GetResource<ResScript>(0);
             var scr = res.GetScript() as Script;
 
-            // Запоминаем имена классов
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             var names = scr.Get<ClassSection>().Select(c => c.Name).ToArray();
 
-            // Меняем размер первой строки. Все следующие строки сдвинутся на 1 байт
+            // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 1 пїЅпїЅпїЅпїЅ
             var str = scr.StringSection.Strings[0];
             var oldValue = str.Value;
             str.Value += "1";
@@ -175,7 +176,7 @@ namespace Tests
             for (int i = 0; i < names.Length; i++)
             {
                 if (names[i] == oldValue) continue;
-                Assert.AreEqual(names[i], newNames[i]);
+                ClassicAssert.AreEqual(names[i], newNames[i]);
             }
         }
     }

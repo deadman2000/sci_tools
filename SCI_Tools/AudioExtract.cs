@@ -151,7 +151,7 @@ namespace SCI_Tools
 
         private void PlayFile(IWaveProvider wave)
         {
-            using var outputDevice = new WaveOutEvent();
+            using var outputDevice = new WaveOut();
             outputDevice.Init(wave);
             outputDevice.Play();
             while (outputDevice.PlaybackState == PlaybackState.Playing)

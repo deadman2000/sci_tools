@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,18 +35,21 @@ namespace SCI_Translator
             cbEncoding.DataSource = Encodings;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string GameDir
         {
             get => tbGameDir.Text;
             set => tbGameDir.Text = value;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string TranslateDir
         {
             get => tbTranslateDir.Text;
             set => tbTranslateDir.Text = value;
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int GameEncoding
         {
             get

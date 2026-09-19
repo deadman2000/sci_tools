@@ -26,7 +26,7 @@ namespace SCI_Tools
         {
             try
             {
-                Decompile(0);
+                //Decompile(0);
                 //DecompileAll();
 
                 /*var res = translate.GetResource<ResFont>(0);

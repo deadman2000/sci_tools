@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib.Resources;
 using SCI_Lib.Resources.Picture;
 
@@ -16,7 +17,7 @@ namespace Tests
 
             var newPic = new SCIPicture1(pic.GetBytes());
 
-            Assert.AreEqual(pic.ImageData, newPic.ImageData, "Image encode error");
+            ClassicAssert.AreEqual(pic.ImageData, newPic.ImageData, "Image encode error");
         }
     }
 }

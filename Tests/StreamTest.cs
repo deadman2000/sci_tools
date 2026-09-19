@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SCI_Lib.Utils;
 using System.IO;
 
@@ -17,7 +18,7 @@ namespace Tests
             mem.Position = 0;
             var val = mem.ReadIntBE();
 
-            Assert.AreEqual(V, val);
+            ClassicAssert.AreEqual(V, val);
         }
 
         [Test]
@@ -29,7 +30,7 @@ namespace Tests
             mem.Position = 0;
             var val = mem.ReadUShortBE();
 
-            Assert.AreEqual(1, val);
+            ClassicAssert.AreEqual(1, val);
         }
 
         [Test]
@@ -41,7 +42,7 @@ namespace Tests
             mem.Position = 0;
             var val = mem.ReadUShortLE();
 
-            Assert.AreEqual(1, val);
+            ClassicAssert.AreEqual(1, val);
         }
     }
 }

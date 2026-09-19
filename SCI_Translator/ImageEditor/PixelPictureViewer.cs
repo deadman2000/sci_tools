@@ -115,6 +115,7 @@ namespace SCI_Translator.ImageEditor
             }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrameIndex
         {
             get { return _currentFrame; }
@@ -130,6 +131,7 @@ namespace SCI_Translator.ImageEditor
             get { return _gTop; }
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public BaseInstrument CurrInstrument
         {
             get;
