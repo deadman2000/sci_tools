@@ -4,7 +4,7 @@ namespace Tests
 {
     static class Utils
     {
-        public const string ASSETS = "../../../../assets/";
+        public const string ASSETS = "../../../assets/";
 
         public static SCIPackage LoadConquest()
         {
