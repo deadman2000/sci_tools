@@ -37,7 +37,6 @@ namespace Tests
 
         private static void CheckScriptValid(Script scr)
         {
-            // �������� ������ �� ������
             Parallel.ForEach(scr.Sections.OfType<RelocationSection>(), rel =>
             {
                 foreach (var r in rel.Refs)
@@ -77,6 +76,12 @@ namespace Tests
         public void DisassembleQG()
         {
             CheckPackage(Utils.LoadQG());
+        }
+
+        [Test]
+        public void DisassembleBA()
+        {
+            CheckPackage(Utils.LoadBA());
         }
 
         [Test]
@@ -156,15 +161,12 @@ namespace Tests
         [Test]
         public void StringsRefs()
         {
-            // ���������, �������� �� ����� ������� ��� ������ ������� �����
             SCIPackage package = Utils.LoadConquest();
             var res = package.GetResource<ResScript>(0);
             var scr = res.GetScript() as Script;
 
-            // ���������� ����� �������
             var names = scr.Get<ClassSection>().Select(c => c.Name).ToArray();
 
-            // ������ ������ ������ ������. ��� ��������� ������ ��������� �� 1 ����
             var str = scr.StringSection.Strings[0];
             var oldValue = str.Value;
             str.Value += "1";

@@ -20,5 +20,10 @@ namespace Tests
         {
             return SCIPackage.Load(ASSETS + "QG_VGA/");
         }
+
+        public static SCIPackage LoadBA()
+        {
+            return SCIPackage.Load(ASSETS + "BA1/");
+        }
     }
 }

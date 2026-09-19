@@ -26,7 +26,7 @@ namespace SCI_Tools
         {
             try
             {
-                //Decompile(0);
+                Decompile(package, 0);
                 //DecompileAll();
 
                 /*var res = translate.GetResource<ResFont>(0);
@@ -206,14 +206,14 @@ namespace SCI_Tools
             }
         }
 
-        private void DecompileAll()
+        private void DecompileAll(SCIPackage target)
         {
             foreach (var res in package.GetResources<ResScript>())
             {
                 Console.WriteLine(res);
                 try
                 {
-                    Decompile(res.Number);
+                    Decompile(target, res.Number);
                 }
                 catch (Exception ex)
                 {
@@ -222,10 +222,8 @@ namespace SCI_Tools
             }
         }
 
-        private void Decompile(ushort num, string cl = null, string method = null)
+        private void Decompile(SCIPackage target, ushort num, string cl = null, string method = null)
         {
-            var target = translate ?? package;
-
             //var res = (translate ?? package).GetResource<ResScript>(num);
             var res = target.GetResource<ResScript>(num);
             var script = res.GetScript();
