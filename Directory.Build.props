@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <Authors>dead_man</Authors>
     <Product>SCI_Tools</Product>
     <Description>https://github.com/deadman2000/sci_tools</Description>

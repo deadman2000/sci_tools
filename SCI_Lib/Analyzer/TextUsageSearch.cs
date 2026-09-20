@@ -36,6 +36,9 @@ public class TextUsageSearch
     {
         _globalPrint.Clear();
         _globalPrint.Add("scr255_0");
+        // Betrayed Alliance's Print has the same
+        // text resource / string index arguments as Sierra's scr255_0.
+        _globalPrint.Add("scr979_0");
         if (globalPrint != null)
             foreach (var p in globalPrint)
                 _globalPrint.Add(p);
@@ -235,7 +238,8 @@ public class TextUsageSearch
 
     private void LookupExpr(Expr ex)
     {
-        if (ex is CallExpr call && call.Method == "Said" && call.Args[0] is RefExpr r && r.Ref is SaidExpression said)
+        if (ex is CallExpr call && call.Method == "Said" && call.Args?.Count > 0
+            && call.Args[0] is RefExpr r && r.Ref is SaidExpression said)
             _saids.Add(said);
         else if (ex is Math2Expr m2 && m2.Op == "||")
         {

@@ -25,7 +25,8 @@ namespace SCI_Tools
         {
             try
             {
-                Decompile(translate, 0);
+                FindTextSaids(18);
+                //Decompile(translate, 0);
                 //DecompileAll();
 
                 /*var res = translate.GetResource<ResFont>(0);
@@ -42,60 +43,6 @@ namespace SCI_Tools
                 res.SavePatch();*/
 
                 //Decompile(24);
-
-                /*var lines = File.ReadAllLines(@"D:\Projects\TranslateWeb\jupyter\text.csv");
-                StringBuilder sb = new();
-                foreach (var line in lines)
-                {
-                    var parts = line.Split(';');
-                    var tupleStr = parts[0].Replace(".wav", "");
-                    var tuple = tupleStr.Split('.');
-                    var number = ushort.Parse(tuple[0]);
-                    var noun = byte.Parse(tuple[1]);
-                    var verb = byte.Parse(tuple[2]);
-                    var cond = byte.Parse(tuple[3]);
-                    var seq = byte.Parse(tuple[4]);
-
-                    var res = package.GetResource<ResMessage>(number);
-                    var msg = res.GetMessages()
-                        .FirstOrDefault(m => m.Noun == noun && m.Verb == verb && m.Cond == cond && m.Seq == seq);
-
-                    sb.AppendLine(tupleStr);
-                    sb.AppendLine(parts[1]);
-                    if (msg != null)
-                        sb.AppendLine(msg.Text);
-                    else
-                        sb.AppendLine("!!! NOT FOUND");
-                    sb.AppendLine();
-                }
-                File.WriteAllText(@"D:\Projects\TranslateWeb\merged.txt", sb.ToString());*/
-
-                /*foreach (var res in translate.GetResources<ResMessage>())
-                {
-                    var messages = res.GetMessages();
-                    var groups = messages.GroupBy(m => (m.Noun, m.Verb, m.Cond));
-                    foreach (var gr in groups)
-                    {
-                        var sequence = gr.Select(m => m.Seq).Order().ToArray();
-                        for (int i = 0; i < sequence.Length - 1; i++)
-                        {
-                            if (sequence[i + 1] != sequence[i] + 1)
-                            {
-                                var index = messages.IndexOf(gr.First());
-
-                                Console.WriteLine($"https://quests-translate.ru/projects/freddy_pharkas_cd/volumes/{res.Number}_msg#t{index}");
-                                break;
-                            }
-                        }
-                    }
-                }*/
-
-                /*var res = translate.GetResource<ResHeap>(625);
-                var heap = res.GetHeap();
-                for (int i = 0; i < heap.Strings.Count; i++)
-                {
-                    Console.WriteLine($"{i} : {heap.Strings[i].Value}");
-                }*/
 
                 //new ImageContextExtractor(package).ExtractAll(@"D:\Projects\TranslateWeb\Freddy\imgs");
 
