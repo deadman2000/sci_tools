@@ -217,103 +217,95 @@ namespace SCI_Translator.ResView
 
         private void tsbExchange_Click(object sender, EventArgs e)
         {
-            if (spr.Frames.Count <= 0x80)
+            for (int i = 0x80; i <= 0xF3; i++)
             {
-                for (int i = 0x80; i <= 0xF3; i++)
+                char or = (char)0;
+                bool mirror = false;
+                switch (GameEncoding.AllChars[i])
                 {
-                    char or = (char)0;
-                    bool mirror = false;
-                    switch (GameEncoding.AllChars[i])
-                    {
-                        case 'А': or = 'A'; break;
-                        case 'Б': or = 'B'; break;
-                        case 'В': or = 'B'; break;
-                        case 'Г': or = 'F'; break;
-                        case 'Д': or = 'F'; break;
-                        case 'Е': or = 'E'; break;
-                        case 'Ё': or = 'E'; break;
-                        case 'Ж': or = 'W'; break;
-                        case 'З': or = '3'; break;
-                        case 'И': or = 'N'; mirror = true; break;
-                        case 'Й': or = 'N'; mirror = true; break;
-                        case 'К': or = 'K'; break;
-                        case 'Л': or = 'N'; break;
-                        case 'М': or = 'M'; break;
-                        case 'Н': or = 'H'; break;
-                        case 'О': or = 'O'; break;
-                        case 'П': or = 'H'; break;
-                        case 'Р': or = 'P'; break;
-                        case 'С': or = 'C'; break;
-                        case 'Т': or = 'T'; break;
-                        case 'У': or = 'Y'; break;
-                        case 'Ф': or = 'W'; break;
-                        case 'Х': or = 'X'; break;
-                        case 'Ц': or = 'U'; break;
-                        case 'Ч': or = 'N'; break;
-                        case 'Ш': or = 'W'; break;
-                        case 'Щ': or = 'W'; break;
-                        case 'Ь': or = 'B'; break;
-                        case 'Э': or = 'C'; mirror = true; break;
-                        case 'Ю': or = 'I'; break;
-                        case 'Я': or = 'R'; mirror = true; break;
-                        case 'а': or = 'a'; break;
-                        case 'б': or = 'b'; break;
-                        case 'в': or = 'b'; break;
-                        case 'г': or = 'z'; break;
-                        case 'д': or = 'g'; break;
-                        case 'е': or = 'e'; break;
-                        case 'ё': or = 'e'; break;
-                        case 'ж': or = 'w'; break;
-                        case 'з': or = 'g'; break;
-                        case 'и': or = 'u'; break;
-                        case 'й': or = 'u'; break;
-                        case 'к': or = 'k'; break;
-                        case 'л': or = 'n'; break;
-                        case 'м': or = 'm'; break;
-                        case 'н': or = 'n'; break;
-                        case 'о': or = 'o'; break;
-                        case 'п': or = 'n'; break;
-                        case 'р': or = 'p'; break;
-                        case 'с': or = 'c'; break;
-                        case 'т': or = 'n'; break;
-                        case 'у': or = 'y'; break;
-                        case 'ф': or = 'o'; break;
-                        case 'х': or = 'x'; break;
-                        case 'ц': or = 'u'; break;
-                        case 'ч': or = 'u'; break;
-                        case 'ш': or = 'w'; break;
-                        case 'щ': or = 'w'; break;
-                        case 'ь': or = 'o'; break;
-                        case 'э': or = 'c'; mirror = true; break;
-                        case 'ю': or = 'o'; break;
-                        case 'я': or = 'a'; break;
-                    }
+                    case 'А': or = 'A'; break;
+                    case 'Б': or = 'B'; break;
+                    case 'В': or = 'B'; break;
+                    case 'Г': or = 'F'; break;
+                    case 'Д': or = 'F'; break;
+                    case 'Е': or = 'E'; break;
+                    case 'Ё': or = 'E'; break;
+                    case 'Ж': or = 'W'; break;
+                    case 'З': or = '3'; break;
+                    case 'И': or = 'N'; mirror = true; break;
+                    case 'Й': or = 'N'; mirror = true; break;
+                    case 'К': or = 'K'; break;
+                    case 'Л': or = 'N'; break;
+                    case 'М': or = 'M'; break;
+                    case 'Н': or = 'H'; break;
+                    case 'О': or = 'O'; break;
+                    case 'П': or = 'H'; break;
+                    case 'Р': or = 'P'; break;
+                    case 'С': or = 'C'; break;
+                    case 'Т': or = 'T'; break;
+                    case 'У': or = 'Y'; break;
+                    case 'Ф': or = 'W'; break;
+                    case 'Х': or = 'X'; break;
+                    case 'Ц': or = 'U'; break;
+                    case 'Ч': or = 'N'; break;
+                    case 'Ш': or = 'W'; break;
+                    case 'Щ': or = 'W'; break;
+                    case 'Ь': or = 'B'; break;
+                    case 'Э': or = 'C'; mirror = true; break;
+                    case 'Ю': or = 'I'; break;
+                    case 'Я': or = 'R'; mirror = true; break;
+                    case 'а': or = 'a'; break;
+                    case 'б': or = 'b'; break;
+                    case 'в': or = 'b'; break;
+                    case 'г': or = 'z'; break;
+                    case 'д': or = 'g'; break;
+                    case 'е': or = 'e'; break;
+                    case 'ё': or = 'e'; break;
+                    case 'ж': or = 'w'; break;
+                    case 'з': or = 'g'; break;
+                    case 'и': or = 'u'; break;
+                    case 'й': or = 'u'; break;
+                    case 'к': or = 'k'; break;
+                    case 'л': or = 'n'; break;
+                    case 'м': or = 'm'; break;
+                    case 'н': or = 'n'; break;
+                    case 'о': or = 'o'; break;
+                    case 'п': or = 'n'; break;
+                    case 'р': or = 'p'; break;
+                    case 'с': or = 'c'; break;
+                    case 'т': or = 'n'; break;
+                    case 'у': or = 'y'; break;
+                    case 'ф': or = 'o'; break;
+                    case 'х': or = 'x'; break;
+                    case 'ц': or = 'u'; break;
+                    case 'ч': or = 'u'; break;
+                    case 'ш': or = 'w'; break;
+                    case 'щ': or = 'w'; break;
+                    case 'ь': or = 'o'; break;
+                    case 'э': or = 'c'; mirror = true; break;
+                    case 'ю': or = 'o'; break;
+                    case 'я': or = 'a'; break;
+                }
 
-                    SpriteFrame frm;
+                SpriteFrame frm;
 
-                    if (or != 0)
-                    {
-                        frm = new SpriteFrame(spr[(byte)or]);
-                        if (mirror)
-                            frm.MirrorHoriz();
-                    }
-                    else
-                        frm = new SpriteFrame(1, 1);
+                if (or != 0)
+                {
+                    frm = new SpriteFrame(spr[(byte)or]);
+                    if (mirror)
+                        frm.MirrorHoriz();
+                }
+                else
+                    frm = new SpriteFrame(1, 1);
 
+                if (spr.Frames.Count <= i)
                     spr.Frames.Add(frm);
-                }
+                else
+                    spr.Frames[i] = frm;
+            }
 
-                FillChars();
-                //btExchange.Visible = false;
-            }
-            else
-            {
-                if (spr.Frames.Count > 0xF2)
-                {
-                    while (spr.Frames.Count > 0xF2) spr.Frames.RemoveAt(spr.Frames.Count - 1);
-                    FillChars();
-                }
-            }
+            FillChars();
+            //btExchange.Visible = false;
         }
 
         #endregion
@@ -501,20 +493,19 @@ namespace SCI_Translator.ResView
             splitContainer1.Panel2.Controls.Add(plPic);
             splitContainer1.Panel2.Controls.Add(tsInstruments);
             splitContainer1.Panel2.Controls.Add(tsControls);
-            splitContainer1.Size = new Size(1645, 1115);
-            splitContainer1.SplitterDistance = 563;
+            splitContainer1.Size = new Size(1745, 1075);
+            splitContainer1.SplitterDistance = 542;
             splitContainer1.SplitterWidth = 6;
             splitContainer1.TabIndex = 0;
             // 
             // lvChars
             // 
             lvChars.Dock = DockStyle.Fill;
-            lvChars.HideSelection = false;
             lvChars.LargeImageList = ilChars;
             lvChars.Location = new Point(0, 0);
             lvChars.Margin = new Padding(4, 5, 4, 5);
             lvChars.Name = "lvChars";
-            lvChars.Size = new Size(1645, 563);
+            lvChars.Size = new Size(1745, 542);
             lvChars.TabIndex = 0;
             lvChars.UseCompatibleStateImageBehavior = false;
             lvChars.ItemActivate += lvChars_ItemActivate;
@@ -533,7 +524,7 @@ namespace SCI_Translator.ResView
             plPic.Location = new Point(0, 53);
             plPic.Margin = new Padding(4, 5, 4, 5);
             plPic.Name = "plPic";
-            plPic.Size = new Size(1645, 493);
+            plPic.Size = new Size(1745, 474);
             plPic.TabIndex = 0;
             // 
             // tsInstruments
@@ -542,7 +533,7 @@ namespace SCI_Translator.ResView
             tsInstruments.ImageScalingSize = new Size(20, 20);
             tsInstruments.Location = new Point(0, 28);
             tsInstruments.Name = "tsInstruments";
-            tsInstruments.Size = new Size(1645, 25);
+            tsInstruments.Size = new Size(1745, 25);
             tsInstruments.TabIndex = 0;
             tsInstruments.Text = "toolStrip1";
             // 
@@ -553,7 +544,7 @@ namespace SCI_Translator.ResView
             tsControls.Items.AddRange(new ToolStripItem[] { tscbChar, tsbResize, toolStripSeparator1, tsbUndo, tsbRedo, tsbExchange, toolStripSeparator3, toolStripSeparator2, tscbScale, toolStripSeparator4, tsbShiftLeft, tsbShiftRight, tsbShiftUp, tsbShiftDown, toolStripSeparator5, tsbCopy, tsbPaste, tsbGenOutline, tsbMirror });
             tsControls.Location = new Point(0, 0);
             tsControls.Name = "tsControls";
-            tsControls.Size = new Size(1645, 28);
+            tsControls.Size = new Size(1745, 28);
             tsControls.TabIndex = 0;
             tsControls.Text = "toolStrip1";
             // 
@@ -719,7 +710,7 @@ namespace SCI_Translator.ResView
             Controls.Add(splitContainer1);
             Margin = new Padding(4, 5, 4, 5);
             Name = "FontView";
-            Size = new Size(1645, 1115);
+            Size = new Size(1745, 1075);
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             splitContainer1.Panel2.PerformLayout();
