@@ -7,7 +7,9 @@ using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
 using SCI_Lib.Resources.Scripts1;
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Tests
@@ -180,6 +182,114 @@ namespace Tests
                 if (names[i] == oldValue) continue;
                 ClassicAssert.AreEqual(names[i], newNames[i]);
             }
+        }
+
+        [Test]
+        public void Script1StringsComeFromHeap()
+        {
+            var package = Utils.LoadQG();
+            var any = false;
+
+            foreach (var res in package.Scripts)
+            {
+                var scr = res.GetScript() as Script1;
+                ClassicAssert.IsNotNull(scr, res.FileName);
+
+                var fromScript = scr.AllStrings().Select(s => s.Value).ToArray();
+                var fromHeap = scr.Heap.AllStrings().Select(s => s.Value).ToArray();
+                CollectionAssert.AreEqual(fromHeap, fromScript, $"script {res.Number}");
+                if (fromScript.Any(s => s.Length > 0))
+                    any = true;
+            }
+
+            ClassicAssert.IsTrue(any);
+        }
+
+        [Test]
+        public void Script1StringGrowthKeepsReference()
+        {
+            var package = Utils.LoadQG();
+
+            foreach (var res in package.Scripts)
+            {
+                var scr = (Script1)res.GetScript();
+                var op = scr.Operators.FirstOrDefault(o =>
+                    o.Type is 0x72 or 0x74 &&
+                    o.Arguments.OfType<BaseRef>().FirstOrDefault()?.Reference is StringConst s &&
+                    !s.IsClassName &&
+                    s.Value.Length > 3);
+                if (op == null)
+                    continue;
+
+                var str = (StringConst)op.Arguments.OfType<BaseRef>().First().Reference;
+                var updated = str.Value + " XXX";
+                str.Value = updated;
+
+                var scriptBytes = scr.GetBytes();
+                var heapBytes = scr.Heap.GetBytes();
+
+                var heapRes = package.GetResource<ResHeap>(res.Number);
+                res.SetContent(scriptBytes);
+                heapRes.SetContent(heapBytes);
+                res.CleanCache();
+                heapRes.CleanCache();
+
+                var reloaded = (Script1)res.GetScript();
+                var op2 = reloaded.Operators.First(o => o.Address == op.Address);
+                var reloadedStr = op2.Arguments.OfType<BaseRef>().First().Reference as StringConst;
+
+                ClassicAssert.IsNotNull(reloadedStr, $"script {res.Number}");
+                ClassicAssert.AreEqual(updated, reloadedStr.Value);
+                ClassicAssert.IsTrue(reloaded.AllStrings().Any(s => s.Value == updated));
+                return;
+            }
+
+            Assert.Fail("No SCI1.1 string reference in QG scripts");
+        }
+
+        [Test]
+        public void PepperScript110ContainsPrompt()
+        {
+            const string dir = @"D:\Dos\GAMES\Peppers_Adventures_in_Time";
+            if (!Directory.Exists(dir))
+                Assert.Ignore("Игра Pepper's Adventures in Time не найдена");
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var package = SCIPackage.Load(dir, Encoding.GetEncoding(437));
+            var scr = (Script1)package.GetResource<ResScript>(110).GetScript();
+
+            var prompt = scr.AllStrings().FirstOrDefault(s => s.Value == "What do you feel like doing?");
+            ClassicAssert.IsNotNull(prompt);
+            ClassicAssert.IsFalse(prompt.IsClassName);
+
+            var referred = scr.Operators
+                .Where(o => o.Type is 0x72 or 0x74)
+                .Select(o => o.Arguments.OfType<BaseRef>().FirstOrDefault()?.Reference)
+                .OfType<StringConst>()
+                .Any(s => s.Value == "What do you feel like doing?");
+            ClassicAssert.IsTrue(referred);
+
+            var res = package.GetResource<ResScript>(110);
+            var heapRes = package.GetResource<ResHeap>(110);
+            CollectionAssert.AreEqual(res.GetContent(), scr.GetBytes(), "script 110");
+            CollectionAssert.AreEqual(heapRes.GetContent(), scr.Heap.GetBytes(), "heap 110");
+
+            const string updated = "What do you feel like doing now?";
+            prompt.Value = updated;
+            var scriptBytes = scr.GetBytes();
+            var heapBytes = scr.Heap.GetBytes();
+            res.SetContent(scriptBytes);
+            heapRes.SetContent(heapBytes);
+            res.CleanCache();
+            heapRes.CleanCache();
+
+            var reloaded = (Script1)res.GetScript();
+            ClassicAssert.IsTrue(reloaded.AllStrings().Any(s => s.Value == updated));
+            ClassicAssert.IsTrue(reloaded.Operators
+                .Where(o => o.Type is 0x72 or 0x74)
+                .Select(o => o.Arguments.OfType<BaseRef>().FirstOrDefault()?.Reference)
+                .OfType<StringConst>()
+                .Any(s => s.Value == updated));
         }
     }
 }

@@ -47,6 +47,22 @@ namespace SCI_Lib.Resources
             return GetContent();
         }
 
+        public override void SavePatch(string path = null)
+        {
+            if (GetScript() is Script1 script)
+            {
+                var heapRes = Package.GetResource<ResHeap>(Number);
+                if (heapRes != null)
+                {
+                    var heapBytes = script.Heap.GetBytes();
+                    if (!heapBytes.SequenceEqual(heapRes.GetContent()))
+                        heapRes.SavePatch(heapBytes);
+                }
+            }
+
+            base.SavePatch(path);
+        }
+
         public void CleanCache()
         {
             _script = null;

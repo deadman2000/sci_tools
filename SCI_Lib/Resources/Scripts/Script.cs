@@ -9,8 +9,6 @@ namespace SCI_Lib.Resources.Scripts
 {
     public class Script : BaseScript
     {
-        private StringSection _strings;
-
         public Script(Resource res) : base(res)
         {
             SourceData = res.GetContent();
@@ -37,9 +35,6 @@ namespace SCI_Lib.Resources.Scripts
                 Section sec = Section.Create(this, type, SourceData, i, size);
                 Sections.Add(sec);
                 i += size;
-
-                if (sec is StringSection section)
-                    _strings = section;
             }
 
             foreach (var sec in Sections)

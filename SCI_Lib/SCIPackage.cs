@@ -327,7 +327,7 @@ namespace SCI_Lib
             return GetResources(ResType.Text)
                 .Union(GetResources(ResType.Script))
                 .Union(GetResources(ResType.Message))
-                .Union(GetResources(ResType.Heap));
+                .Union(GetResources(ResType.Heap).Where(h => GetResource<ResScript>(h.Number) == null));
         }
 
         public void Pack(string directory)

@@ -33,7 +33,7 @@ namespace SCI_Lib.Resources.Scripts1
 
         public override IClass GetInstance(string name, string superName) => Objects.FirstOrDefault(o => o.Name == name && o.Super.Name == superName);
 
-        public override IEnumerable<StringConst> AllStrings() => Array.Empty<StringConst>();
+        public override IEnumerable<StringConst> AllStrings() => _heap.Strings;
 
         public List<Method> Procedures { get; } = new();
 
@@ -113,10 +113,19 @@ namespace SCI_Lib.Resources.Scripts1
 
             foreach (var el in AllElements)
                 el.SetupByOffset();
+
+            foreach (var obj in Objects)
+            {
+                if (obj.Properties.Length > 8 && obj.Properties[8].StringValue is StringConst name)
+                    name.IsClassName = true;
+            }
         }
 
         public override byte[] GetBytes()
         {
+            // Адреса строк зависят от их длины. Ссылки lofsa/lofss пишутся уже после пересчёта.
+            _heap.GetBytes();
+
             ByteBuilder bb = new();
 
             bb.AddUShortBE(0); // heapOffset
