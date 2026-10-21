@@ -1,5 +1,6 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         public string Decompile(Script script)
         {
+            sb.Clear();
+            _methods.Clear();
             _words = script.Package.GetIdToWord();
 
             sb.AppendFormat("(script {0})", script.Resource.Number).AppendLine();
@@ -38,6 +41,88 @@ namespace SCI_Lib.Resources.Scripts.Builders
             return sb.ToString().TrimEnd();
         }
 
+        public string Decompile(Script1 script)
+        {
+            sb.Clear();
+            _methods.Clear();
+            sb.AppendLine($"(script {script.Resource.Number})").AppendLine();
+
+            sb.AppendLine("(exports");
+            for (int i = 0; i < script.Exports.Length; i++)
+                sb.AppendLine($"    {i} {Script1Listing.ExportName(script, script.Exports[i])}");
+            sb.AppendLine(")").AppendLine();
+
+            sb.AppendLine("(string");
+            foreach (var str in script.AllStrings())
+                sb.AppendLine($"    string_{str.Address:x4} \"{str.ValueSlashEsc}\"");
+            sb.AppendLine(")").AppendLine();
+
+            sb.AppendLine("(local");
+            for (int i = 0; i < script.Heap.LocalVars.Length; i++)
+            {
+                var local = script.Heap.LocalVars[i];
+                sb.AppendLine($"    local{i} = {Script1Listing.Value(local.Value, local.StringValue)}");
+            }
+            sb.AppendLine(")").AppendLine();
+
+            foreach (var method in script.Objects.SelectMany(obj => obj.Methods))
+                _methods.Add(method.Address);
+
+            // SCI 1.1 has one code block. Bound each body by the next entry point,
+            // rather than stopping at a ret or following an address in the heap.
+            var entries = new SortedSet<ushort>(_methods);
+            foreach (var export in script.Exports)
+                if (export != null && !Script1Listing.IsHeapExport(script, export))
+                    entries.Add(export.TargetOffset);
+            foreach (var code in script.Operators)
+            {
+                if (code.Name == "call")
+                    foreach (var reference in code.Arguments.OfType<BaseRef>())
+                        entries.Add(reference.TargetOffset);
+            }
+            if (script.Operators.Count > 0)
+                entries.Add(script.Operators[0].Address);
+
+            var starts = entries.Where(address => script.GetOperator(address) != null).ToArray();
+            var ends = new Dictionary<ushort, int>();
+            for (int i = 0; i < starts.Length; i++)
+                ends[starts[i]] = i + 1 < starts.Length ? starts[i + 1] : int.MaxValue;
+
+            foreach (var address in starts.Where(address => !_methods.Contains(address)))
+            {
+                sb.AppendLine($"(procedure (localproc_{address:x4})");
+                WriteCode(script.GetOperator(address), ends[address], false);
+                sb.AppendLine(")").AppendLine();
+            }
+
+            foreach (var obj in script.Objects)
+            {
+                var super = obj.Super;
+                sb.AppendLine($"// Heap {obj.Address:x4}");
+                sb.Append($"({(obj.IsInstance ? "instance" : "class")} {Script1Listing.ObjectName(obj)}");
+                if (super != null)
+                    sb.Append($" of {Script1Listing.ObjectName(super)}");
+                sb.AppendLine().AppendLine("    (properties");
+                for (int i = 8; i < obj.Properties.Length; i++)
+                {
+                    var property = obj.Properties[i];
+                    sb.AppendLine($"        {Script1Listing.PropertyName(obj, super, i)} = {Script1Listing.Value(property.Value, property.StringValue)}");
+                }
+                sb.AppendLine("    )");
+
+                foreach (var method in obj.Methods)
+                {
+                    sb.AppendLine($"    (method ({method.Name ?? $"selector_{method.Selector:x4}"}) // method_{method.Address:x4}");
+                    if (ends.TryGetValue(method.Address, out var end))
+                        WriteCode(script.GetOperator(method.Address), end, false);
+                    sb.AppendLine("    )").AppendLine();
+                }
+                sb.AppendLine(")").AppendLine();
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
         private void WriteProc(CodeSection cs)
         {
             if (_methods.Contains((ushort)cs.Address)) return;
@@ -53,10 +138,10 @@ namespace SCI_Lib.Resources.Scripts.Builders
             }
         }
 
-        private Code WriteCode(Code code)
+        private Code WriteCode(Code code, int endAddress = int.MaxValue, bool stopAtReturn = true)
         {
             ushort lookTo = 0; // Адрес переходов
-            while (code != null)
+            while (code != null && code.Address < endAddress)
             {
                 if (code.XRefs.Any(r => r is not GlobalRef))
                     sb.AppendLine($"        {code.Label}");
@@ -73,7 +158,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
                 sb.AppendLine($"  {code.Address:x4}:{code.Type:x2} {ArgsHexToString(code),-13} {code.Name,5} {args}");
 
-                if (code.IsReturn && code.Address >= lookTo)
+                if (stopAtReturn && code.IsReturn && code.Address >= lookTo)
                     break;
 
                 if (code.IsJump)

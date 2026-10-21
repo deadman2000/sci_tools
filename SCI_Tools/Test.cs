@@ -25,7 +25,7 @@ namespace SCI_Tools
         {
             try
             {
-                FindTextSaids(18);
+                //FindTextSaids(18);
                 //Decompile(translate, 0);
                 //DecompileAll();
 
@@ -44,7 +44,7 @@ namespace SCI_Tools
 
                 //Decompile(24);
 
-                //new ImageContextExtractor(package).ExtractAll(@"D:\Projects\TranslateWeb\Freddy\imgs");
+                new ImageContextExtractor(package).ExtractAll(@"D:\Projects\TranslateWeb\Pepper\imgs");
 
                 // PrintAllVerbs();
 

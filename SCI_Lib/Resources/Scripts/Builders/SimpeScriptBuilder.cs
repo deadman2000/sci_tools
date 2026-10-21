@@ -1,5 +1,6 @@
 ﻿using SCI_Lib.Resources.Scripts.Elements;
 using SCI_Lib.Resources.Scripts.Sections;
+using SCI_Lib.Resources.Scripts1;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,10 +13,61 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         public string Decompile(Script script)
         {
+            sb.Clear();
             _words = script.Package.GetIdToWord();
 
             foreach (Section sec in script.Sections)
                 WriteSection(sec);
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public string Decompile(Script1 script)
+        {
+            sb.Clear();
+            sb.AppendLine($"[Script {script.Resource.Number} - SCI 1.1]");
+            sb.AppendLine("[Exports section]");
+            for (int i = 0; i < script.Exports.Length; i++)
+            {
+                var export = script.Exports[i];
+                sb.AppendLine($"\texport_{i} = {Script1Listing.ExportName(script, export)} ({export?.ToHex() ?? "0000"})");
+            }
+            sb.AppendLine();
+
+            WriteCode(script.Operators);
+            sb.AppendLine().AppendLine("[Heap pointers in script]");
+            foreach (var pointer in script.HeapPointers)
+            {
+                if (pointer is BaseRef reference)
+                    sb.AppendLine($"{reference.Address:x4}: pointer = {reference.TargetOffset:x4}");
+            }
+
+            sb.AppendLine().AppendLine("[Heap - Local variables]");
+            for (int i = 0; i < script.Heap.LocalVars.Length; i++)
+            {
+                var local = script.Heap.LocalVars[i];
+                sb.AppendLine($"{4 + i * 2:x4}: var[{i}] = {Script1Listing.Value(local.Value, local.StringValue)}");
+            }
+
+            foreach (var obj in script.Objects)
+            {
+                var super = obj.Super;
+                sb.AppendLine().AppendLine($"{obj.Address:x4}: [Heap - {(obj.IsInstance ? "Object" : "Class")}]")
+                    .AppendLine($"\tname = {Script1Listing.ObjectName(obj)}")
+                    .AppendLine($"\tspecies = {obj.Id:x4}")
+                    .AppendLine($"\tsuper = {super?.Name ?? $"${obj.Properties[6].Value:x4}"}");
+                for (int i = 5; i < obj.Properties.Length; i++)
+                {
+                    var property = obj.Properties[i];
+                    sb.AppendLine($"{obj.Address + i * 2:x4}: {Script1Listing.PropertyName(obj, super, i)} = {Script1Listing.Value(property.Value, property.StringValue)}");
+                }
+                foreach (var method in obj.Methods)
+                    sb.AppendLine($"\tfunc[{method.Selector:x4}] = {method.Name} code_{method.Address:x4}");
+            }
+
+            sb.AppendLine().AppendLine("[Heap - String section]");
+            foreach (var str in script.AllStrings())
+                sb.AppendLine($"string_{str.Address:x4} = '{str.ValueSlashEsc}'");
 
             return sb.ToString().TrimEnd();
         }
@@ -109,8 +161,13 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         private void Write(CodeSection cs)
         {
+            WriteCode(cs.Operators);
+        }
+
+        private void WriteCode(IEnumerable<Code> operators)
+        {
             sb.AppendLine($"[Code section]");
-            foreach (var c in cs.Operators)
+            foreach (var c in operators)
             {
                 if (c.XRefs.Count > 0)
                     sb.AppendLine().AppendLine($"{c.Label}:");

@@ -26,6 +26,7 @@ namespace SCI_Tools
         typeof(PatchFreddyDemo),
         typeof(PatchFreddyCD),
         typeof(PatchFreddyDemoCD),
+        typeof(PatchPepper),
         typeof(AudioExtract),
         typeof(AudioReplace)
     )]

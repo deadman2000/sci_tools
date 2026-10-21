@@ -1,5 +1,6 @@
 ﻿using SCI_Lib.Utils;
 using System.Text;
+using SCI_Lib.Resources.Scripts1;
 
 namespace SCI_Lib.Resources.Scripts.Builders
 {
@@ -11,6 +12,7 @@ namespace SCI_Lib.Resources.Scripts.Builders
 
         public string Decompile(Script script)
         {
+            sb.Clear();
             gameEncoding = script.Package.GameEncoding;
 
             foreach (var sec in script.Sections)
@@ -19,6 +21,24 @@ namespace SCI_Lib.Resources.Scripts.Builders
                 AddHex(script.SourceData, sec.Address, sec.Size);
                 sb.Append("\r\n");
             }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public string Decompile(Script1 script)
+        {
+            sb.Clear();
+            gameEncoding = script.Package.GameEncoding;
+
+            // Read the resource bytes without serializing and changing element addresses.
+            var data = script.Resource.GetContent();
+            sb.AppendLine($"Script {script.Resource.Number} Size: {data.Length}");
+            AddHex(data, 0, data.Length);
+            sb.AppendLine();
+
+            var heap = script.Heap.Resource.GetContent();
+            sb.AppendLine($"Heap {script.Resource.Number} Size: {heap.Length}");
+            AddHex(heap, 0, heap.Length);
 
             return sb.ToString().TrimEnd();
         }

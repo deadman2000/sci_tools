@@ -3,6 +3,7 @@ using SCI_Lib.Resources;
 using SCI_Lib.Resources.Scripts;
 using SCI_Lib.Resources.Scripts.Builders;
 using SCI_Lib.Resources.Scripts.Elements;
+using SCI_Lib.Resources.Scripts1;
 using System;
 using System.Linq;
 using System.Windows.Forms;
@@ -43,6 +44,7 @@ namespace SCI_Translator.ResView
 
             dgvStrings.Rows.Clear();
             tbASM.Clear();
+            tbASMC.Clear();
             tbHex.Clear();
 
             if (_translated)
@@ -73,6 +75,12 @@ namespace SCI_Translator.ResView
                 tbHex.Text = new HexBuilder().Decompile(scr);
                 tbASM.Text = new SimpeScriptBuilder().Decompile(scr);
                 tbASMC.Text = new CompanionBuilder().Decompile(scr);
+            }
+            else if (script is Script1 scr1)
+            {
+                tbHex.Text = new HexBuilder().Decompile(scr1);
+                tbASM.Text = new SimpeScriptBuilder().Decompile(scr1);
+                tbASMC.Text = new CompanionBuilder().Decompile(scr1);
             }
 
             ResumeLayout();

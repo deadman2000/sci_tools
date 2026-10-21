@@ -17,6 +17,8 @@ namespace SCI_Lib.Resources.Scripts1
 
         public Property[] Properties { get; private set; }
 
+        public bool IsInstance => _isInstance;
+
         public Object1(Heap heap, ushort offset)
             : base(heap, offset)
         {
@@ -43,9 +45,9 @@ namespace SCI_Lib.Resources.Scripts1
             }
         }
 
-        public string Name => Properties[8].StringValue?.Value;
+        public string Name => Properties.Length > 8 ? Properties[8].StringValue?.Value : null;
 
-        public override string ToString() => Name;
+        public override string ToString() => Name ?? Label;
 
         public void ReadHeap(MemoryStream heap)
         {
