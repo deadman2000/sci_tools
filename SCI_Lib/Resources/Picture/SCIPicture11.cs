@@ -21,9 +21,9 @@ namespace SCI_Lib.Resources.Picture
             Read(data);
         }
 
-        public override int Width => _cell.Width;
+        public override int Width => _cell?.Width ?? 320;
 
-        public override int Height => _cell.Height;
+        public override int Height => _cell?.Height ?? 190;
 
         private void Read(byte[] data)
         {
@@ -50,8 +50,19 @@ namespace SCI_Lib.Resources.Picture
 
             if (_header.PaletteOffset > 0)
             {
-                stream.Seek(_header.PaletteOffset, SeekOrigin.Begin);
-                _palette = Palette.Read(stream);
+                var paletteOffset = (int)_header.PaletteOffset;
+                // Picture 99 stores a palette offset into a stub shorter than a
+                // palette header. The interpreter only applies a palette when
+                // the picture has a cel, and a short stub is not a palette.
+                if (paletteOffset < data.Length && data.Length - paletteOffset >= 37)
+                {
+                    stream.Seek(paletteOffset, SeekOrigin.Begin);
+                    _palette = Palette.Read(stream);
+                }
+                else
+                {
+                    _header.PaletteOffset = 0;
+                }
             }
 
             if (_header.CelCount > 0)
@@ -92,6 +103,7 @@ namespace SCI_Lib.Resources.Picture
 
         public override Image GetBackground()
         {
+            if (_cell == null) return null;
             return _cell.GetImage();
         }
 
@@ -112,7 +124,7 @@ namespace SCI_Lib.Resources.Picture
 
         public override Color[] GetPalette()
         {
-            return _palette.Colors;
+            return _palette?.Colors ?? Package.GlobalPalette.Colors;
         }
 
         public override byte[] GetPixels()

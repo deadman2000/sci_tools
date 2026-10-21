@@ -49,13 +49,24 @@ namespace SCI_Lib.Resources.Picture
             public void Fill(Point p)
             {
                 if (!enabled) return;
-                FloodFill(p, color);
+                if (p.X < 0 || p.Y < 0 || p.X >= bitmap.Width || p.Y >= bitmap.Height) return;
+
+                // SCI fills priority and control only over the empty value 0,
+                // and a fill that starts on an already painted pixel is ignored.
+                if (Name is "Control" or "Priority")
+                {
+                    if (color.ToArgb() == palette[0].ToArgb()) return;
+                    if (bitmap.GetPixel(p.X, p.Y).ToArgb() != palette[0].ToArgb()) return;
+                    FloodFill(p, palette[0]);
+                    return;
+                }
+
+                FloodFill(p, bitmap.GetPixel(p.X, p.Y));
             }
 
-            private void FloodFill(Point pt, Color color)
+            private void FloodFill(Point pt, Color targetColor)
             {
                 Stack<Point> pixels = new();
-                var targetColor = bitmap.GetPixel(pt.X, pt.Y);
                 if (targetColor == color) return;
                 pixels.Push(pt);
 
